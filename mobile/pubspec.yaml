@@ -1,0 +1,72 @@
+name: sahali
+description: "Sahali - Civic reporting platform for Tunisian citizens"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Navigation
+  go_router: ^14.6.3
+
+  # State management (MVVM)
+  provider: ^6.1.2
+
+  # HTTP client
+  dio: ^5.7.0
+
+  # Secure token storage
+  flutter_secure_storage: ^9.2.2
+
+  # Preferences (language, theme)
+  shared_preferences: ^2.3.4
+
+  # Local DB for offline queue
+  sqflite: ^2.4.1
+  path: ^1.9.0
+
+  # Fonts
+  google_fonts: ^6.2.1
+
+  # Maps (OpenStreetMap, no API key needed)
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
+  # Location / GPS
+  geolocator: ^13.0.2
+
+  # Camera / Gallery
+  image_picker: ^1.1.2
+
+  # Permissions
+  permission_handler: ^11.4.0
+
+  # Image caching
+  cached_network_image: ^3.4.1
+
+  # Localization helpers
+  intl: ^0.20.2
+
+  # Icons
+  cupertino_icons: ^1.0.8
+  url_launcher: ^6.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+
+  generate: true
