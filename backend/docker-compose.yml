@@ -1,0 +1,82 @@
+services:
+  db:
+    image: postgis/postgis:15-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: citizen_alert
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: citizen_alert_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U citizen_alert"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  createbuckets:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin;
+        /usr/bin/mc mb --ignore-existing local/citizen-alert;
+        /usr/bin/mc anonymous set download local/citizen-alert;
+        exit 0;
+      "
+
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://citizen_alert:password@db:5432/citizen_alert_db
+      REDIS_URL: redis://redis:6379/0
+      AWS_S3_ENDPOINT_URL: http://minio:9000
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./private.pem:/app/private.pem:ro
+      - ./public.pem:/app/public.pem:ro
+
+volumes:
+  pgdata:
+  miniodata:
