@@ -191,10 +191,8 @@ class AppLocalizations {
   String get statusSubmitted => _t('statusSubmitted');
   String get statusReceived => _t('statusReceived');
   String get statusUnderReview => _t('statusUnderReview');
-  String get statusScheduled => _t('statusScheduled');
   String get statusInProgress => _t('statusInProgress');
   String get statusResolved => _t('statusResolved');
-  String get statusClosed => _t('statusClosed');
   String get statusRejected => _t('statusRejected');
 
   // ── Login ─────────────────────────────────────────────────────────────────────
@@ -342,7 +340,7 @@ const _en = <String, String>{
   'filterAll': 'All',
   'filterActive': 'Active',
   'filterResolved': 'Resolved',
-  'filterClosed': 'Closed',
+  'filterClosed': 'Rejected',
   'noReportsFound': 'No reports found',
 
   'profile': 'Profile',
@@ -401,10 +399,8 @@ const _en = <String, String>{
   'statusSubmitted': 'Submitted',
   'statusReceived': 'Received',
   'statusUnderReview': 'Under Review',
-  'statusScheduled': 'Scheduled',
   'statusInProgress': 'In Progress',
   'statusResolved': 'Resolved',
-  'statusClosed': 'Closed',
   'statusRejected': 'Rejected',
 
   'onboardingSkip': 'Skip',
@@ -551,7 +547,7 @@ const _fr = <String, String>{
   'filterAll': 'Tous',
   'filterActive': 'Actifs',
   'filterResolved': 'Résolus',
-  'filterClosed': 'Fermés',
+  'filterClosed': 'Rejetés',
   'noReportsFound': 'Aucun signalement trouvé',
 
   'profile': 'Profil',
@@ -610,10 +606,8 @@ const _fr = <String, String>{
   'statusSubmitted': 'Soumis',
   'statusReceived': 'Reçu',
   'statusUnderReview': 'En examen',
-  'statusScheduled': 'Planifié',
   'statusInProgress': 'En cours',
   'statusResolved': 'Résolu',
-  'statusClosed': 'Clôturé',
   'statusRejected': 'Rejeté',
 
   'onboardingSkip': 'Passer',
@@ -760,7 +754,7 @@ const _ar = <String, String>{
   'filterAll': 'الكل',
   'filterActive': 'نشطة',
   'filterResolved': 'محلولة',
-  'filterClosed': 'مغلقة',
+  'filterClosed': 'مرفوضة',
   'noReportsFound': 'لا توجد تقارير',
 
   'profile': 'الملف الشخصي',
@@ -819,10 +813,8 @@ const _ar = <String, String>{
   'statusSubmitted': 'مُقدَّم',
   'statusReceived': 'مستلم',
   'statusUnderReview': 'قيد المراجعة',
-  'statusScheduled': 'مجدول',
   'statusInProgress': 'قيد التنفيذ',
   'statusResolved': 'محلول',
-  'statusClosed': 'مغلق',
   'statusRejected': 'مرفوض',
 
   'onboardingSkip': 'تخطي',

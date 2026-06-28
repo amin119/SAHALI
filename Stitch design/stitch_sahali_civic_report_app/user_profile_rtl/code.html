@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>الملف الشخصي - سهلي</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;family=Nunito+Sans:wght@700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', 'Cairo', sans-serif;
+            background-color: #faf8ff;
+        }
+        .font-section-title { font-family: 'Nunito Sans', 'Cairo', sans-serif; }
+        .font-display-hero { font-family: 'Nunito Sans', 'Cairo', sans-serif; }
+        .font-label-sm { font-family: 'Inter', 'Cairo', sans-serif; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#c4c5d7",
+                      "on-primary": "#ffffff",
+                      "surface-container-low": "#f3f2fe",
+                      "inverse-primary": "#b6c4ff",
+                      "outline": "#747686",
+                      "tertiary-fixed-dim": "#ffb59b",
+                      "tertiary": "#7e2700",
+                      "on-tertiary-fixed": "#380d00",
+                      "on-primary-fixed": "#001550",
+                      "inverse-surface": "#2e3039",
+                      "secondary-fixed": "#d3e4fe",
+                      "background": "#faf8ff",
+                      "on-secondary-container": "#54647a",
+                      "surface-tint": "#1f51da",
+                      "primary-fixed-dim": "#b6c4ff",
+                      "on-surface": "#191b23",
+                      "on-error": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "surface-container-highest": "#e2e1ed",
+                      "on-secondary-fixed": "#0b1c30",
+                      "on-surface-variant": "#434655",
+                      "tertiary-fixed": "#ffdbcf",
+                      "surface-container": "#ededf8",
+                      "surface": "#faf8ff",
+                      "primary": "#0038af",
+                      "on-secondary-fixed-variant": "#38485d",
+                      "surface-variant": "#e2e1ed",
+                      "secondary-container": "#d0e1fb",
+                      "on-tertiary-fixed-variant": "#812800",
+                      "secondary-fixed-dim": "#b7c8e1",
+                      "secondary": "#505f76",
+                      "tertiary-container": "#a63600",
+                      "on-primary-container": "#cbd4ff",
+                      "error": "#ba1a1a",
+                      "surface-dim": "#d9d9e4",
+                      "on-error-container": "#93000a",
+                      "surface-bright": "#faf8ff",
+                      "on-tertiary": "#ffffff",
+                      "primary-container": "#1b4fd8",
+                      "on-background": "#191b23",
+                      "inverse-on-surface": "#f0f0fb",
+                      "surface-container-high": "#e8e7f3",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed": "#dce1ff",
+                      "on-tertiary-container": "#ffc9b7",
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed-variant": "#003ab3"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "screen-edge": "20px",
+                      "md": "16px",
+                      "sm": "12px",
+                      "gutter": "16px",
+                      "base": "8px",
+                      "lg": "24px",
+                      "xs": "4px"
+              },
+              "fontFamily": {
+                      "body-md": ["Inter", "Cairo"],
+                      "display-hero": ["Nunito Sans", "Cairo"],
+                      "caption": ["Inter", "Cairo"],
+                      "label-sm": ["Inter", "Cairo"],
+                      "section-title": ["Nunito Sans", "Cairo"],
+                      "body-lg": ["Inter", "Cairo"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display-hero": ["34px", {"lineHeight": "42px", "fontWeight": "800"}],
+                      "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                      "section-title": ["22px", {"lineHeight": "28px", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="bg-background sticky top-0 z-40 flex justify-between items-center w-full px-screen-edge py-md">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-primary-container flex items-center justify-center border-2 border-white shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged Tunisian man with a friendly expression, short dark hair, and neat beard. He is wearing a formal navy blue shirt. The background is a soft-focus urban environment in Tunis during golden hour, reflecting a reliable and civic-minded character." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdut20a3qf_LBXSex4Au7vu6gdnjM6nVWXjLnVmcgyY6R9Y2JzQI-3162NBpiPyjhpVfv23d6QGMEQYm_Xuu9xe3h-S64QcLKQs62_mPx8gRoXtr3ondO2nFYqDFoVxp-eqeJYgqVSaFm4-uxqdzXYZtIgN2bPhc8Hz3HzkA_htm6wfNH5P9_-XucyABkb-A_QQ7DZdxNxv2Qps17X2s-gmGsX_msJ_h28mrKLh88WEGktrmnLKDVpwDl5vbS4b6jjAbgmWsluXA"/>
+</div>
+<h1 class="font-display-hero text-section-title text-primary">سهلي</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/20 transition-opacity">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<main class="flex-1 pb-24">
+<!-- Profile Header Section -->
+<section class="bg-primary px-screen-edge pt-lg pb-xl rounded-b-[32px] shadow-lg relative overflow-hidden">
+<!-- Background Decoration -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-24 h-24 rounded-full border-4 border-white/30 p-1 mb-md">
+<div class="w-full h-full rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close up profile picture of a reliable citizen named Amin Ben Ali. He has a warm smile, clear skin, and dark hair. The image is bright with high-key lighting, maintaining a trustworthy and corporate modern aesthetic suitable for a civic platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgcm4dVWmcp8JYeX08oLx_oCOxmVZuwAPuxhUT_zoDLCDnAu_XDe7q1D1sSOGwunRSNR86S2dkbDPZHDhzwtGjuxMHR1CCBcEfx_yNhrGmj6ve7DG01XOL3q4uRvWA9dDMWF_cugX0EEeZmvuEYu32tX_0ODc3tYuDvY80NZ130gSQ_920_UxY5zIEf09ro9VWbylaxOWNQeW3wPIKkq3Zf-9aMKY9Hjth365E7lfeKWUaRxIwGy2HCMhwhdplDPG5a19NjF5dDg"/>
+</div>
+</div>
+<h2 class="text-white font-section-title text-section-title mb-1">أمين بن علي</h2>
+<p class="text-on-primary-container text-body-md opacity-90 dir-ltr">+216 98 765 432</p>
+</div>
+</section>
+<!-- Stats Bento Row -->
+<section class="px-screen-edge -mt-8 relative z-20">
+<div class="grid grid-cols-3 gap-3">
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-[0_2px_8px_rgba(15,23,42,0.05)] flex flex-col items-center text-center">
+<span class="text-primary font-bold text-lg">12</span>
+<span class="text-on-surface-variant text-caption mt-1">تم الإبلاغ</span>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-[0_2px_8px_rgba(15,23,42,0.05)] flex flex-col items-center text-center">
+<span class="text-primary font-bold text-lg">8</span>
+<span class="text-on-surface-variant text-caption mt-1">تم الحل</span>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-[0_2px_8px_rgba(15,23,42,0.05)] flex flex-col items-center text-center">
+<div class="flex items-center gap-1">
+<span class="text-primary font-bold text-lg">4.9</span>
+<span class="material-symbols-outlined text-[14px] text-tertiary" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="text-on-surface-variant text-caption mt-1">التقييم</span>
+</div>
+</div>
+</section>
+<!-- Settings Groups -->
+<div class="px-screen-edge mt-xl space-y-xl">
+<!-- Group: Preferences -->
+<div>
+<h3 class="text-outline text-label-sm mb-md px-1">تفضيلات التطبيق</h3>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden divide-y divide-outline-variant/30">
+<button class="w-full flex items-center justify-between p-md hover:bg-surface-variant/10 transition-colors group">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">language</span>
+</div>
+<div class="text-right">
+<p class="text-on-surface font-body-md font-semibold">اللغة</p>
+<p class="text-outline text-caption">العربية</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:translate-x-1 transition-transform">chevron_left</span>
+</button>
+<button class="w-full flex items-center justify-between p-md hover:bg-surface-variant/10 transition-colors group">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">notifications_active</span>
+</div>
+<div class="text-right">
+<p class="text-on-surface font-body-md font-semibold">التنبيهات</p>
+<p class="text-outline text-caption">مفعلة</p>
+</div>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative flex items-center px-1">
+<div class="w-4 h-4 bg-white rounded-full mr-auto"></div>
+</div>
+</button>
+</div>
+</div>
+<!-- Group: Account -->
+<div>
+<h3 class="text-outline text-label-sm mb-md px-1">الحساب والأمان</h3>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden divide-y divide-outline-variant/30">
+<button class="w-full flex items-center justify-between p-md hover:bg-surface-variant/10 transition-colors group">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">person_edit</span>
+</div>
+<p class="text-on-surface font-body-md font-semibold">تعديل الملف الشخصي</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:translate-x-1 transition-transform">chevron_left</span>
+</button>
+<button class="w-full flex items-center justify-between p-md hover:bg-surface-variant/10 transition-colors group">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<p class="text-on-surface font-body-md font-semibold">تغيير كلمة المرور</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:translate-x-1 transition-transform">chevron_left</span>
+</button>
+</div>
+</div>
+<!-- Group: Action -->
+<div class="pb-base">
+<button class="w-full flex items-center justify-center gap-base p-md border-2 border-error/20 rounded-xl text-error font-bold hover:bg-error/5 transition-colors">
+<span class="material-symbols-outlined">logout</span>
+                    تسجيل الخروج
+                </button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container-lowest shadow-[0_-2px_8px_rgba(15,23,42,0.05)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant hover:opacity-80" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm mt-1">Accueil</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant hover:opacity-80" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-label-sm text-label-sm mt-1">Signaux</span>
+</a>
+<button class="flex flex-col items-center justify-center bg-primary text-white w-14 h-14 rounded-full -translate-y-6 shadow-lg hover:scale-95 transition-transform active:scale-90">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant hover:opacity-80" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-sm text-label-sm mt-1">Alertes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profil</span>
+</a>
+</nav>
+<script>
+        // Simple touch interaction for items
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('touchstart', () => {
+                el.style.opacity = '0.7';
+            });
+            el.addEventListener('touchend', () => {
+                el.style.opacity = '1';
+            });
+        });
+
+        // Horizontal spacing RTL check: Tailwind handles 'rtl' dir naturally with flex-row-reverse 
+        // if needed, but since we use standard flex layouts with dir="rtl", it maps correctly.
+    </script>
+</body></html>

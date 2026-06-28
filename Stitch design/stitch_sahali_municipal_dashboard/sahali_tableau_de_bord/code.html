@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sahali - Tableau de bord</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #F4F6FB; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .chart-container { position: relative; }
+        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-on-background antialiased overflow-x-hidden">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#181c20",
+                        "surface-container-highest": "#e0e2e7",
+                        "error": "#ba1a1a",
+                        "surface-container": "#eceef3",
+                        "on-secondary-container": "#5c647a",
+                        "primary-container": "#1b4fd8",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "surface": "#FFFFFF",
+                        "background": "#f7f9fe",
+                        "inverse-on-surface": "#eff1f6",
+                        "primary-fixed": "#dce1ff",
+                        "on-primary-fixed-variant": "#003ab3",
+                        "surface-container-high": "#e6e8ed",
+                        "surface-container-low": "#f1f4f9",
+                        "priority-medium": "#F59E0B",
+                        "secondary": "#565e74",
+                        "on-tertiary-container": "#cbd6ee",
+                        "on-secondary-fixed": "#131b2e",
+                        "status-progress": "#F97316",
+                        "tertiary": "#3b4559",
+                        "status-scheduled": "#8B5CF6",
+                        "status-rejected": "#EF4444",
+                        "inverse-primary": "#b6c4ff",
+                        "outline": "#747686",
+                        "text-secondary": "#64748B",
+                        "surface-dim": "#d8dadf",
+                        "outline-variant": "#c4c5d7",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#dae2fd",
+                        "on-primary-container": "#cbd4ff",
+                        "priority-low": "#22C55E",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "tertiary-fixed-dim": "#bcc7de",
+                        "on-tertiary-fixed": "#111c2d",
+                        "text-primary": "#0F172A",
+                        "on-tertiary-fixed-variant": "#3c475a",
+                        "surface-bright": "#f7f9fe",
+                        "on-surface": "#181c20",
+                        "on-error-container": "#93000a",
+                        "text-muted": "#94A3B8",
+                        "on-primary-fixed": "#001550",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "status-resolved": "#22C55E",
+                        "border": "#E2E8F0",
+                        "status-received": "#0EA5E9",
+                        "on-surface-variant": "#434655",
+                        "status-closed": "#64748B",
+                        "status-review": "#F59E0B",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#d8e3fb",
+                        "status-submitted": "#6366F1",
+                        "tertiary-container": "#525d71",
+                        "primary": "#0038af",
+                        "inverse-surface": "#2d3135",
+                        "priority-critical": "#EF4444",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e0e2e7",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "priority-high": "#F97316",
+                        "surface-tint": "#1f51da",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "12px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "24px",
+                        "sidebar_width": "260px",
+                        "navbar_height": "64px",
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "container_padding": "32px",
+                        "gutter": "24px"
+                    }
+                }
+            }
+        }
+    </script>
+<!-- Side Navigation Bar -->
+<aside class="fixed left-0 top-0 h-screen w-[260px] bg-on-secondary-fixed flex flex-col py-stack-lg z-50 shadow-lg">
+<div class="px-6 mb-10">
+<h1 class="font-headline-sm text-headline-sm text-surface-container-lowest font-bold tracking-tight">Sahali</h1>
+</div>
+<div class="flex-1 overflow-y-auto px-2 custom-scrollbar">
+<nav class="space-y-1">
+<!-- Navigation mapping from JSON -->
+<a class="flex items-center gap-3 px-4 py-3 text-surface-container-lowest bg-primary border-l-4 border-primary-fixed-dim translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Tableau de bord</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Carte en direct</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">report_problem</span>
+<span class="font-label-md text-label-md">Signalements</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">engineering</span>
+<span class="font-label-md text-label-md">Interventions</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Calendrier</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Équipes &amp; Agents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">location_city</span>
+<span class="font-label-md text-label-md">Municipalités</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">category</span>
+<span class="font-label-md text-label-md">Catégories</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">insert_chart</span>
+<span class="font-label-md text-label-md">Statistiques</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Rapports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">speed</span>
+<span class="font-label-md text-label-md">Performance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Paramètres</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto px-6 pt-6 border-t border-outline/20">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-white">location_city</span>
+</div>
+<div>
+<p class="text-surface-container-lowest font-label-md text-label-md">La Marsa</p>
+<p class="text-on-secondary-fixed-variant font-label-sm text-label-sm">Administration</p>
+</div>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+</a>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-40 flex items-center justify-between px-container_padding h-[64px] bg-surface border-b border-border ml-[260px] w-[calc(100%-260px)]">
+<div class="flex items-center gap-8">
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-lg pl-10 text-body-md py-1.5 focus:ring-2 focus:ring-primary/20" placeholder="Rechercher un signalement, agent..." type="text"/>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-primary font-semibold border-b-2 border-primary pb-1 font-label-md text-label-md" href="#">Tableau de bord</a>
+<a class="text-secondary hover:bg-surface-container-low transition-colors px-2 py-1 rounded font-label-md text-label-md" href="#">Signalements</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-secondary">language</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors relative">
+<span class="material-symbols-outlined text-secondary">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-secondary">help</span>
+</button>
+<div class="flex items-center gap-3 pl-4 border-l border-border">
+<div class="text-right">
+<p class="font-label-md text-label-md font-bold text-on-surface">Amin Ben Ali</p>
+<p class="font-label-sm text-label-sm text-text-secondary">Superviseur</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-primary-fixed ring-1 ring-surface shadow-sm object-cover" data-alt="A professional headshot of a middle-aged male municipal supervisor named Amin Ben Ali. He is wearing a sharp navy blue business suit with a crisp white shirt, posing against a soft-focus modern office background. The lighting is bright and professional, conveying a sense of authority and municipal leadership in a modern civic environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOowjdRuhIpuozMv_xpCzqbH8VoD8mHBvV-p1WgynfGeyvo7f_mp4kBjC9FXKUetWzrZMhRUawwvATnosUUlkgtEjucliGzx8Y3YYoEeaeK2W5Khpm4Svz4JXWKruPOsKveja_GVBvFjcQGHWA00vQJY-POKKgkqTAQoqXJwap9zSVyLN_upytXXoMtrxGTSYe4V4F0sf9L3R49WVw-v96f0op6ywVM4f1TbIFuL_W6pfvqH3eMRkGsfEK3C6uLjDeU3eKg9nvxM4"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[260px] p-container_padding min-h-screen">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-stack-lg gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-text-primary mb-1">Tableau de bord</h2>
+<p class="text-text-secondary font-body-lg text-body-lg">Bienvenue, Amin 👋 Voici l'état de la municipalité aujourd'hui.</p>
+</div>
+<div class="flex items-center gap-stack-sm">
+<div class="bg-surface border border-border px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-text-secondary text-sm">calendar_today</span>
+<span class="font-label-md text-label-md text-on-surface">18 – 25 juin 2026</span>
+</div>
+<button class="bg-primary text-on-primary px-5 py-2 rounded-xl flex items-center gap-2 shadow-md hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm">download</span>
+<span class="font-label-md text-label-md">Exporter</span>
+</button>
+</div>
+</div>
+<!-- Section 1: KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-gutter mb-stack-lg">
+<!-- Total Signalements -->
+<div class="bg-surface rounded-xl p-stack-md shadow-[0_1px_ shadow-sm] border border-border relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary-container/10 rounded-lg">
+<span class="material-symbols-outlined text-primary">report_problem</span>
+</div>
+<span class="text-priority-low flex items-center gap-1 font-label-sm text-label-sm bg-priority-low/10 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> 12%
+                    </span>
+</div>
+<p class="text-text-secondary font-label-md text-label-md uppercase tracking-wider mb-1">Total signalements</p>
+<h3 class="text-display-stat font-display-stat text-on-surface">1,284</h3>
+<div class="h-10 mt-4 opacity-50 group-hover:opacity-100 transition-opacity">
+<svg class="w-full h-full stroke-primary fill-none stroke-2" viewbox="0 0 100 20">
+<path d="M0 15 Q 10 5, 20 12 T 40 8 T 60 14 T 80 5 T 100 10"></path>
+</svg>
+</div>
+</div>
+<!-- En attente -->
+<div class="bg-surface rounded-xl p-stack-md shadow-sm border border-border">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-priority-medium/10 rounded-lg">
+<span class="material-symbols-outlined text-priority-medium">pending_actions</span>
+</div>
+<span class="text-priority-medium flex items-center gap-1 font-label-sm text-label-sm bg-priority-medium/10 px-2 py-0.5 rounded-full">
+                        +5 hier
+                    </span>
+</div>
+<p class="text-text-secondary font-label-md text-label-md uppercase tracking-wider mb-1">En attente</p>
+<h3 class="text-display-stat font-display-stat text-on-surface">87</h3>
+<p class="text-text-muted font-label-sm text-label-sm mt-4 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> Temps moyen: 18h
+                </p>
+</div>
+<!-- Résolus -->
+<div class="bg-surface rounded-xl p-stack-md shadow-sm border border-border">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-priority-low/10 rounded-lg">
+<span class="material-symbols-outlined text-priority-low">check_circle</span>
+</div>
+<span class="text-priority-low flex items-center gap-1 font-label-sm text-label-sm bg-priority-low/10 px-2 py-0.5 rounded-full">
+                        +8%
+                    </span>
+</div>
+<p class="text-text-secondary font-label-md text-label-md uppercase tracking-wider mb-1">Résolus ce mois</p>
+<h3 class="text-display-stat font-display-stat text-on-surface">342</h3>
+<p class="text-text-muted font-label-sm text-label-sm mt-4 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> Taux: 91.2%
+                </p>
+</div>
+<!-- Satisfaction -->
+<div class="bg-surface rounded-xl p-stack-md shadow-sm border border-border">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-status-scheduled/10 rounded-lg">
+<span class="material-symbols-outlined text-status-scheduled">sentiment_satisfied</span>
+</div>
+</div>
+<p class="text-text-secondary font-label-md text-label-md uppercase tracking-wider mb-1">Satisfaction</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-display-stat font-display-stat text-on-surface">4.6</h3>
+<span class="text-text-muted font-body-md text-body-md">/5</span>
+</div>
+<div class="flex items-center gap-1 mt-4">
+<div class="flex text-priority-medium">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0.5;">star_half</span>
+</div>
+<span class="text-text-muted font-label-sm text-label-sm ml-2">218 avis</span>
+</div>
+</div>
+</div>
+<!-- Section 2: Charts Row -->
+<div class="grid grid-cols-12 gap-gutter mb-stack-lg">
+<!-- Evolution Chart -->
+<div class="col-span-12 xl:col-span-8 bg-surface rounded-xl p-6 shadow-sm border border-border">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Évolution des signalements</h4>
+<p class="text-text-muted font-label-sm text-label-sm">Comparaison hebdomadaire de l'activité</p>
+</div>
+<div class="flex bg-surface-container-low p-1 rounded-lg">
+<button class="px-3 py-1.5 rounded-md text-label-sm font-label-sm bg-surface shadow-sm text-primary">7j</button>
+<button class="px-3 py-1.5 rounded-md text-label-sm font-label-sm text-text-secondary hover:text-on-surface transition-colors">30j</button>
+<button class="px-3 py-1.5 rounded-md text-label-sm font-label-sm text-text-secondary hover:text-on-surface transition-colors">3m</button>
+<button class="px-3 py-1.5 rounded-md text-label-sm font-label-sm text-text-secondary hover:text-on-surface transition-colors">1an</button>
+</div>
+</div>
+<div class="h-64 flex items-end justify-between gap-2 px-4">
+<!-- Faux Bar Chart Representation -->
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end gap-1 h-48">
+<div class="bg-primary-container/40 h-32 w-full rounded-t-sm group-hover:bg-primary-container transition-colors"></div>
+<div class="bg-priority-low/40 h-24 w-full rounded-t-sm group-hover:bg-priority-low transition-colors"></div>
+<div class="bg-priority-medium/40 h-10 w-full rounded-t-sm group-hover:bg-priority-medium transition-colors"></div>
+</div>
+<span class="text-text-muted font-label-sm text-label-sm mt-2">Lun</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end gap-1 h-48">
+<div class="bg-primary-container/40 h-28 w-full rounded-t-sm group-hover:bg-primary-container transition-colors"></div>
+<div class="bg-priority-low/40 h-20 w-full rounded-t-sm group-hover:bg-priority-low transition-colors"></div>
+<div class="bg-priority-medium/40 h-12 w-full rounded-t-sm group-hover:bg-priority-medium transition-colors"></div>
+</div>
+<span class="text-text-muted font-label-sm text-label-sm mt-2">Mar</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end gap-1 h-48">
+<div class="bg-primary-container/40 h-40 w-full rounded-t-sm group-hover:bg-primary-container transition-colors"></div>
+<div class="bg-priority-low/40 h-36 w-full rounded-t-sm group-hover:bg-priority-low transition-colors"></div>
+<div class="bg-priority-medium/40 h-8 w-full rounded-t-sm group-hover:bg-priority-medium transition-colors"></div>
+</div>
+<span class="text-text-muted font-label-sm text-label-sm mt-2">Mer</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end gap-1 h-48">
+<div class="bg-primary-container/40 h-36 w-full rounded-t-sm group-hover:bg-primary-container transition-colors"></div>
+<div class="bg-priority-low/40 h-30 w-full rounded-t-sm group-hover:bg-priority-low transition-colors"></div>
+<div class="bg-priority-medium/40 h-14 w-full rounded-t-sm group-hover:bg-priority-medium transition-colors"></div>
+</div>
+<span class="text-text-muted font-label-sm text-label-sm mt-2">Jeu</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end gap-1 h-48">
+<div class="bg-primary-container/40 h-44 w-full rounded-t-sm group-hover:bg-primary-container transition-colors"></div>
+<div class="bg-priority-low/40 h-40 w-full rounded-t-sm group-hover:bg-priority-low transition-colors"></div>
+<div class="bg-priority-medium/40 h-6 w-full rounded-t-sm group-hover:bg-priority-medium transition-colors"></div>
+</div>
+<span class="text-text-muted font-label-sm text-label-sm mt-2">Ven</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end gap-1 h-48">
+<div class="bg-primary-container/40 h-20 w-full rounded-t-sm group-hover:bg-primary-container transition-colors"></div>
+<div class="bg-priority-low/40 h-16 w-full rounded-t-sm group-hover:bg-priority-low transition-colors"></div>
+<div class="bg-priority-medium/40 h-4 w-full rounded-t-sm group-hover:bg-priority-medium transition-colors"></div>
+</div>
+<span class="text-text-muted font-label-sm text-label-sm mt-2">Sam</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end gap-1 h-48">
+<div class="bg-primary-container/40 h-14 w-full rounded-t-sm group-hover:bg-primary-container transition-colors"></div>
+<div class="bg-priority-low/40 h-10 w-full rounded-t-sm group-hover:bg-priority-low transition-colors"></div>
+<div class="bg-priority-medium/40 h-4 w-full rounded-t-sm group-hover:bg-priority-medium transition-colors"></div>
+</div>
+<span class="text-text-muted font-label-sm text-label-sm mt-2">Dim</span>
+</div>
+</div>
+<div class="flex items-center justify-center gap-8 mt-6">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary-container"></span>
+<span class="text-label-sm font-label-sm text-text-secondary">Soumis</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-priority-low"></span>
+<span class="text-label-sm font-label-sm text-text-secondary">Résolus</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-priority-medium"></span>
+<span class="text-label-sm font-label-sm text-text-secondary">En attente</span>
+</div>
+</div>
+</div>
+<!-- Category Donut Chart -->
+<div class="col-span-12 xl:col-span-4 bg-surface rounded-xl p-6 shadow-sm border border-border flex flex-col">
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-6">Par catégorie</h4>
+<div class="relative flex items-center justify-center mb-8">
+<!-- CSS based Donut Placeholder -->
+<div class="w-48 h-48 rounded-full border-[12px] border-surface-container-highest flex items-center justify-center relative">
+<div class="absolute inset-[-12px] rounded-full border-[12px] border-primary" style="clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 40%, 50% 50%);"></div>
+<div class="absolute inset-[-12px] rounded-full border-[12px] border-priority-medium" style="clip-path: polygon(50% 50%, 100% 40%, 100% 70%, 50% 50%);"></div>
+<div class="absolute inset-[-12px] rounded-full border-[12px] border-priority-low" style="clip-path: polygon(50% 50%, 100% 70%, 80% 100%, 50% 100%, 50% 50%);"></div>
+<div class="text-center">
+<p class="font-display-stat text-[24px] leading-tight text-on-surface">1,284</p>
+<p class="font-label-sm text-label-sm text-text-muted">Total</p>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
+<div class="flex items-center justify-between group cursor-default">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-md text-label-md text-text-secondary group-hover:text-on-surface">Routes</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">342</span>
+</div>
+<div class="flex items-center justify-between group cursor-default">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-priority-medium"></span>
+<span class="font-label-md text-label-md text-text-secondary group-hover:text-on-surface">Déchets</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">280</span>
+</div>
+<div class="flex items-center justify-between group cursor-default">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-status-scheduled"></span>
+<span class="font-label-md text-label-md text-text-secondary group-hover:text-on-surface">Éclairage</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">198</span>
+</div>
+<div class="flex items-center justify-between group cursor-default">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-status-received"></span>
+<span class="font-label-md text-label-md text-text-secondary group-hover:text-on-surface">Eau</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">156</span>
+</div>
+<div class="flex items-center justify-between group cursor-default">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-priority-critical"></span>
+<span class="font-label-md text-label-md text-text-secondary group-hover:text-on-surface">Sécurité</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">145</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Metrics Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-lg">
+<!-- Card A: Horizontal Bar Chart -->
+<div class="bg-surface rounded-xl p-6 shadow-sm border border-border">
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-6">Temps de réponse moyen</h4>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-md text-label-md text-on-surface">Sécurité</span>
+<span class="font-label-sm text-label-sm font-bold text-priority-critical">4.2h</span>
+</div>
+<div class="w-full h-2 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-priority-critical" style="width: 42%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-md text-label-md text-on-surface">Eau</span>
+<span class="font-label-sm text-label-sm font-bold text-status-received">6.1h</span>
+</div>
+<div class="w-full h-2 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-status-received" style="width: 61%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-md text-label-md text-on-surface">Routes</span>
+<span class="font-label-sm text-label-sm font-bold text-primary">8.3h</span>
+</div>
+<div class="w-full h-2 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 83%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Card B: Gauge Chart -->
+<div class="bg-surface rounded-xl p-6 shadow-sm border border-border flex flex-col items-center justify-center">
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-4 self-start">Résolution dans les SLA</h4>
+<div class="relative mt-4">
+<!-- CSS Gauge -->
+<div class="w-48 h-24 overflow-hidden relative">
+<div class="w-48 h-48 border-[16px] border-surface-container-highest rounded-full"></div>
+<div class="absolute top-0 left-0 w-48 h-48 border-[16px] border-priority-low rounded-full" style="clip-path: inset(0 0 50% 0); transform: rotate(150deg);"></div>
+</div>
+<div class="absolute inset-0 flex flex-col items-center justify-end pb-4">
+<span class="text-display-stat font-display-stat text-priority-low">91.2%</span>
+<span class="text-label-sm font-label-sm text-text-muted">Objectif: 85%</span>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-6 bg-priority-low/10 px-4 py-2 rounded-lg">
+<span class="material-symbols-outlined text-priority-low text-[18px]">verified</span>
+<span class="text-label-md font-label-md text-priority-low">Performance excellente</span>
+</div>
+</div>
+<!-- Card C: Ranking with Progress -->
+<div class="bg-surface rounded-xl p-6 shadow-sm border border-border">
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-6">Zones les plus actives</h4>
+<div class="space-y-5">
+<div class="flex items-center gap-4">
+<span class="text-label-sm font-bold text-text-muted w-4">01</span>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-md text-label-md text-on-surface">La Marsa</span>
+<span class="font-label-md text-label-md font-bold">89</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 89%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-label-sm font-bold text-text-muted w-4">02</span>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-md text-label-md text-on-surface">Ariana</span>
+<span class="font-label-md text-label-md font-bold">76</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 76%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-label-sm font-bold text-text-muted w-4">03</span>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-md text-label-md text-on-surface">Carthage</span>
+<span class="font-label-md text-label-md font-bold">61</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 61%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 opacity-50">
+<span class="text-label-sm font-bold text-text-muted w-4">04</span>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-md text-label-md text-on-surface">Sidi Bou Saïd</span>
+<span class="font-label-md text-label-md font-bold">42</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 42%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 4: Bottom Row -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Table Container -->
+<div class="col-span-12 xl:col-span-8 bg-surface rounded-xl shadow-sm border border-border overflow-hidden">
+<div class="px-6 py-4 border-b border-border flex items-center justify-between">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Signalements récents</h4>
+<button class="text-primary font-label-md text-label-md hover:underline">Voir tout</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-lowest">
+<th class="px-6 py-4 font-label-md text-label-md text-text-secondary border-b border-border">ID</th>
+<th class="px-6 py-4 font-label-md text-label-md text-text-secondary border-b border-border">Catégorie</th>
+<th class="px-6 py-4 font-label-md text-label-md text-text-secondary border-b border-border">Adresse</th>
+<th class="px-6 py-4 font-label-md text-label-md text-text-secondary border-b border-border">Statut</th>
+<th class="px-6 py-4 font-label-md text-label-md text-text-secondary border-b border-border">Temps</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 font-code-id text-code-id text-on-surface">CA-2024-88412</td>
+<td class="px-6 py-4 font-body-md text-body-md">Déchets</td>
+<td class="px-6 py-4 font-body-md text-body-md">La Marsa</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-progress/10 text-status-progress font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-status-progress"></span> En cours
+                                    </span>
+</td>
+<td class="px-6 py-4 font-label-sm text-label-sm text-text-muted">Il y a 2h</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 font-code-id text-code-id text-on-surface">CA-2024-88390</td>
+<td class="px-6 py-4 font-body-md text-body-md">Éclairage</td>
+<td class="px-6 py-4 font-body-md text-body-md">Ariana Center</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-priority-low/10 text-priority-low font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-priority-low"></span> Résolu
+                                    </span>
+</td>
+<td class="px-6 py-4 font-label-sm text-label-sm text-text-muted">Il y a 5h</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 font-code-id text-code-id text-on-surface">CA-2024-88355</td>
+<td class="px-6 py-4 font-body-md text-body-md">Sécurité</td>
+<td class="px-6 py-4 font-body-md text-body-md">La Marsa Plage</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-priority-critical/10 text-priority-critical font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-priority-critical"></span> Urgent
+                                    </span>
+</td>
+<td class="px-6 py-4 font-label-sm text-label-sm text-text-muted">Aujourd'hui</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 font-code-id text-code-id text-on-surface">CA-2024-88321</td>
+<td class="px-6 py-4 font-body-md text-body-md">Eau</td>
+<td class="px-6 py-4 font-body-md text-body-md">Carthage Salambo</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-received/10 text-status-received font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-status-received"></span> Reçu
+                                    </span>
+</td>
+<td class="px-6 py-4 font-label-sm text-label-sm text-text-muted">Hier</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Performance List -->
+<div class="col-span-12 xl:col-span-4 bg-surface rounded-xl p-6 shadow-sm border border-border">
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-6">Performance équipe</h4>
+<div class="space-y-6">
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-full object-cover ring-2 ring-surface border border-border" data-alt="A focused headshot of a male municipal agent named Sami Mejri. He has a determined expression, wearing a high-visibility yellow vest over a professional grey work shirt. The lighting is crisp and outdoor-daylight, set against a blurred background of a clean urban street in Tunisia. The overall feel is one of hard work and professional competence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY_wXM9_AV9N0ZiPkLfFkBOGI2TJTf1yYj0j4SINHSz_LCPXIjL9SxiddlfAB6YUDKszsQRJ0nEQ4oEgoMhpsjBtzDXONP_cfwZaZusmX4ck6uYp4fx712AZwwwYwN7Pp431btggJ1Xn1h0D27PV8_y2FMQCcJVJGt-gT_7vnO-6BAgEUvuxJ-7YSEPh6dLG-_p0ZVqfkGJUwAHv3meRhfPCLME0R_0qVt7KNlflNgXFrdmCFI6tGs2vyQ9vpthEC4nVy9VVByMVk"/>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-md text-label-md text-on-surface">Sami Mejri</span>
+<span class="font-label-sm text-label-sm font-bold text-priority-low">94%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-priority-low" style="width: 94%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-full object-cover ring-2 ring-surface border border-border" data-alt="A professional headshot of a female municipal agent named Hana Trabelsi. She is smiling warmly, wearing a smart charcoal blazer with a small municipal pin. Her hair is tied back professionally. The lighting is soft and flattering, typical of a professional studio portrait. The background is a minimalist, slightly out-of-focus civic administration office." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfCllnk9RZq4yQ6WFo0U2awaDAJtUIuqEcI9R0uPkQaVXxV2a4olvFdCpOOe-jw3l_YEQoxmRw2JyFzD34ukdQOVRvCQo16Wt-otcvhouHT2WEmV8Lade_yNvVgZ7W5Hqg7i3eOILUccTeO-Jh8wkPiN7xjJkMUfZay_zc2v1QPH2Z4kdELOrLVHAYtNsTL4n3NMWKoShlMa7k_7q_RDBpdtZHLVtui_y3K8Nrx9gXebekkqXAvE76fmkl7iUW34uaiM53R_dZolk"/>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-md text-label-md text-on-surface">Hana Trabelsi</span>
+<span class="font-label-sm text-label-sm font-bold text-primary">88%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 88%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-full object-cover ring-2 ring-surface border border-border" data-alt="A profile photo of a young male municipal agent named Kais Dhouib. He has a friendly but professional look, wearing a blue polo shirt with a small municipal logo. He is set against a brightly lit modern municipal building facade. The image is clean and well-composed, emphasizing a fresh, modern approach to municipal services." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfxmcA4vGtiZvkMHDIwTieVU7pShXEtkchQ393HfjuldCEmfWgn35n5ZilC_aYwFBANBmBn4AhOyrRPowwvGH0UEr4AtBzdKHSgXZ90MCWS-kjDmO3g21j5tiAezikaN9sFxDxiKCENumEdrZbY-qgx6kSMn5j5vh_D2crduL-5fHmjj3Ah8l7K3VoIsYtN8A3j3BNR0eoBQB0SHtF1YXfq7yIJ_OoPVe4G2s4yG7BNqEktzRtjiGQcMs5sGotzzu219HzteJ5Mxo"/>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-md text-label-md text-on-surface">Kais Dhouib</span>
+<span class="font-label-sm text-label-sm font-bold text-primary">82%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 82%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-full object-cover ring-2 ring-surface border border-border" data-alt="A professional portrait of a female municipal agent named Meriem Gara. She is wearing glasses and a business casual olive green blouse. She looks engaged and ready to help. The setting is a bright, modern government office space with glass partitions and indoor plants in the background, creating a transparent and approachable municipal atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCykNxwdxLVWv9TCAyry-tt_NzSWw84bN2QKA8SFFdlWjjQsQQC87J8yW5MxJAOl2hmaahbKVXsMRVY6muyDE9_msaYmVoUJIPjsJOgjUSS_pGiB3-kYUGhCzx505PXPW9bDbBb16mk4z1WSKAQrfCtYArJuShFxYHS25JCshPK1eX20T4oDiFsr2gsdAn4RVUUk9iIOjRg0Ua5IxekkUNrjO_h652i5bbpkfIl-iBDyeXC2tSZO04ijH69GIqYtSTRoE7iwdwYmpk"/>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-md text-label-md text-on-surface">Meriem Gara</span>
+<span class="font-label-sm text-label-sm font-bold text-priority-medium">75%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-priority-medium" style="width: 75%"></div>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full mt-8 py-3 border border-primary text-primary rounded-xl font-label-md text-label-md hover:bg-primary/5 transition-colors">
+                    Consulter le classement complet
+                </button>
+</div>
+</div>
+</main>
+<script>
+        // Simple micro-interaction for tab switching simulation
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                if (!e.currentTarget.classList.contains('bg-primary')) {
+                    // Logic to show it's clickable
+                    console.log('Navigating to:', e.currentTarget.innerText.trim());
+                }
+            });
+        });
+
+        // Search bar focus effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('ring-2', 'ring-primary/20');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('ring-2', 'ring-primary/20');
+        });
+    </script>
+</body></html>

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sahali - Statistiques &amp; Rapports</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "priority-medium": "#F59E0B",
+                    "border": "#E2E8F0",
+                    "tertiary-container": "#525d71",
+                    "status-received": "#0EA5E9",
+                    "status-scheduled": "#8B5CF6",
+                    "on-tertiary-fixed-variant": "#3c475a",
+                    "status-resolved": "#22C55E",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#5c647a",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "surface-container-low": "#f1f4f9",
+                    "surface-variant": "#e0e2e7",
+                    "surface": "#FFFFFF",
+                    "primary-container": "#1b4fd8",
+                    "on-surface-variant": "#434655",
+                    "status-progress": "#F97316",
+                    "surface-container": "#eceef3",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-primary": "#ffffff",
+                    "on-primary-container": "#cbd4ff",
+                    "surface-container-high": "#e6e8ed",
+                    "inverse-primary": "#b6c4ff",
+                    "priority-critical": "#EF4444",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed": "#dae2fd",
+                    "on-tertiary-fixed": "#111c2d",
+                    "inverse-on-surface": "#eff1f6",
+                    "error": "#ba1a1a",
+                    "priority-high": "#F97316",
+                    "inverse-surface": "#2d3135",
+                    "on-surface": "#181c20",
+                    "background": "#f7f9fe",
+                    "tertiary-fixed": "#d8e3fb",
+                    "status-submitted": "#6366F1",
+                    "surface-dim": "#d8dadf",
+                    "priority-low": "#22C55E",
+                    "text-secondary": "#64748B",
+                    "on-background": "#181c20",
+                    "surface-container-highest": "#e0e2e7",
+                    "on-primary-fixed": "#001550",
+                    "text-primary": "#0F172A",
+                    "primary": "#0038af",
+                    "surface-bright": "#f7f9fe",
+                    "tertiary-fixed-dim": "#bcc7de",
+                    "outline": "#747686",
+                    "tertiary": "#3b4559",
+                    "status-rejected": "#EF4444",
+                    "on-error-container": "#93000a",
+                    "status-review": "#F59E0B",
+                    "on-secondary-fixed": "#131b2e",
+                    "on-secondary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "outline-variant": "#c4c5d7",
+                    "on-primary-fixed-variant": "#003ab3",
+                    "error-container": "#ffdad6",
+                    "status-closed": "#64748B",
+                    "on-tertiary-container": "#cbd6ee",
+                    "secondary": "#565e74",
+                    "surface-tint": "#1f51da",
+                    "text-muted": "#94A3B8",
+                    "secondary-container": "#dae2fd",
+                    "primary-fixed": "#dce1ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "stack-sm": "8px",
+                    "sidebar_width": "260px",
+                    "stack-md": "16px",
+                    "container_padding": "32px",
+                    "stack-lg": "24px",
+                    "navbar_height": "64px"
+            },
+            "fontFamily": {
+                    "code-id": ["JetBrains Mono"],
+                    "headline-md": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "display-stat": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "code-id": ["13px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "display-stat": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "body-lg": ["16px", {"lineHeight": "26px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .chart-grid {
+            background-image: linear-gradient(to right, #E2E8F0 1px, transparent 1px), linear-gradient(to bottom, #E2E8F0 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-[260px] bg-on-secondary-fixed flex flex-col py-stack-lg z-50 shadow-lg">
+<div class="px-6 mb-8">
+<h1 class="font-headline-sm text-headline-sm text-surface-container-lowest font-bold">Sahali</h1>
+<div class="flex items-center gap-3 mt-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional municipal logo for La Marsa city administration, featuring minimalist architectural lines and Tunisian cultural motifs in a sophisticated corporate blue and white color scheme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv-Dcbc635TFaSU9ymjarUEh814G7PqfR7ik3DasGL-frekCeF2QM9e18eL6UeNW6sFz9yA0jWU8xp3-UkwGhLXh98lqbZRAZ4_sPCZv2MqZxXa7gbs2gkdkUySCdfrAXIESLSQPsTCiyWMN3Nf7cMH4U5z4QJ075FZVhSLNhxh5I1L9Ztwu5sHb_PS26-RLiggxtwibpP_-LJhgU_3yFbcmjax_FaOoZlRzzPeB-Ouh9tLKOyHhU7ZSSIQHOh5SeHx3ciQqUNHyo"/>
+</div>
+<div>
+<div class="text-surface-container-lowest font-label-md text-label-md">La Marsa</div>
+<div class="text-on-secondary-fixed-variant font-label-sm text-label-sm">Administration</div>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Nav Items mapped from JSON -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Tableau de bord</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Carte en direct</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">report_problem</span>
+<span class="font-label-md text-label-md">Signalements</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">engineering</span>
+<span class="font-label-md text-label-md">Interventions</span>
+</a>
+<!-- Active State: Statistiques -->
+<a class="flex items-center gap-3 px-4 py-3 text-surface-container-lowest bg-primary border-l-4 border-primary-fixed-dim translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">insert_chart</span>
+<span class="font-label-md text-label-md">Statistiques</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Rapports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Équipes &amp; Agents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Paramètres</span>
+</a>
+</nav>
+<div class="mt-auto px-4 pt-4 border-t border-on-secondary-fixed-variant/20">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="ml-[260px] flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 flex items-center justify-between px-container_padding h-[64px] bg-surface border-b border-border w-full">
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg w-80 text-body-md focus:ring-2 focus:ring-primary/20" placeholder="Rechercher un signalement, un agent..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined text-secondary">language</span>
+</button>
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined text-secondary">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined text-secondary">help</span>
+</button>
+<div class="h-8 w-[1px] bg-border mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="font-label-md text-label-md text-text-primary">Amin Ben Ali</p>
+<p class="font-label-sm text-label-sm text-text-muted">Superviseur</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-border" data-alt="Close-up professional portrait of a Tunisian man in his 40s, Amin Ben Ali, wearing a professional suit, set against a clean blurred office background. Soft studio lighting and high-end corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkREIF7LA9J1cGcznH8RYEef8YG2a5jzs-wMfziX5JrCDYmXcB_hNkYfKSoJcRTYEOibJe0hQSWwvAkRQzco9bf0mdOYtSp7l99nuWhvd-xm5W49jtryUSNvygWlTQ4o8Z9Mf7zhfOMOfutRVMar-gMiA_N3iEN60nbeTlcksDYOhN93ulL9jlFjJSGQfO8ixUs9TJp3FgYSVH-EMoyLMakTt52_ydBFJzdGEIbyfVBW89VID82C5aJ4GNP9fYxstbHcbUpNGXzE0"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<main class="p-container_padding space-y-stack-lg">
+<!-- Page Header Section -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-text-primary">Statistiques &amp; Rapports</h2>
+<p class="text-text-secondary font-body-md">Analyse approfondie de la performance municipale pour la période sélectionnée.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 bg-surface border border-border px-4 py-2 rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-text-muted text-[20px]">calendar_today</span>
+<span class="font-label-md text-label-md text-text-primary">Juin 2026</span>
+<span class="material-symbols-outlined text-text-muted text-[18px]">expand_more</span>
+</div>
+<button class="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+                        Générer un rapport PDF
+                    </button>
+</div>
+</div>
+<!-- Tab Navigation -->
+<div class="flex items-center gap-8 border-b border-border">
+<button class="pb-3 px-1 text-primary font-semibold border-b-2 border-primary font-label-md text-label-md">Vue d'ensemble</button>
+<button class="pb-3 px-1 text-text-secondary hover:text-text-primary transition-colors font-label-md text-label-md">Par catégorie</button>
+<button class="pb-3 px-1 text-text-secondary hover:text-text-primary transition-colors font-label-md text-label-md">Par zone</button>
+<button class="pb-3 px-1 text-text-secondary hover:text-text-primary transition-colors font-label-md text-label-md">Performance équipes</button>
+<button class="pb-3 px-1 text-text-secondary hover:text-text-primary transition-colors font-label-md text-label-md">Export</button>
+</div>
+<!-- Summary Stats Row -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-stack-md">
+<!-- KPI Card 1 -->
+<div class="bg-surface p-4 rounded-xl shadow-sm border border-border">
+<div class="flex items-center justify-between mb-2">
+<span class="p-2 bg-primary/10 text-primary rounded-lg">
+<span class="material-symbols-outlined text-[20px]">flag</span>
+</span>
+<span class="text-priority-low font-label-sm text-label-sm flex items-center">
+                            ↑12%
+                        </span>
+</div>
+<p class="text-text-muted font-label-sm text-label-sm truncate">Signalements ce mois</p>
+<p class="font-headline-md text-headline-md text-text-primary">284</p>
+</div>
+<!-- KPI Card 2 -->
+<div class="bg-surface p-4 rounded-xl shadow-sm border border-border">
+<div class="flex items-center justify-between mb-2">
+<span class="p-2 bg-status-resolved/10 text-status-resolved rounded-lg">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</span>
+<span class="text-priority-low font-label-sm text-label-sm flex items-center">
+                            ↑8%
+                        </span>
+</div>
+<p class="text-text-muted font-label-sm text-label-sm">Résolus</p>
+<p class="font-headline-md text-headline-md text-text-primary">242</p>
+</div>
+<!-- KPI Card 3 -->
+<div class="bg-surface p-4 rounded-xl shadow-sm border border-border">
+<div class="flex items-center justify-between mb-2">
+<span class="p-2 bg-status-scheduled/10 text-status-scheduled rounded-lg">
+<span class="material-symbols-outlined text-[20px]">percent</span>
+</span>
+<span class="text-priority-low font-label-sm text-label-sm flex items-center">
+                            ↑1.3%
+                        </span>
+</div>
+<p class="text-text-muted font-label-sm text-label-sm">Taux résolution</p>
+<p class="font-headline-md text-headline-md text-text-primary">91.2%</p>
+</div>
+<!-- KPI Card 4 -->
+<div class="bg-surface p-4 rounded-xl shadow-sm border border-border">
+<div class="flex items-center justify-between mb-2">
+<span class="p-2 bg-status-progress/10 text-status-progress rounded-lg">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+</span>
+<span class="text-priority-low font-label-sm text-label-sm flex items-center">
+                            ↓0.3j
+                        </span>
+</div>
+<p class="text-text-muted font-label-sm text-label-sm">Délai moyen</p>
+<p class="font-headline-md text-headline-md text-text-primary">4.8j</p>
+</div>
+<!-- KPI Card 5 -->
+<div class="bg-surface p-4 rounded-xl shadow-sm border border-border">
+<div class="flex items-center justify-between mb-2">
+<span class="p-2 bg-priority-medium/10 text-priority-medium rounded-lg">
+<span class="material-symbols-outlined text-[20px]">star</span>
+</span>
+<span class="material-symbols-outlined text-priority-medium text-[16px]">trending_up</span>
+</div>
+<p class="text-text-muted font-label-sm text-label-sm">Satisfaction</p>
+<p class="font-headline-md text-headline-md text-text-primary">4.6/5</p>
+</div>
+<!-- KPI Card 6 -->
+<div class="bg-surface p-4 rounded-xl shadow-sm border border-border">
+<div class="flex items-center justify-between mb-2">
+<span class="p-2 bg-tertiary/10 text-tertiary rounded-lg">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</span>
+<span class="text-text-muted font-label-sm text-label-sm">Actifs</span>
+</div>
+<p class="text-text-muted font-label-sm text-label-sm">Agents actifs</p>
+<p class="font-headline-md text-headline-md text-text-primary">14</p>
+</div>
+</div>
+<!-- Main Area Chart -->
+<div class="bg-surface rounded-xl shadow-sm border border-border overflow-hidden">
+<div class="p-6 border-b border-border flex items-center justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">Évolution sur 12 mois</h3>
+<p class="text-text-secondary text-label-sm">Analyse comparative des volumes de signalements</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-label-sm text-text-secondary">Soumis</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-status-resolved"></span>
+<span class="text-label-sm text-text-secondary">Résolus</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-priority-medium"></span>
+<span class="text-label-sm text-text-secondary">En attente</span>
+</div>
+</div>
+</div>
+<div class="p-6 h-80 relative flex items-end justify-between px-12 pb-12">
+<div class="absolute inset-x-12 top-12 bottom-20 chart-grid opacity-20 pointer-events-none"></div>
+<!-- Mock Area Chart Shapes -->
+<svg class="absolute inset-x-12 top-12 bottom-20 w-[calc(100%-6rem)] h-[calc(100%-5rem)]" preserveaspectratio="none">
+<path class="fill-primary/5 stroke-primary stroke-2" d="M0,100 L50,80 L100,90 L150,60 L200,40 L250,70 L300,50 L350,30 L400,20 L450,10 L500,5 L550,0 L550,150 L0,150 Z"></path>
+<path class="fill-none stroke-status-resolved stroke-2 stroke-dasharray-[4,2]" d="M0,110 L50,95 L100,105 L150,85 L200,65 L250,95 L300,75 L350,55 L400,45 L450,35 L500,30 L550,25"></path>
+</svg>
+<!-- X-Axis Labels -->
+<span class="text-label-sm text-text-muted">Juil</span>
+<span class="text-label-sm text-text-muted">Aout</span>
+<span class="text-label-sm text-text-muted">Sept</span>
+<span class="text-label-sm text-text-muted">Oct</span>
+<span class="text-label-sm text-text-muted">Nov</span>
+<span class="text-label-sm text-text-muted">Déc</span>
+<span class="text-label-sm text-text-muted">Jan</span>
+<span class="text-label-sm text-text-muted">Fév</span>
+<span class="text-label-sm text-text-muted">Mar</span>
+<span class="text-label-sm text-text-muted">Avr</span>
+<span class="text-label-sm text-text-muted">Mai</span>
+<span class="text-label-sm text-text-primary font-bold">Juin</span>
+</div>
+</div>
+<!-- Two-Column Chart Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-stack-lg">
+<!-- Stacked Bar Chart -->
+<div class="bg-surface rounded-xl shadow-sm border border-border p-6">
+<h3 class="font-headline-sm text-headline-sm text-text-primary mb-6">Répartition par catégorie</h3>
+<div class="space-y-4">
+<div class="space-y-2">
+<div class="flex justify-between text-label-sm">
+<span class="text-text-primary">Infrastructure &amp; Voirie</span>
+<span class="text-text-muted">42%</span>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 42%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-sm">
+<span class="text-text-primary">Déchets &amp; Propreté</span>
+<span class="text-text-muted">28%</span>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-status-received h-full rounded-full" style="width: 28%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-sm">
+<span class="text-text-primary">Éclairage Public</span>
+<span class="text-text-muted">15%</span>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-priority-medium h-full rounded-full" style="width: 15%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-sm">
+<span class="text-text-primary">Espaces Verts</span>
+<span class="text-text-muted">10%</span>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-status-resolved h-full rounded-full" style="width: 10%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-sm">
+<span class="text-text-primary">Autres</span>
+<span class="text-text-muted">5%</span>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 5%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Grouped Bar Chart -->
+<div class="bg-surface rounded-xl shadow-sm border border-border p-6">
+<h3 class="font-headline-sm text-headline-sm text-text-primary mb-6">Délai moyen de résolution (Jours)</h3>
+<div class="flex items-end justify-between h-[180px] pt-4 px-4 border-b border-border">
+<div class="flex flex-col items-center gap-2 group cursor-help">
+<div class="w-10 bg-primary/80 group-hover:bg-primary transition-all rounded-t-lg" style="height: 140px"></div>
+<span class="text-[10px] text-text-muted uppercase tracking-tighter">Infras</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-help">
+<div class="w-10 bg-primary/80 group-hover:bg-primary transition-all rounded-t-lg" style="height: 100px"></div>
+<span class="text-[10px] text-text-muted uppercase tracking-tighter">Déchets</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-help">
+<div class="w-10 bg-primary/80 group-hover:bg-primary transition-all rounded-t-lg" style="height: 60px"></div>
+<span class="text-[10px] text-text-muted uppercase tracking-tighter">Éclair</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-help">
+<div class="w-10 bg-primary/80 group-hover:bg-primary transition-all rounded-t-lg" style="height: 40px"></div>
+<span class="text-[10px] text-text-muted uppercase tracking-tighter">Verts</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-help">
+<div class="w-10 bg-primary/80 group-hover:bg-primary transition-all rounded-t-lg" style="height: 80px"></div>
+<span class="text-[10px] text-text-muted uppercase tracking-tighter">Eau</span>
+</div>
+</div>
+<div class="mt-4 flex justify-between text-label-sm text-text-muted px-4">
+<span>Cible: 3.5j</span>
+<span class="text-priority-critical">Alerte: Infrastructure (6.2j)</span>
+</div>
+</div>
+</div>
+<!-- Heatmap Section -->
+<div class="bg-surface rounded-xl shadow-sm border border-border p-6">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">Carte de chaleur des signalements</h3>
+<p class="text-text-secondary text-label-sm">Analyse temporelle des pics d'activité sur 7 jours</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-label-sm text-text-muted">Moins</span>
+<div class="flex gap-1">
+<div class="w-4 h-4 rounded bg-primary/10"></div>
+<div class="w-4 h-4 rounded bg-primary/30"></div>
+<div class="w-4 h-4 rounded bg-primary/60"></div>
+<div class="w-4 h-4 rounded bg-primary"></div>
+</div>
+<span class="text-label-sm text-text-muted">Plus</span>
+</div>
+</div>
+<div class="overflow-x-auto scrollbar-hide">
+<div class="min-w-[800px]">
+<!-- Time labels row -->
+<div class="grid grid-cols-[80px_repeat(24,1fr)] mb-2">
+<div></div>
+<div class="text-[10px] text-text-muted text-center">00h</div>
+<div class="text-[10px] text-text-muted text-center">02h</div>
+<div class="text-[10px] text-text-muted text-center">04h</div>
+<div class="text-[10px] text-text-muted text-center">06h</div>
+<div class="text-[10px] text-text-muted text-center">08h</div>
+<div class="text-[10px] text-text-muted text-center">10h</div>
+<div class="text-[10px] text-text-muted text-center">12h</div>
+<div class="text-[10px] text-text-muted text-center">14h</div>
+<div class="text-[10px] text-text-muted text-center">16h</div>
+<div class="text-[10px] text-text-muted text-center">18h</div>
+<div class="text-[10px] text-text-muted text-center">20h</div>
+<div class="text-[10px] text-text-muted text-center">22h</div>
+<!-- Fillers to 24 -->
+<div class="col-span-12"></div>
+</div>
+<!-- Grid rows -->
+<div class="space-y-1">
+<div class="grid grid-cols-[80px_repeat(24,1fr)] gap-1">
+<div class="text-label-sm text-text-secondary flex items-center">Lundi</div>
+<div class="h-6 rounded-sm bg-primary/10"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/20"></div><div class="h-6 rounded-sm bg-primary/40"></div><div class="h-6 rounded-sm bg-primary/60"></div><div class="h-6 rounded-sm bg-primary/80"></div><div class="h-6 rounded-sm bg-primary"></div><div class="h-6 rounded-sm bg-primary/90"></div><div class="h-6 rounded-sm bg-primary/70"></div><div class="h-6 rounded-sm bg-primary/60"></div><div class="h-6 rounded-sm bg-primary/40"></div><div class="h-6 rounded-sm bg-primary/30"></div><div class="h-6 rounded-sm bg-primary/20"></div><div class="h-6 rounded-sm bg-primary/10"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/10"></div><div class="h-6 rounded-sm bg-primary/20"></div><div class="h-6 rounded-sm bg-primary/10"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div>
+</div>
+<div class="grid grid-cols-[80px_repeat(24,1fr)] gap-1">
+<div class="text-label-sm text-text-secondary flex items-center">Mardi</div>
+<div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/10"></div><div class="h-6 rounded-sm bg-primary/30"></div><div class="h-6 rounded-sm bg-primary/50"></div><div class="h-6 rounded-sm bg-primary/70"></div><div class="h-6 rounded-sm bg-primary/90"></div><div class="h-6 rounded-sm bg-primary"></div><div class="h-6 rounded-sm bg-primary/80"></div><div class="h-6 rounded-sm bg-primary/60"></div><div class="h-6 rounded-sm bg-primary/40"></div><div class="h-6 rounded-sm bg-primary/20"></div><div class="h-6 rounded-sm bg-primary/10"></div><div class="h-6 rounded-sm bg-primary/10"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/10"></div><div class="h-6 rounded-sm bg-primary/10"></div><div class="h-6 rounded-sm bg-primary/5"></div><div class="h-6 rounded-sm bg-primary/5"></div>
+</div>
+<!-- Rows 3-7 follow same pattern... Simplified for demo -->
+<div class="grid grid-cols-[80px_repeat(24,1fr)] gap-1">
+<div class="text-label-sm text-text-secondary flex items-center">Mercredi</div>
+<div class="h-6 rounded-sm bg-primary/20" style="grid-column: 2 / span 24"></div>
+</div>
+<div class="grid grid-cols-[80px_repeat(24,1fr)] gap-1">
+<div class="text-label-sm text-text-secondary flex items-center">Jeudi</div>
+<div class="h-6 rounded-sm bg-primary/15" style="grid-column: 2 / span 24"></div>
+</div>
+<div class="grid grid-cols-[80px_repeat(24,1fr)] gap-1">
+<div class="text-label-sm text-text-secondary flex items-center">Vendredi</div>
+<div class="h-6 rounded-sm bg-primary/25" style="grid-column: 2 / span 24"></div>
+</div>
+<div class="grid grid-cols-[80px_repeat(24,1fr)] gap-1">
+<div class="text-label-sm text-text-secondary flex items-center font-bold">Samedi</div>
+<div class="h-6 rounded-sm bg-status-progress/40" style="grid-column: 2 / span 24"></div>
+</div>
+<div class="grid grid-cols-[80px_repeat(24,1fr)] gap-1">
+<div class="text-label-sm text-text-secondary flex items-center font-bold">Dimanche</div>
+<div class="h-6 rounded-sm bg-status-progress/20" style="grid-column: 2 / span 24"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hover effect on KPI cards
+            const kpiCards = document.querySelectorAll('.bg-surface');
+            kpiCards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.classList.add('shadow-md');
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.classList.remove('shadow-md');
+                });
+            });
+        });
+    </script>
+</body></html>

@@ -6,10 +6,8 @@ enum ReportStatus {
   submitted,
   received,
   underReview,
-  scheduled,
   inProgress,
   resolved,
-  closed,
   rejected,
 }
 
@@ -22,14 +20,10 @@ extension ReportStatusX on ReportStatus {
         return ReportStatus.received;
       case 'under_review':
         return ReportStatus.underReview;
-      case 'scheduled':
-        return ReportStatus.scheduled;
       case 'in_progress':
         return ReportStatus.inProgress;
       case 'resolved':
         return ReportStatus.resolved;
-      case 'closed':
-        return ReportStatus.closed;
       case 'rejected':
         return ReportStatus.rejected;
       default:
@@ -45,14 +39,10 @@ extension ReportStatusX on ReportStatus {
         return l.statusReceived;
       case ReportStatus.underReview:
         return l.statusUnderReview;
-      case ReportStatus.scheduled:
-        return l.statusScheduled;
       case ReportStatus.inProgress:
         return l.statusInProgress;
       case ReportStatus.resolved:
         return l.statusResolved;
-      case ReportStatus.closed:
-        return l.statusClosed;
       case ReportStatus.rejected:
         return l.statusRejected;
     }
@@ -66,14 +56,10 @@ extension ReportStatusX on ReportStatus {
         return AppColors.statusReceived;
       case ReportStatus.underReview:
         return AppColors.statusUnderReview;
-      case ReportStatus.scheduled:
-        return AppColors.statusInProgress;
       case ReportStatus.inProgress:
         return AppColors.statusInProgress;
       case ReportStatus.resolved:
         return AppColors.statusResolved;
-      case ReportStatus.closed:
-        return AppColors.statusClosed;
       case ReportStatus.rejected:
         return AppColors.statusRejected;
     }

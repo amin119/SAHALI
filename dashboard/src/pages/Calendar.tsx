@@ -6,9 +6,10 @@ const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 const HOURS = Array.from({ length: 10 }, (_, i) => i + 8)
 
 const STATUS_META: Record<string, { label: string; bg: string; text: string }> = {
-  scheduled:   { label: 'Planifié',  bg: '#8B5CF618', text: '#8B5CF6' },
-  in_progress: { label: 'En cours',  bg: '#0038AF18', text: '#0038AF' },
-  resolved:    { label: 'Résolu',    bg: '#22C55E18', text: '#22C55E' },
+  received:     { label: 'Reçu',     bg: '#0EA5E918', text: '#0EA5E9' },
+  under_review: { label: 'En examen',bg: '#F59E0B18', text: '#F59E0B' },
+  in_progress:  { label: 'En cours', bg: '#0038AF18', text: '#0038AF' },
+  resolved:     { label: 'Résolu',   bg: '#22C55E18', text: '#22C55E' },
 }
 
 const PRIORITY_COLOR: Record<string, string> = {
@@ -46,7 +47,7 @@ export default function Calendar() {
     })
       .then(d => {
         const relevant = d.items.filter(r =>
-          r.status === 'scheduled' || r.status === 'in_progress' || r.status === 'resolved'
+          r.status === 'received' || r.status === 'under_review' || r.status === 'in_progress' || r.status === 'resolved'
         )
         setReports(relevant)
       })
@@ -158,7 +159,7 @@ export default function Calendar() {
                     <div key={di} className={`p-1.5 border-r border-[#E2E8F0] last:border-r-0 min-h-14
                       ${isToday ? 'bg-[#0038AF04]' : ''}`}>
                       {events.map(r => {
-                        const sm = STATUS_META[r.status] ?? STATUS_META.scheduled
+                        const sm = STATUS_META[r.status] ?? STATUS_META.in_progress
                         const pc = PRIORITY_COLOR[r.priority] ?? '#94A3B8'
                         return (
                           <button key={r.id} onClick={() => setSelectedReport(r === selectedReport ? null : r)}
@@ -184,7 +185,7 @@ export default function Calendar() {
       {/* Summary strip */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Planifiés', value: reports.filter(r => r.status === 'scheduled').length, color: '#8B5CF6', icon: 'event' },
+          { label: 'En examen', value: reports.filter(r => r.status === 'under_review').length, color: '#F59E0B', icon: 'search' },
           { label: 'En cours', value: reports.filter(r => r.status === 'in_progress').length, color: '#0038AF', icon: 'pending' },
           { label: 'Terminés cette semaine', value: reports.filter(r => r.status === 'resolved' && weekDates.some(d => sameDay(d, new Date(r.updated_at)))).length, color: '#22C55E', icon: 'check_circle' },
           { label: 'Total à suivre', value: reports.length, color: '#F97316', icon: 'assignment' },
@@ -222,7 +223,7 @@ export default function Calendar() {
             )}
             <div className="flex items-center gap-2">
               {(() => {
-                const sm = STATUS_META[selectedReport.status] ?? STATUS_META.scheduled
+                const sm = STATUS_META[selectedReport.status] ?? STATUS_META.in_progress
                 return (
                   <span className="px-2.5 py-1 rounded-full text-xs font-semibold"
                     style={{ backgroundColor: sm.bg, color: sm.text }}>{sm.label}</span>

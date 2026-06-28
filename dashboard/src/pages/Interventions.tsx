@@ -4,20 +4,17 @@ import type { Report, ReportStatus } from '../types/api'
 import StatusBadge from '../components/ui/StatusBadge'
 
 const COLUMNS: { id: string; label: string; statuses: ReportStatus[]; color: string }[] = [
-  { id: 'planifier',  label: 'À planifier',  statuses: ['submitted', 'received', 'under_review'], color: '#94A3B8' },
-  { id: 'planifies',  label: 'Planifiés',    statuses: ['scheduled'],                              color: '#8B5CF6' },
-  { id: 'en_cours',   label: 'En cours',     statuses: ['in_progress'],                            color: '#0038AF' },
-  { id: 'termines',   label: 'Terminés',     statuses: ['resolved', 'closed'],                     color: '#22C55E' },
+  { id: 'reception',  label: 'Réception',  statuses: ['received'],               color: '#0EA5E9' },
+  { id: 'examen',     label: 'En examen',  statuses: ['under_review'],            color: '#F59E0B' },
+  { id: 'en_cours',   label: 'En cours',   statuses: ['in_progress'],             color: '#0038AF' },
+  { id: 'termines',   label: 'Terminés',   statuses: ['resolved'],                color: '#22C55E' },
 ]
 
 const NEXT_STATUSES: Record<ReportStatus, ReportStatus[]> = {
-  submitted:    ['received', 'rejected'],
   received:     ['under_review', 'rejected'],
-  under_review: ['scheduled', 'rejected'],
-  scheduled:    ['in_progress'],
-  in_progress:  ['resolved', 'under_review'],
-  resolved:     ['closed'],
-  closed:       [],
+  under_review: ['in_progress', 'rejected'],
+  in_progress:  ['resolved', 'rejected'],
+  resolved:     [],
   rejected:     [],
 }
 
@@ -29,13 +26,10 @@ const PRIORITY_META: Record<string, { label: string; color: string }> = {
 }
 
 const STATUS_LABELS: Record<ReportStatus, string> = {
-  submitted:    'Soumis',
   received:     'Reçu',
   under_review: 'En examen',
-  scheduled:    'Planifié',
   in_progress:  'En cours',
   resolved:     'Résolu',
-  closed:       'Fermé',
   rejected:     'Rejeté',
 }
 

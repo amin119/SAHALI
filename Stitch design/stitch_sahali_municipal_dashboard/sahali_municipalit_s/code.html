@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Municipalités - Sahali</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#dae2fd",
+                        "tertiary-fixed-dim": "#bcc7de",
+                        "priority-low": "#22C55E",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "on-primary-container": "#cbd4ff",
+                        "on-tertiary-fixed": "#111c2d",
+                        "outline": "#747686",
+                        "surface-dim": "#d8dadf",
+                        "text-secondary": "#64748B",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c4c5d7",
+                        "status-rejected": "#EF4444",
+                        "inverse-primary": "#b6c4ff",
+                        "secondary": "#565e74",
+                        "status-progress": "#F97316",
+                        "on-secondary-fixed": "#131b2e",
+                        "on-tertiary-container": "#cbd6ee",
+                        "status-scheduled": "#8B5CF6",
+                        "tertiary": "#3b4559",
+                        "primary-fixed": "#dce1ff",
+                        "surface-container-low": "#f1f4f9",
+                        "priority-medium": "#F59E0B",
+                        "surface-container-high": "#e6e8ed",
+                        "on-primary-fixed-variant": "#003ab3",
+                        "background": "#f7f9fe",
+                        "inverse-on-surface": "#eff1f6",
+                        "primary-container": "#1b4fd8",
+                        "surface": "#FFFFFF",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "status-submitted": "#6366F1",
+                        "tertiary-container": "#525d71",
+                        "priority-critical": "#EF4444",
+                        "inverse-surface": "#2d3135",
+                        "primary": "#0038af",
+                        "on-error": "#ffffff",
+                        "status-review": "#F59E0B",
+                        "tertiary-fixed": "#d8e3fb",
+                        "status-received": "#0EA5E9",
+                        "status-closed": "#64748B",
+                        "on-surface-variant": "#434655",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "status-resolved": "#22C55E",
+                        "border": "#E2E8F0",
+                        "surface-bright": "#f7f9fe",
+                        "on-surface": "#181c20",
+                        "text-primary": "#0F172A",
+                        "on-tertiary-fixed-variant": "#3c475a",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#001550",
+                        "text-muted": "#94A3B8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container_padding": "32px",
+                        "gutter": "24px",
+                        "stack-md": "16px",
+                        "navbar_height": "64px",
+                        "stack-sm": "8px",
+                        "stack-lg": "24px",
+                        "sidebar_width": "260px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "code-id": ["JetBrains Mono"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-stat": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                        "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+                        "code-id": ["13px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "headline-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-stat": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fe; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .level-1-shadow {
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 16px rgba(15, 23, 42, 0.03);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-screen w-[260px] bg-on-secondary-fixed flex flex-col py-stack-lg z-50 shadow-lg">
+<div class="px-6 mb-8">
+<h1 class="font-headline-sm text-headline-sm text-surface-container-lowest font-bold">Sahali</h1>
+</div>
+<div class="px-4 mb-6 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a municipal administrator in a high-tech government office environment. The scene is lit with clean, soft morning light filtered through large windows. The overall aesthetic is corporate and modern, featuring neutral tones and a clear focus on the subject. The background shows hints of a clean architectural workspace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD07dc6A07DnI71LneE-J4sPnvMbohLrU_StYsOjjRCxoj9PQGErCcNer37mpjKp9w5KoegRvhIUO3yMkVOMDfuCj7gZZYWa3e2PJhqFs9UXqt3IefhkNnxC06zuzF9bRgvwrl6VS9xOAnlb9AC9VDr3RaRSouw6ySPg41iwT0qSQc2NSAvRyJOMpMgCrozRnUb6JqOIHhVXwqhgzH9Nf3nIVyZTmDBtn-FYG5NVSGNzfhmYv8FmmQ-woNzZ_LoJ3SdxhaMC6gwJ48"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-surface-container-lowest">La Marsa</span>
+<span class="font-label-sm text-label-sm text-on-secondary-fixed-variant">Administration</span>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Nav Item: Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Tableau de bord</span>
+</a>
+<!-- Nav Item: Direct Map -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Carte en direct</span>
+</a>
+<!-- Nav Item: Municipalités (ACTIVE) -->
+<a class="flex items-center gap-3 px-4 py-3 text-surface-container-lowest bg-primary border-l-4 border-primary-fixed-dim translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">location_city</span>
+<span class="font-label-md text-label-md">Municipalités</span>
+</a>
+<!-- Nav Item: Signalements -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">report_problem</span>
+<span class="font-label-md text-label-md">Signalements</span>
+</a>
+<!-- Nav Item: Interventions -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">engineering</span>
+<span class="font-label-md text-label-md">Interventions</span>
+</a>
+<!-- Nav Item: Calendrier -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Calendrier</span>
+</a>
+<!-- Nav Item: Équipes -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Équipes &amp; Agents</span>
+</a>
+<!-- Nav Item: Statistiques -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">insert_chart</span>
+<span class="font-label-md text-label-md">Statistiques</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Paramètres</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 left-[260px] h-[64px] bg-surface flex items-center justify-between px-container_padding z-40 border-b border-border">
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="absolute inset-y-0 left-3 flex items-center text-text-muted">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="pl-10 pr-4 py-2 bg-surface border border-border rounded-lg text-body-md w-64 focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="Rechercher une zone, un agent..." type="text"/>
+</div>
+<nav class="hidden md:flex items-center gap-4">
+<a class="text-secondary hover:text-primary font-label-md text-label-md transition-colors" href="#">Tableau de bord</a>
+<a class="text-primary font-semibold border-b-2 border-primary pb-1 font-label-md text-label-md" href="#">Municipalités</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-[1px] bg-border mx-2"></div>
+<div class="flex items-center gap-3">
+<span class="font-label-md text-label-md text-text-primary hidden lg:block">Amin Ben Ali</span>
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A close-up high-resolution profile picture of a professional supervisor in a corporate setting. The lighting is bright and even, casting soft shadows. The individual has a confident, approachable expression. The style matches a clean, modern administrative interface with a light-mode color palette of blues and greys." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyljK8_imCNO1jjAKaTm1OSXDH2KKSEGJn6aIlHmOr_d183rzVEa6q4VmjszP2hCy-6kpZFs8mFgQ2DqP_fp8cJsZaZnMG28uUV-rHyNGvKgQsnZFo7iK5ou3VkDN3YiXkA1MqJRsJZlUkop1HAZ9tsDCq6oCm86gZuhSTEO8jY3p8cJZdoADUIkwe8Q5Cfy-iNZkty7HEMEuIcjNnJQ-FJ2fVU0D97lNERDrAMaqb1E3lt7mrY8yYegU77H_hyKDFd-sp4AfcENE"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-[260px] pt-[64px] min-h-screen p-container_padding">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-text-primary mb-1">Municipalités</h2>
+<p class="font-body-md text-body-md text-text-secondary">Gestion des zones administratives et des quartiers.</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-label-md text-label-md flex items-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+                Ajouter une municipalité
+            </button>
+</div>
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-8">
+<div class="bg-surface p-6 rounded-xl level-1-shadow border border-border flex items-center justify-between">
+<div>
+<p class="font-label-md text-label-md text-text-secondary mb-2">Total Municipalités</p>
+<h3 class="font-display-stat text-display-stat text-text-primary">4</h3>
+</div>
+<div class="w-12 h-12 bg-primary-container/10 rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">location_city</span>
+</div>
+</div>
+<div class="bg-surface p-6 rounded-xl level-1-shadow border border-border flex items-center justify-between">
+<div>
+<p class="font-label-md text-label-md text-text-secondary mb-2">Zones actives</p>
+<h3 class="font-display-stat text-display-stat text-text-primary">12</h3>
+</div>
+<div class="w-12 h-12 bg-status-resolved/10 rounded-full flex items-center justify-center text-status-resolved">
+<span class="material-symbols-outlined text-[32px]">map</span>
+</div>
+</div>
+<div class="bg-surface p-6 rounded-xl level-1-shadow border border-border flex items-center justify-between">
+<div>
+<p class="font-label-md text-label-md text-text-secondary mb-2">Population couverte</p>
+<h3 class="font-display-stat text-display-stat text-text-primary">120k</h3>
+</div>
+<div class="w-12 h-12 bg-secondary-container/30 rounded-full flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[32px]">groups</span>
+</div>
+</div>
+</div>
+<!-- Main Content Table Card -->
+<div class="bg-surface rounded-xl level-1-shadow border border-border overflow-hidden">
+<div class="px-6 py-4 border-b border-border flex items-center justify-between">
+<h4 class="font-headline-sm text-headline-sm text-text-primary">Liste des municipalités</h4>
+<div class="flex items-center gap-2">
+<button class="p-2 text-text-muted hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="p-2 text-text-muted hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-6 py-3 font-label-md text-label-md text-text-secondary border-b border-border">Nom</th>
+<th class="px-6 py-3 font-label-md text-label-md text-text-secondary border-b border-border">Statut</th>
+<th class="px-6 py-3 font-label-md text-label-md text-text-secondary border-b border-border">Chef de zone</th>
+<th class="px-6 py-3 font-label-md text-label-md text-text-secondary border-b border-border">Agents assignés</th>
+<th class="px-6 py-3 font-label-md text-label-md text-text-secondary border-b border-border">Signalements (mois)</th>
+<th class="px-6 py-3 font-label-md text-label-md text-text-secondary border-b border-border text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border">
+<!-- Row 1: La Marsa -->
+<tr class="hover:bg-surface-container-lowest transition-colors h-[52px]">
+<td class="px-6 py-3 font-body-md text-body-md text-text-primary font-semibold">La Marsa</td>
+<td class="px-6 py-3">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-priority-low/10 text-priority-low font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-priority-low"></span>
+                                    Actif
+                                </span>
+</td>
+<td class="px-6 py-3 font-body-md text-body-md text-text-secondary">Yassine Belhaj</td>
+<td class="px-6 py-3">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-surface overflow-hidden"><img class="w-full h-full object-cover" data-alt="Close-up headshot of a municipal officer in uniform, high-quality professional lighting, neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAElusuu_cm-V94q1XxVJmcZsK6DL-2dlwMf1nrEUbdR7Qy1MFzTrrWEj_Caa8KjtlvDOsqiA7kfxVgNZNTFe3YHYjYsNYlG9fWYGQSZz8V5Ge459sP3PtSW2-oYmlfelS2u6KvYxvP051U8DRcLxmDy2bVEZxPAevgQ6IdahE1tjlstqDRyx-D8Aso6K2upNpxjdPRGdr2jnMWo3R6cNyV_f4B0s9KJcpvZPmEgkXbUa23N51ZSCRcUXAkzUnsqeyfU4iy1toSINs"/></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface overflow-hidden"><img class="w-full h-full object-cover" data-alt="Portrait of a young municipal agent, urban background blurred, sharp focus on face, corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCx9MCoh_ozMWK1hd2Ni5p749_QVjfdjEbZpIv489no7YyGGgjoHN1a1P48lAs2kvR8Ji0Iu4DBdHn8R7qux-oOSc4Dqesk5Ia4-U2kpExOjPgRAn_t4V73qDDmmPnjvBoTLbsX2-D2YV4gn1-q7m-5nVIbyjmK3i75naPrpY9Xnnhco0zcci-lNVEocR9dTCVYEYDR5LVW00lvB3BztTjidoKMDdr7CAvbVHhDiUOYyV3XtFG8w_F78OEG0MdBIjn4_GLmLPy7Dys"/></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-high flex items-center justify-center text-label-sm text-text-secondary font-bold">+12</div>
+</div>
+</td>
+<td class="px-6 py-3 font-body-md text-body-md text-text-secondary">156</td>
+<td class="px-6 py-3 text-right">
+<button class="text-primary hover:bg-primary/5 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="text-text-muted hover:bg-surface-container-low p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Ariana -->
+<tr class="hover:bg-surface-container-lowest transition-colors h-[52px]">
+<td class="px-6 py-3 font-body-md text-body-md text-text-primary font-semibold">Ariana</td>
+<td class="px-6 py-3">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-priority-low/10 text-priority-low font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-priority-low"></span>
+                                    Actif
+                                </span>
+</td>
+<td class="px-6 py-3 font-body-md text-body-md text-text-secondary">Sonia Mansour</td>
+<td class="px-6 py-3">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-surface overflow-hidden"><img class="w-full h-full object-cover" data-alt="Headshot of Sonia Mansour, municipal manager, confident expression, soft office lighting, clean aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9jRA58h--UaKuop2OZ8-CWwFkA9t_dpsRDaVzxTfLmSj0OKWrDUXOOoBBMSMm5_yNAuBy-dhXCtjJQQTuV2MMdnhgP4uSAQFC9VR4IVCUA5P4rcWzuiR4jfVs4uUQXLzKt7ffIkULffuSRM9Sbnarsv2XMmhm40qoBGO2iKf_bkEnsqRPQYAmiJ4b2f9jYpADAOtGdh3nDrgWQvaA6PxzQUgIxYqcnjvm3vHfitGeA98rkO8xlsgIjVrZuNYQgnBnk7Dt9yEFkcg"/></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface overflow-hidden"><img class="w-full h-full object-cover" data-alt="Field agent portrait, wearing safety vest, outdoors bright daylight, professional quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaCrTxKHO4jK0BH8Ti3Ziq5xioW5PuIm0qdqTtkOs5n63I2dPlJEmUH7p22wRbqL3XA_RHeRNMiAaUtCQP2TkZtmg0GP6NKrEyAd4OK9eUUZED9wd99V5YIpR_1-I--7oJidoqYqCXSW9T3JYUPhppltmzh1EBOmqYcULK0pPzvxcnU2IPMX7XW4kJQJb4RvmWEPJP20WEILDXc0aBK76ApWERZZt3iUZd7XmTp70BOnmenF2K6lXoDfRIq4L8rg2rSoLV7AkkWKc"/></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-high flex items-center justify-center text-label-sm text-text-secondary font-bold">+8</div>
+</div>
+</td>
+<td class="px-6 py-3 font-body-md text-body-md text-text-secondary">204</td>
+<td class="px-6 py-3 text-right">
+<button class="text-primary hover:bg-primary/5 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="text-text-muted hover:bg-surface-container-low p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Carthage -->
+<tr class="hover:bg-surface-container-lowest transition-colors h-[52px]">
+<td class="px-6 py-3 font-body-md text-body-md text-text-primary font-semibold">Carthage</td>
+<td class="px-6 py-3">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-status-rejected/10 text-status-rejected font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-status-rejected"></span>
+                                    Inactif
+                                </span>
+</td>
+<td class="px-6 py-3 font-body-md text-body-md text-text-secondary">Mehdi Gharbi</td>
+<td class="px-6 py-3">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-surface overflow-hidden"><img class="w-full h-full object-cover" data-alt="Professional profile photo of a male administrator, wearing a blazer, minimalist background, studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMnV2G-qcNKlS2kiePZcSRef2otgoAr0J0cPI-vvvsBEXwecIc4meisV8lcfAE3tt3bpmNyymBWUDw5Edd260PWMshqQeVgksUfvL1uZnXEivmBGGL7IEYeLzLAHUud2DzpJZm9FsHFyNSSQJcDEVGsTJ34qPFC9eXKfOPXdeaepCsKseYMQJxhsCLQ2HsN_Yi07bq0SuuQblOxeiCg11pIGTVqfRmTCHpar6SQBH3IVFda3x-E2eO9Xm_m9Gjl2LoAayq4WHgXRQ"/></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-high flex items-center justify-center text-label-sm text-text-secondary font-bold">+4</div>
+</div>
+</td>
+<td class="px-6 py-3 font-body-md text-body-md text-text-secondary">42</td>
+<td class="px-6 py-3 text-right">
+<button class="text-primary hover:bg-primary/5 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="text-text-muted hover:bg-surface-container-low p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Sidi Bou Saïd -->
+<tr class="hover:bg-surface-container-lowest transition-colors h-[52px]">
+<td class="px-6 py-3 font-body-md text-body-md text-text-primary font-semibold">Sidi Bou Saïd</td>
+<td class="px-6 py-3">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-priority-low/10 text-priority-low font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-priority-low"></span>
+                                    Actif
+                                </span>
+</td>
+<td class="px-6 py-3 font-body-md text-body-md text-text-secondary">Leila Trabelsi</td>
+<td class="px-6 py-3">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-surface overflow-hidden"><img class="w-full h-full object-cover" data-alt="Portrait of a female city official, wearing glasses, soft daylight, professional environment, high clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1CQMA09NebJkdQa6eBKUCwX5xhJeNx6YPvWb9-NR1xRyzKbYj7mAUOAuhfx1IzmSOqNznymCT7WVEVbm6NVOULf8CbBGO-Eld7FKCqdiDrDCbMhxOQCtuFQ6em9F190C4zlmz29nOmreca5jN_criXd_i1fqOvYValJu7Fb6_Tt8xP-fEkobHn2mUdY9f3pvAQCHSkhxXSBTO3HlAIZTElS3PGRo5DoQqdIgf0jeSH6uLA_Dj4nIYTKRDjgEHMQLwACmvLd-Fqsw"/></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface overflow-hidden"><img class="w-full h-full object-cover" data-alt="Action shot of a municipal agent working on a tablet, focused expression, cinematic depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCa26jXy8JgLr15wHNZJLU6iAmL21B6Up2pFzqQ9L7lMckqmi_OLNacw_RbAauEUItYRZywB3sIIdVvLOSbOozMfSrpBwy4ed2qDUUeXUnrjS0hU1ax_R3cN4oWgsRl_4MXMLGjksEkkLwspBVx3vAYcMrZJfmmcerMFE5ZIfrGsnoBxjIeCte42SNgqR7GBbFwWpIo7BZAZ_mn747KrKwY4kCgUGh6gyIDshwAZ4pNmhBeWlDXiMAPsJj7G5IGCLEQXC8TnvemoXg"/></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-high flex items-center justify-center text-label-sm text-text-secondary font-bold">+6</div>
+</div>
+</td>
+<td class="px-6 py-3 font-body-md text-body-md text-text-secondary">89</td>
+<td class="px-6 py-3 text-right">
+<button class="text-primary hover:bg-primary/5 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="text-text-muted hover:bg-surface-container-low p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 border-t border-border flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-text-secondary">Affichage de 4 sur 4 municipalités</span>
+<div class="flex gap-2">
+<button class="p-2 border border-border rounded-lg text-text-muted hover:bg-surface-container-low transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="p-2 border border-border rounded-lg text-text-muted hover:bg-surface-container-low transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Secondary Insights (Asymmetric Grid) -->
+<div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<div class="lg:col-span-2 bg-surface p-6 rounded-xl level-1-shadow border border-border">
+<h4 class="font-headline-sm text-headline-sm text-text-primary mb-6">Répartition Géographique</h4>
+<div class="relative h-64 rounded-lg bg-surface-container-low overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="A clean, minimalist topographical map of the northern coast of Tunisia (La Marsa, Carthage area). The map is stylized with soft blues and greys, highlighting municipal boundaries with thin, elegant white lines. The visual style is modern, professional, and serves as a background for an administrative data visualization." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDNq5qsaHnxCGlObe7zIC3dDNLw8TthBTBFIeikI-KaW8QFdGfU7U_YoyvVHqXMH8w0BiOqjjMz2kYC77J4iDYt-bykpMhpF8R-dRI1bW5F9_z1B-k52rRTQCKWApYt7VLWbaU5Ykw220V__vwMTE5ZeSGIHi6DDqnv64vCEIheiGZM7DAZKxNjNvg0Mz_8u4R2Qt4La97auQ7F3JEVthkvmtfKnRgQWxQEDg2hij2bk4pmVZe1OqgepE5UzYxsGLLIEaDlvl07tRg')"></div>
+<div class="absolute inset-0 bg-primary/5 pointer-events-none"></div>
+<!-- Marker overlays simulating a map interface -->
+<div class="absolute top-1/4 left-1/3 p-2 bg-primary text-on-primary rounded-full shadow-lg flex items-center gap-2 animate-pulse">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span class="font-label-sm text-label-sm pr-1">La Marsa</span>
+</div>
+</div>
+</div>
+<div class="bg-surface p-6 rounded-xl level-1-shadow border border-border">
+<h4 class="font-headline-sm text-headline-sm text-text-primary mb-4">Activité Récente</h4>
+<div class="space-y-4">
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-2 h-2 bg-primary rounded-full"></div>
+<div class="w-[1px] flex-1 bg-border my-1"></div>
+</div>
+<div>
+<p class="font-label-md text-label-md text-text-primary">Nouvelle zone ajoutée</p>
+<p class="font-label-sm text-label-sm text-text-muted">Il y a 2h • Sidi Daoud</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-2 h-2 bg-status-progress rounded-full"></div>
+<div class="w-[1px] flex-1 bg-border my-1"></div>
+</div>
+<div>
+<p class="font-label-md text-label-md text-text-primary">Mise à jour du chef de zone</p>
+<p class="font-label-sm text-label-sm text-text-muted">Hier • Ariana Centre</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-2 h-2 bg-status-resolved rounded-full"></div>
+</div>
+<div>
+<p class="font-label-md text-label-md text-text-primary">Signalements résolus (+15%)</p>
+<p class="font-label-sm text-label-sm text-text-muted">3 jours • Carthage</p>
+</div>
+</div>
+</div>
+<button class="mt-6 w-full py-2 text-primary font-label-sm text-label-sm hover:bg-primary/5 rounded-lg border border-primary/20 transition-all">
+                    Voir tout l'historique
+                </button>
+</div>
+</div>
+</main>
+<!-- Micro-interaction Scripts -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Placeholder for sorting functionality or filtering
+            console.log("Municipalités dashboard initialized.");
+        });
+    </script>
+</body></html>

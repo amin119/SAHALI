@@ -1,19 +1,21 @@
 import { NavLink, useLocation } from 'react-router-dom'
+import { useLang, type TranslationKey } from '../../context/LangContext'
 
-const NAV_ITEMS = [
-  { path: '/dashboard', icon: 'dashboard', label: 'Tableau de bord' },
-  { path: '/map', icon: 'map', label: 'Carte en direct' },
-  { path: '/reports', icon: 'report_problem', label: 'Signalements' },
-  { path: '/interventions', icon: 'engineering', label: 'Interventions' },
-  { path: '/calendar', icon: 'calendar_today', label: 'Calendrier' },
-  { path: '/teams', icon: 'groups', label: 'Équipes & Agents' },
-  { path: '/municipalities', icon: 'location_city', label: 'Municipalités' },
-  { path: '/categories', icon: 'category', label: 'Catégories' },
-  { path: '/statistics', icon: 'insert_chart', label: 'Statistiques' },
+const NAV_ITEMS: { path: string; icon: string; labelKey: TranslationKey }[] = [
+  { path: '/dashboard',      icon: 'dashboard',      labelKey: 'nav_dashboard' },
+  { path: '/map',            icon: 'map',            labelKey: 'nav_map' },
+  { path: '/reports',        icon: 'report_problem', labelKey: 'nav_reports' },
+  { path: '/interventions',  icon: 'engineering',    labelKey: 'nav_interventions' },
+  { path: '/calendar',       icon: 'calendar_today', labelKey: 'nav_calendar' },
+  { path: '/teams',          icon: 'groups',         labelKey: 'nav_teams' },
+  { path: '/municipalities', icon: 'location_city',  labelKey: 'nav_municipalities' },
+  { path: '/categories',     icon: 'category',       labelKey: 'nav_categories' },
+  { path: '/statistics',     icon: 'insert_chart',   labelKey: 'nav_statistics' },
 ]
 
 export default function Sidebar() {
   const location = useLocation()
+  const { lang, setLang, t } = useLang()
 
   return (
     <aside
@@ -21,14 +23,31 @@ export default function Sidebar() {
       className="fixed left-0 top-0 h-screen flex flex-col z-50 shadow-xl"
     >
       {/* Logo */}
-      <div className="px-6 py-6 mb-2">
+      <div className="px-6 py-5 mb-1">
         <h1 className="text-white text-xl font-bold tracking-tight">Sahali</h1>
-        <p className="text-[#3f465c] text-xs mt-1">Municipalité de La Marsa</p>
+        <p className="text-[#3f465c] text-xs mt-0.5">سهلي — Municipalité</p>
+      </div>
+
+      {/* Language toggle */}
+      <div className="px-4 mb-3">
+        <div className="flex rounded-lg bg-[#0d1520] p-0.5 gap-0.5">
+          {(['fr', 'ar'] as const).map(l => (
+            <button
+              key={l}
+              onClick={() => setLang(l)}
+              className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                lang === l ? 'bg-[#0038AF] text-white shadow' : 'text-[#3f465c] hover:text-white'
+              }`}
+            >
+              {l === 'fr' ? 'Français' : 'العربية'}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 space-y-0.5">
-        {NAV_ITEMS.map(({ path, icon, label }) => {
+        {NAV_ITEMS.map(({ path, icon, labelKey }) => {
           const isActive = location.pathname === path
           return (
             <NavLink
@@ -41,7 +60,7 @@ export default function Sidebar() {
                 }`}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{icon}</span>
-              <span>{label}</span>
+              <span>{t(labelKey)}</span>
             </NavLink>
           )
         })}
@@ -60,11 +79,10 @@ export default function Sidebar() {
           }
         >
           <span className="material-symbols-outlined" style={{ fontSize: 20 }}>settings</span>
-          <span>Paramètres</span>
+          <span>{t('nav_settings')}</span>
         </NavLink>
 
-        {/* Municipality badge */}
-        <div className="flex items-center gap-3 px-4 py-3 mt-2">
+        <div className="flex items-center gap-3 px-4 py-3 mt-1">
           <div className="w-9 h-9 rounded-lg bg-[#0038AF] flex items-center justify-center flex-shrink-0">
             <span className="material-symbols-outlined text-white" style={{ fontSize: 18 }}>location_city</span>
           </div>

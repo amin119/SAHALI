@@ -9,14 +9,12 @@ interface AdminStats {
 }
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
-  submitted:    { label: 'Soumis',         color: '#94A3B8' },
-  received:     { label: 'Reçus',           color: '#0EA5E9' },
-  under_review: { label: 'En examen',       color: '#F59E0B' },
-  scheduled:    { label: 'Planifiés',       color: '#8B5CF6' },
-  in_progress:  { label: 'En cours',        color: '#0038AF' },
-  resolved:     { label: 'Résolus',         color: '#22C55E' },
-  closed:       { label: 'Fermés',          color: '#64748B' },
-  rejected:     { label: 'Rejetés',         color: '#EF4444' },
+  submitted:    { label: 'Soumis',    color: '#94A3B8' },
+  received:     { label: 'Reçus',     color: '#0EA5E9' },
+  under_review: { label: 'En examen', color: '#F59E0B' },
+  in_progress:  { label: 'En cours',  color: '#0038AF' },
+  resolved:     { label: 'Résolus',   color: '#22C55E' },
+  rejected:     { label: 'Rejetés',   color: '#EF4444' },
 }
 
 function KPICard({ label, value, icon, color, sub }: {
@@ -63,11 +61,11 @@ export default function Statistics() {
 
   const byStatus = stats?.by_status ?? {}
   const total = Object.values(byStatus).reduce((s, v) => s + v, 0) || 1
-  const resolved = (byStatus['resolved'] ?? 0) + (byStatus['closed'] ?? 0)
-  const active = (byStatus['in_progress'] ?? 0) + (byStatus['scheduled'] ?? 0)
+  const resolved = byStatus['resolved'] ?? 0
+  const active = byStatus['in_progress'] ?? 0
   const resolutionRate = stats ? Math.round((resolved / total) * 100) : 0
 
-  const statusOrder = ['submitted', 'received', 'under_review', 'scheduled', 'in_progress', 'resolved', 'closed', 'rejected']
+  const statusOrder = ['submitted', 'received', 'under_review', 'in_progress', 'resolved', 'rejected']
   const barData = statusOrder.map(key => ({
     key, ...STATUS_META[key],
     count: byStatus[key] ?? 0,

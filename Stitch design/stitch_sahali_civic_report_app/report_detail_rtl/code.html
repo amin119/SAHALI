@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>تفاصيل البلاغ - سهلي</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Nunito+Sans:wght@700;800&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@100..900&family=Inter:wght@100..900&family=Nunito+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .stepper-line {
+            width: 2px;
+            background: #E2E8F0;
+            position: absolute;
+            top: 24px;
+            bottom: 0;
+            right: 11px;
+        }
+        .stepper-line-active {
+            background: #0038af;
+        }
+        body {
+            font-family: 'Inter', 'Cairo', sans-serif;
+            background-color: #F4F6FB;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#c4c5d7",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f3f2fe",
+                        "inverse-primary": "#b6c4ff",
+                        "outline": "#747686",
+                        "tertiary-fixed-dim": "#ffb59b",
+                        "tertiary": "#7e2700",
+                        "on-tertiary-fixed": "#380d00",
+                        "on-primary-fixed": "#001550",
+                        "inverse-surface": "#2e3039",
+                        "secondary-fixed": "#d3e4fe",
+                        "background": "#faf8ff",
+                        "on-secondary-container": "#54647a",
+                        "surface-tint": "#1f51da",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "on-surface": "#191b23",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e2e1ed",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-surface-variant": "#434655",
+                        "tertiary-fixed": "#ffdbcf",
+                        "surface-container": "#ededf8",
+                        "surface": "#faf8ff",
+                        "primary": "#0038af",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "surface-variant": "#e2e1ed",
+                        "secondary-container": "#d0e1fb",
+                        "on-tertiary-fixed-variant": "#812800",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "secondary": "#505f76",
+                        "tertiary-container": "#a63600",
+                        "on-primary-container": "#cbd4ff",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d9d9e4",
+                        "on-surface-bright": "#faf8ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#1b4fd8",
+                        "on-background": "#191b23",
+                        "inverse-on-surface": "#f0f0fb",
+                        "surface-container-high": "#e8e7f3",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#dce1ff",
+                        "on-tertiary-container": "#ffc9b7",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#003ab3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "12px",
+                        "2xl": "16px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "screen-edge": "20px",
+                        "md": "16px",
+                        "sm": "12px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "lg": "24px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "display-hero": ["Nunito Sans"],
+                        "caption": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "section-title-arabic": ["Cairo"],
+                        "section-title": ["Nunito Sans"],
+                        "display-hero-arabic": ["Cairo"],
+                        "body-md-arabic": ["Cairo"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-hero": ["34px", {"lineHeight": "42px", "fontWeight": "800"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "section-title-arabic": ["20px", {"lineHeight": "36px", "fontWeight": "700"}],
+                        "section-title": ["22px", {"lineHeight": "28px", "fontWeight": "700"}],
+                        "display-hero-arabic": ["32px", {"lineHeight": "58px", "fontWeight": "800"}],
+                        "body-md-arabic": ["16px", {"lineHeight": "28.8px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- Top AppBar (from JSON guidance) -->
+<header class="bg-background fixed top-0 w-full z-50 flex justify-between items-center px-screen-edge py-md">
+<div class="flex items-center gap-4">
+<button class="hover:bg-surface-variant/20 rounded-full p-2 transition-opacity active:opacity-70">
+<span class="material-symbols-outlined text-primary">arrow_forward</span>
+</button>
+<h1 class="font-section-title-arabic text-section-title-arabic text-primary">تفاصيل البلاغ</h1>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional corporate headshot of a person against a clean studio background, reflecting a reliable and authorized civic user profile for a government service application. The lighting is bright and even, matching the clean blue and white aesthetic of the Sahali platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgznATOJoDtbID21_c6ROIMdgBCGnyICJ-m_tC6VkdWP96EYNXifJxb9-ZOpti4_ge8WhCROOulbCNd7TRJ8zl1OHMbEKhLg7efaKSoIGs0IULpvjJ6hl_slbeqHvViu9rYKFijCdhj06V0Sjnc5obVGpkJjFJN5wFVYwOxdX2Z4otsfmxLE3YHqAu2jpT9Gm7_KZiI3GbsAU4uylBCQl3giMpTav3wdNT9kgnTAkq2EEx8GMvoNBWDSwtXkccUcTrTPZ8uxmBcg"/>
+</div>
+</div>
+</header>
+<main class="pt-20">
+<!-- Hero Photo Section -->
+<div class="relative w-full h-64 px-screen-edge mb-6">
+<div class="w-full h-full rounded-2xl overflow-hidden shadow-lg relative">
+<img class="w-full h-full object-cover" data-alt="A high-quality documentary-style photograph of a damaged asphalt road in a sun-drenched urban Tunisian neighborhood. The scene is captured in clear daylight with high legibility, showing a significant pothole that needs repair. The visual style is realistic and authoritative, consistent with a civic reporting tool's professional interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsZX8XM0k20fFgcvyaQyc35xCJQVEyXqVVXDCuzGeRUEdjnB8Mn3B3pegN0gmNxBuxtYjd8Z6REZwA4A1jIsRP6MpJonhYo0nv9YwJBgYY759oUtiV052K6sI9p2QeiVJkRNXrFD6zo6AgGZJwAKMB3dugy9t6BHUuP1v99rO74luJMtJOpuZsjbeLqRb8pCYdRc0npvGJa1_a9fbtxu-8jLs0ZbFM-dcHlcu1p6PsHmWOY_VAn61VVlMDvLq1Z7Kb2GE32ExXIQ"/>
+<!-- Floating Status Badge -->
+<div class="absolute top-4 left-4 bg-secondary-container/90 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2 border border-white/20">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-secondary-fixed-variant">قيد المعالجة</span>
+</div>
+</div>
+</div>
+<!-- Details Card -->
+<div class="px-screen-edge mb-8">
+<div class="bg-surface-container-lowest p-lg rounded-2xl shadow-[0_2px_8px_rgba(15,23,42,0.05)] border border-outline-variant/30">
+<div class="flex justify-between items-start mb-6">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">add_road</span>
+<span class="font-label-sm text-label-sm text-primary">البنية التحتية / الطرقات</span>
+</div>
+<h2 class="font-section-title-arabic text-section-title-arabic text-on-surface mb-2">إصلاح حفرة في الطريق الرئيسي</h2>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="font-body-md-arabic text-body-md-arabic">تونس، سيدي بوسعيد</span>
+</div>
+</div>
+<div class="text-left">
+<span class="block font-label-sm text-label-sm text-outline mb-1">رقم التتبع</span>
+<span class="font-display-hero text-[18px] text-primary tracking-wider">#SH-2024-892</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-4 border-t border-outline-variant/20">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline mb-1">تاريخ التقديم</span>
+<span class="font-body-md-arabic text-on-surface">12 جوان 2024</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline mb-1">الأولوية</span>
+<span class="font-body-md-arabic text-tertiary">عالية</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Progress Timeline (Stepper) -->
+<div class="px-screen-edge mb-8">
+<h3 class="font-section-title-arabic text-section-title-arabic text-on-surface mb-6 pr-2">تتبع المسار</h3>
+<div class="bg-surface-container-lowest p-lg rounded-2xl shadow-[0_2px_8px_rgba(15,23,42,0.05)] border border-outline-variant/30 relative overflow-hidden">
+<div class="space-y-8 relative">
+<!-- Step 1: Submitted (Completed) -->
+<div class="flex gap-4 relative">
+<div class="z-10 flex flex-col items-center">
+<div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white ring-4 ring-primary-container/20">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="stepper-line stepper-line-active h-full"></div>
+</div>
+<div class="pb-2">
+<h4 class="font-label-sm text-label-sm text-on-surface">تم إرسال البلاغ</h4>
+<p class="font-caption text-caption text-outline mt-1">12 جوان 2024 - 09:30 ص</p>
+<p class="font-body-md-arabic text-body-md-arabic text-on-surface-variant mt-2">لقد استلمنا بلاغك بنجاح وسنقوم بمراجعته قريباً.</p>
+</div>
+</div>
+<!-- Step 2: Received (Completed) -->
+<div class="flex gap-4 relative">
+<div class="z-10 flex flex-col items-center">
+<div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white ring-4 ring-primary-container/20">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="stepper-line stepper-line-active h-full"></div>
+</div>
+<div class="pb-2">
+<h4 class="font-label-sm text-label-sm text-on-surface">تم استلام البلاغ</h4>
+<p class="font-caption text-caption text-outline mt-1">12 جوان 2024 - 02:15 م</p>
+<p class="font-body-md-arabic text-body-md-arabic text-on-surface-variant mt-1">تم تخصيص البلاغ للفريق الفني المختص.</p>
+</div>
+</div>
+<!-- Step 3: Analysis (Active) -->
+<div class="flex gap-4 relative">
+<div class="z-10 flex flex-col items-center">
+<div class="w-6 h-6 rounded-full border-2 border-primary bg-white flex items-center justify-center text-primary ring-4 ring-primary-container/10">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</div>
+<div class="stepper-line h-full"></div>
+</div>
+<div class="pb-2">
+<h4 class="font-label-sm text-label-sm text-primary font-bold">قيد الدراسة والتحليل</h4>
+<p class="font-caption text-caption text-primary/70 mt-1">جارٍ التنفيذ الآن</p>
+<p class="font-body-md-arabic text-body-md-arabic text-on-surface-variant mt-2">يقوم المهندسون حالياً بتقييم حجم الأضرار لتحديد الموارد اللازمة.</p>
+</div>
+</div>
+<!-- Step 4: Scheduled (Pending) -->
+<div class="flex gap-4 relative">
+<div class="z-10 flex flex-col items-center">
+<div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-white"></div>
+</div>
+<div class="pb-2">
+<h4 class="font-label-sm text-label-sm text-outline-variant">تمت جدولة الإصلاح</h4>
+<p class="font-body-md-arabic text-body-md-arabic text-outline-variant mt-1">في انتظار انتهاء مرحلة التحليل.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Actions & Nav -->
+<div class="fixed bottom-0 left-0 w-full z-50">
+<!-- Floating Actions -->
+<div class="flex justify-center px-screen-edge pb-6">
+<div class="flex w-full gap-4 max-w-md">
+<button class="flex-1 h-[52px] bg-primary text-on-primary rounded-xl font-label-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined">add_comment</span>
+                    أضف تعليقاً
+                </button>
+<button class="w-[52px] h-[52px] border border-outline-variant bg-surface-container-lowest text-on-surface rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<!-- BottomNavBar (from JSON guidance) -->
+<nav class="bg-surface-container-lowest dark:bg-inverse-surface shadow-[0_-2px_8px_rgba(15,23,42,0.05)] rounded-t-xl w-full flex justify-around items-center px-4 pb-4 pt-2">
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant dark:text-outline-variant hover:opacity-80" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Accueil</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-inverse-primary font-bold scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment</span>
+<span class="font-label-sm text-label-sm">Signaux</span>
+</a>
+<button class="bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center -translate-y-4 shadow-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[28px]">add</span>
+</button>
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant dark:text-outline-variant hover:opacity-80" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-sm text-label-sm">Alertes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant dark:text-outline-variant hover:opacity-80" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profil</span>
+</a>
+</nav>
+</div>
+<script>
+        // Simple interaction for the comment button
+        document.querySelector('button.bg-primary').addEventListener('click', function() {
+            const btn = this;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> جاري التحميل...';
+            setTimeout(() => {
+                btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> تم الإرسال';
+                setTimeout(() => {
+                    btn.innerHTML = '<span class="material-symbols-outlined">add_comment</span> أضف تعليقاً';
+                }, 2000);
+            }, 1000);
+        });
+    </script>
+</body></html>

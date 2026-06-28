@@ -11,14 +11,18 @@ export interface User {
   created_at: string
 }
 
+export interface UserBrief {
+  id: string
+  full_name: string
+  role: UserRole
+}
+
 export type ReportStatus =
   | 'submitted'
   | 'received'
   | 'under_review'
-  | 'scheduled'
   | 'in_progress'
   | 'resolved'
-  | 'closed'
   | 'rejected'
 
 export type Priority = 'low' | 'medium' | 'high' | 'critical'
@@ -40,6 +44,7 @@ export interface Report {
   status: ReportStatus
   priority: Priority
   assigned_to?: string
+  analyzed_by?: string
   is_duplicate: boolean
   created_at: string
   updated_at: string
@@ -51,6 +56,34 @@ export interface ReportListOut {
   total: number
   page: number
   page_size: number
+}
+
+export interface Assignment {
+  id: string
+  agent: UserBrief
+  assigned_by_user: UserBrief
+  note?: string
+  is_active: boolean
+  created_at: string
+}
+
+export interface ResolutionReport {
+  id: string
+  comment: string
+  materials?: string
+  photo_url?: string
+  resolved_by_user: UserBrief
+  created_at: string
+}
+
+export interface StatusHistoryEntry {
+  id: string
+  from_status: string | null
+  to_status: string
+  note?: string
+  changed_by: string
+  changed_by_name?: string
+  created_at: string
 }
 
 export interface AdminStats {
@@ -76,6 +109,7 @@ export interface Category {
 export interface Notification {
   id: string
   user_id: string
+  report_id?: string | null
   title: string
   body: string
   is_read: boolean

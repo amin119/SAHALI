@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sahali - Gestion des Catégories</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fe;
+        }
+        .category-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(15,23,42,0.12);
+        }
+        .glass-header {
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-container": "#dae2fd",
+                      "tertiary-fixed-dim": "#bcc7de",
+                      "priority-low": "#22C55E",
+                      "primary-fixed-dim": "#b6c4ff",
+                      "on-primary-container": "#cbd4ff",
+                      "on-tertiary-fixed": "#111c2d",
+                      "outline": "#747686",
+                      "surface-dim": "#d8dadf",
+                      "text-secondary": "#64748B",
+                      "error-container": "#ffdad6",
+                      "outline-variant": "#c4c5d7",
+                      "status-rejected": "#EF4444",
+                      "inverse-primary": "#b6c4ff",
+                      "secondary": "#565e74",
+                      "status-progress": "#F97316",
+                      "on-secondary-fixed": "#131b2e",
+                      "on-tertiary-container": "#cbd6ee",
+                      "status-scheduled": "#8B5CF6",
+                      "tertiary": "#3b4559",
+                      "primary-fixed": "#dce1ff",
+                      "surface-container-low": "#f1f4f9",
+                      "priority-medium": "#F59E0B",
+                      "surface-container-high": "#e6e8ed",
+                      "on-primary-fixed-variant": "#003ab3",
+                      "background": "#f7f9fe",
+                      "inverse-on-surface": "#eff1f6",
+                      "primary-container": "#1b4fd8",
+                      "surface": "#FFFFFF",
+                      "on-secondary-fixed-variant": "#3f465c",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "status-submitted": "#6366F1",
+                      "tertiary-container": "#525d71",
+                      "priority-critical": "#EF4444",
+                      "inverse-surface": "#2d3135",
+                      "primary": "#0038af",
+                      "on-error": "#ffffff",
+                      "status-review": "#F59E0B",
+                      "tertiary-fixed": "#d8e3fb",
+                      "status-received": "#0EA5E9",
+                      "status-closed": "#64748B",
+                      "on-surface-variant": "#434655",
+                      "secondary-fixed-dim": "#bec6e0",
+                      "status-resolved": "#22C55E",
+                      "border": "#E2E8F0",
+                      "surface-bright": "#f7f9fe",
+                      "on-surface": "#181c20",
+                      "text-primary": "#0F172A",
+                      "on-tertiary-fixed-variant": "#3c475a",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed": "#001550",
+                      "text-muted": "#94A3B8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container_padding": "32px",
+                      "gutter": "24px",
+                      "stack-md": "16px",
+                      "navbar_height": "64px",
+                      "stack-sm": "8px",
+                      "stack-lg": "24px",
+                      "sidebar_width": "260px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "code-id": ["JetBrains Mono"],
+                      "headline-sm": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "display-stat": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                      "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "body-lg": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+                      "code-id": ["13px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "headline-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                      "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "display-stat": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="flex overflow-hidden h-screen bg-background">
+<!-- SideNavBar (from JSON) -->
+<aside class="flex flex-col h-full py-stack-lg fixed left-0 top-0 w-[260px] bg-on-secondary-fixed dark:bg-on-background shadow-lg z-50">
+<div class="px-6 mb-8">
+<h1 class="font-headline-sm text-headline-sm text-surface-container-lowest">Sahali</h1>
+<div class="flex items-center gap-3 mt-6 p-3 bg-surface-container-lowest/10 rounded-xl">
+<div class="w-10 h-10 rounded-lg overflow-hidden bg-primary-container flex items-center justify-center text-white">
+<span class="material-symbols-outlined">location_city</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-white">La Marsa</p>
+<p class="font-label-sm text-label-sm text-on-secondary-fixed-variant">Administration</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto px-2 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Tableau de bord</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Carte en direct</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">report_problem</span>
+<span class="font-label-md text-label-md">Signalements</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">engineering</span>
+<span class="font-label-md text-label-md">Interventions</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Calendrier</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Équipes &amp; Agents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">location_city</span>
+<span class="font-label-md text-label-md">Municipalités</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-surface-container-lowest bg-primary dark:bg-primary-container border-l-4 border-primary-fixed-dim translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">category</span>
+<span class="font-label-md text-label-md">Catégories</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">insert_chart</span>
+<span class="font-label-md text-label-md">Statistiques</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Rapports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">speed</span>
+<span class="font-label-md text-label-md">Performance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Paramètres</span>
+</a>
+</nav>
+<div class="mt-auto px-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container dark:hover:bg-tertiary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+</a>
+</div>
+</aside>
+<main class="flex-1 ml-[260px] flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar (from JSON) -->
+<header class="sticky top-0 z-40 flex items-center justify-between px-container_padding h-[64px] w-full bg-surface border-b border-border">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 bg-surface-container-low px-4 py-2 rounded-full border border-border w-[320px]">
+<span class="material-symbols-outlined text-secondary">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md text-on-surface w-full" placeholder="Rechercher..." type="text"/>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-secondary dark:text-on-secondary-variant font-label-md text-label-md hover:bg-surface-container-low transition-colors px-2 py-1 rounded" href="#">Tableau de bord</a>
+<a class="text-primary font-semibold border-b-2 border-primary pb-1 text-label-md" href="#">Signalements</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">language</span>
+</button>
+<button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="flex items-center gap-3 pl-4 border-l border-border ml-2">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">Amin Ben Ali</p>
+<p class="font-label-sm text-label-sm text-secondary">Superviseur</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-primary/20 object-cover" data-alt="A professional headshot of a middle-aged man with short dark hair and a confident expression, wearing a tailored navy suit and a white dress shirt, set against a blurred modern office background with soft corporate lighting. The style is clean, high-resolution, and professional, maintaining the blue and white brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZwK_H0GPhKO4DXTfRU60JVLU4XC45IvjLGH-70jh_ZRBK_EbwzKamgxzbrvJuUdWE7Xv-0EWiO72Qxfq74cHoBH0uFQgmq8rPYj--so1ldVKwQk9JgCQb1pE2eMijJ6F_-poH1FxR6SquTiNxieqSSOT6oY8axNZ8zyhmDaTfNwkJ5VUXoEBgEhndKL1ax_jTPIvfXuz0lm91PEidjbxjOPNKnXCmVzzPMwz1xUq65w6-gYrrIGS--XMvfGnPvJmpZ8tS6hpK75c"/>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="flex-1 overflow-y-auto p-container_padding bg-background space-y-stack-lg">
+<!-- Page Header -->
+<div class="flex items-end justify-between">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-text-primary">Gestion des Catégories</h2>
+<p class="font-body-md text-body-md text-text-secondary mt-1">Configurez les types de signalements et les départements responsables.</p>
+</div>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-lg font-label-md text-label-md hover:opacity-90 transition-all shadow-md active:scale-95">
+<span class="material-symbols-outlined text-sm">add</span>
+                    Ajouter une catégorie
+                </button>
+</div>
+<!-- Bento Grid of Categories -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<!-- Category Card: Routes -->
+<div class="category-card bg-surface p-stack-lg rounded-xl border border-border shadow-sm transition-all flex flex-col justify-between h-[240px]">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined filled-icon text-[28px]">road</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="mt-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Routes</h3>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[18px] text-text-muted">account_balance</span>
+<span class="font-label-sm text-label-sm text-text-secondary">Service Voirie</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-border flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-priority-high"></span>
+<span class="font-label-sm text-label-sm font-semibold text-priority-high uppercase">SLA: 24h</span>
+</div>
+<button class="text-primary hover:underline font-label-sm text-label-sm">Modifier</button>
+</div>
+</div>
+<!-- Category Card: Éclairage -->
+<div class="category-card bg-surface p-stack-lg rounded-xl border border-border shadow-sm transition-all flex flex-col justify-between h-[240px]">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-status-review/10 text-status-review flex items-center justify-center">
+<span class="material-symbols-outlined filled-icon text-[28px]">lightbulb</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="mt-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Éclairage</h3>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[18px] text-text-muted">bolt</span>
+<span class="font-label-sm text-label-sm text-text-secondary">Service Électrique</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-border flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-priority-medium"></span>
+<span class="font-label-sm text-label-sm font-semibold text-priority-medium uppercase">SLA: 48h</span>
+</div>
+<button class="text-primary hover:underline font-label-sm text-label-sm">Modifier</button>
+</div>
+</div>
+<!-- Category Card: Déchets -->
+<div class="category-card bg-surface p-stack-lg rounded-xl border border-border shadow-sm transition-all flex flex-col justify-between h-[240px]">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-priority-low/10 text-priority-low flex items-center justify-center">
+<span class="material-symbols-outlined filled-icon text-[28px]">delete</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="mt-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Déchets</h3>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[18px] text-text-muted">recycling</span>
+<span class="font-label-sm text-label-sm text-text-secondary">Salubrité Publique</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-border flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-priority-low"></span>
+<span class="font-label-sm text-label-sm font-semibold text-priority-low uppercase">SLA: 12h</span>
+</div>
+<button class="text-primary hover:underline font-label-sm text-label-sm">Modifier</button>
+</div>
+</div>
+<!-- Category Card: Eau -->
+<div class="category-card bg-surface p-stack-lg rounded-xl border border-border shadow-sm transition-all flex flex-col justify-between h-[240px]">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-status-received/10 text-status-received flex items-center justify-center">
+<span class="material-symbols-outlined filled-icon text-[28px]">water_drop</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="mt-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Eau</h3>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[18px] text-text-muted">waves</span>
+<span class="font-label-sm text-label-sm text-text-secondary">SONEDE / Assainissement</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-border flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-priority-critical"></span>
+<span class="font-label-sm text-label-sm font-semibold text-priority-critical uppercase">SLA: 6h</span>
+</div>
+<button class="text-primary hover:underline font-label-sm text-label-sm">Modifier</button>
+</div>
+</div>
+<!-- Category Card: Sécurité -->
+<div class="category-card bg-surface p-stack-lg rounded-xl border border-border shadow-sm transition-all flex flex-col justify-between h-[240px]">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-status-rejected/10 text-status-rejected flex items-center justify-center">
+<span class="material-symbols-outlined filled-icon text-[28px]">security</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="mt-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Sécurité</h3>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[18px] text-text-muted">policy</span>
+<span class="font-label-sm text-label-sm text-text-secondary">Police Municipale</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-border flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-priority-critical"></span>
+<span class="font-label-sm text-label-sm font-semibold text-priority-critical uppercase">SLA: Urgent</span>
+</div>
+<button class="text-primary hover:underline font-label-sm text-label-sm">Modifier</button>
+</div>
+</div>
+<!-- Category Card: Transport -->
+<div class="category-card bg-surface p-stack-lg rounded-xl border border-border shadow-sm transition-all flex flex-col justify-between h-[240px]">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-status-scheduled/10 text-status-scheduled flex items-center justify-center">
+<span class="material-symbols-outlined filled-icon text-[28px]">directions_bus</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="mt-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Transport</h3>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[18px] text-text-muted">commute</span>
+<span class="font-label-sm text-label-sm text-text-secondary">Régie des Transports</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-border flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-status-closed"></span>
+<span class="font-label-sm text-label-sm font-semibold text-status-closed uppercase">Désactivé</span>
+</div>
+<button class="text-primary hover:underline font-label-sm text-label-sm">Modifier</button>
+</div>
+</div>
+<!-- Category Card: Environnement -->
+<div class="category-card bg-surface p-stack-lg rounded-xl border border-border shadow-sm transition-all flex flex-col justify-between h-[240px]">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-status-resolved/10 text-status-resolved flex items-center justify-center">
+<span class="material-symbols-outlined filled-icon text-[28px]">park</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="mt-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Environnement</h3>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[18px] text-text-muted">nature</span>
+<span class="font-label-sm text-label-sm text-text-secondary">Espaces Verts</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-border flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-priority-medium"></span>
+<span class="font-label-sm text-label-sm font-semibold text-priority-medium uppercase">SLA: 72h</span>
+</div>
+<button class="text-primary hover:underline font-label-sm text-label-sm">Modifier</button>
+</div>
+</div>
+<!-- Empty State / Add New Card Placeholder -->
+<button class="group border-2 border-dashed border-border p-stack-lg rounded-xl hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center h-[240px] space-y-4">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary/20 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[32px]">add_circle</span>
+</div>
+<div class="text-center">
+<p class="font-headline-sm text-headline-sm text-on-surface">Nouvelle Catégorie</p>
+<p class="font-label-sm text-label-sm text-text-secondary">Définir un nouveau département</p>
+</div>
+</button>
+</div>
+<!-- Dashboard Stats Summary Section (Bento Grid Style Extension) -->
+<div class="mt-12 grid grid-cols-1 lg:grid-cols-4 gap-gutter">
+<div class="lg:col-span-1 bg-surface p-6 rounded-xl border border-border">
+<p class="font-label-md text-label-md text-text-secondary mb-2">Total Catégories</p>
+<p class="font-display-stat text-display-stat text-text-primary">12</p>
+<div class="mt-4 flex items-center gap-1 text-priority-low">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="font-label-sm text-label-sm">+2 ce mois</span>
+</div>
+</div>
+<div class="lg:col-span-3 bg-primary text-white p-6 rounded-xl relative overflow-hidden flex items-center justify-between">
+<div class="z-10 max-w-lg">
+<h4 class="font-headline-sm text-headline-sm mb-2">Optimisation de la Répartition</h4>
+<p class="font-body-md text-body-md opacity-80">Le département 'Voirie' reçoit 45% des signalements. Envisagez de subdiviser cette catégorie pour améliorer le temps de réponse.</p>
+<button class="mt-4 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-label-md text-label-md transition-colors backdrop-blur-md">
+                            Analyser les flux
+                        </button>
+</div>
+<div class="absolute right-[-40px] top-[-40px] opacity-10">
+<span class="material-symbols-outlined text-[240px]">analytics</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions for toggles and cards
+        document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const card = this.closest('.category-card');
+                const statusDot = card.querySelector('.mt-4.pt-4 span.w-2');
+                const statusText = card.querySelector('.mt-4.pt-4 span.font-label-sm.font-semibold');
+                
+                if (this.checked) {
+                    card.classList.remove('opacity-60');
+                    if (statusText.innerText === 'DÉSACTIVÉ') {
+                        statusText.innerText = 'SLA: À DÉFINIR';
+                        statusDot.className = 'w-2 h-2 rounded-full bg-priority-low';
+                        statusText.className = 'font-label-sm text-label-sm font-semibold text-priority-low uppercase';
+                    }
+                } else {
+                    card.classList.add('opacity-60');
+                    // Just visual feedback, normally would be handled by state management
+                }
+            });
+        });
+
+        // Hover animation for icons
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                const icon = card.querySelector('.material-symbols-outlined.filled-icon');
+                if (icon) icon.style.transform = 'scale(1.1) rotate(-5deg)';
+            });
+            card.addEventListener('mouseleave', () => {
+                const icon = card.querySelector('.material-symbols-outlined.filled-icon');
+                if (icon) icon.style.transform = 'scale(1) rotate(0deg)';
+            });
+        });
+    </script>
+</body></html>

@@ -64,10 +64,10 @@ class ReportModel {
             .toList(),
       );
 
-  bool get isActive => ['submitted', 'received', 'under_review', 'scheduled', 'in_progress']
+  bool get isActive => ['submitted', 'received', 'under_review', 'in_progress']
       .contains(status);
   bool get isResolved => status == 'resolved';
-  bool get isClosed => status == 'closed' || status == 'rejected';
+  bool get isClosed => status == 'rejected';
 }
 
 class StatusHistoryItem {

@@ -19,7 +19,7 @@ class MyReportsScreen extends StatefulWidget {
 class _MyReportsScreenState extends State<MyReportsScreen> {
   int _filterIndex = 0;
 
-  static const _statusFilters = [null, 'active', 'resolved', 'closed'];
+  static const _statusFilters = [null, 'active', 'resolved', 'rejected'];
 
   @override
   void initState() {

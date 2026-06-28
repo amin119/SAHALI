@@ -1,4 +1,4 @@
-export type ReportStatus = 'submitted' | 'received' | 'under_review' | 'scheduled' | 'in_progress' | 'resolved' | 'closed' | 'rejected';
+export type ReportStatus = 'submitted' | 'received' | 'under_review' | 'in_progress' | 'resolved' | 'rejected';
 export type Priority = 'critical' | 'high' | 'medium' | 'low';
 
 export interface Report {
@@ -32,10 +32,10 @@ export const REPORTS: Report[] = [
   { id: '2', code: 'CA-2026-88390', category: 'Éclairage', address: 'Ariana Center, Rue 12', city: 'Ariana', status: 'resolved', priority: 'medium', assignedTo: 'Hana Trabelsi', createdAt: 'Il y a 5h', description: 'Lampadaire défaillant — risque sécurité la nuit.' },
   { id: '3', code: 'CA-2026-88355', category: 'Sécurité', address: 'La Marsa Plage', city: 'La Marsa', status: 'received', priority: 'critical', assignedTo: undefined, createdAt: "Aujourd'hui", description: 'Balustrade effondrée sur la promenade.' },
   { id: '4', code: 'CA-2026-88321', category: 'Eau', address: 'Carthage Salambo', city: 'Carthage', status: 'received', priority: 'high', assignedTo: 'Kais Dhouib', createdAt: 'Hier', description: 'Fuite d\'eau importante sur la voirie.' },
-  { id: '5', code: 'CA-2026-88300', category: 'Routes', address: 'Rue de la République', city: 'Ariana', status: 'scheduled', priority: 'medium', assignedTo: 'Meriem Gara', createdAt: 'Il y a 2j', description: 'Nid de poule profond ralentissant la circulation.' },
+  { id: '5', code: 'CA-2026-88300', category: 'Routes', address: 'Rue de la République', city: 'Ariana', status: 'in_progress', priority: 'medium', assignedTo: 'Meriem Gara', createdAt: 'Il y a 2j', description: 'Nid de poule profond ralentissant la circulation.' },
   { id: '6', code: 'CA-2026-88289', category: 'Environnement', address: 'Parc Saada', city: 'La Marsa', status: 'under_review', priority: 'low', assignedTo: 'Sami Mejri', createdAt: 'Il y a 3j', description: 'Arbres non taillés obstruant les trottoirs.' },
   { id: '7', code: 'CA-2026-88260', category: 'Transport', address: 'Arrêt Bus 78', city: 'Carthage', status: 'resolved', priority: 'low', assignedTo: 'Hana Trabelsi', createdAt: 'Il y a 4j', description: 'Abri bus vandalisé, vitre brisée.' },
-  { id: '8', code: 'CA-2026-88244', category: 'Routes', address: 'Av. Bourguiba Goulette', city: 'La Goulette', status: 'closed', priority: 'medium', assignedTo: 'Kais Dhouib', createdAt: 'Il y a 5j', description: 'Marquage au sol effacé à l\'intersection.' },
+  { id: '8', code: 'CA-2026-88244', category: 'Routes', address: 'Av. Bourguiba Goulette', city: 'La Goulette', status: 'resolved', priority: 'medium', assignedTo: 'Kais Dhouib', createdAt: 'Il y a 5j', description: 'Marquage au sol effacé à l\'intersection.' },
 ];
 
 export const AGENTS: Agent[] = [
@@ -48,25 +48,21 @@ export const AGENTS: Agent[] = [
 ];
 
 export const STATUS_LABELS: Record<ReportStatus, string> = {
-  submitted: 'Soumis',
-  received: 'Reçu',
-  under_review: 'En révision',
-  scheduled: 'Planifié',
-  in_progress: 'En cours',
-  resolved: 'Résolu',
-  closed: 'Fermé',
-  rejected: 'Rejeté',
+  submitted:    'Soumis',
+  received:     'Reçu',
+  under_review: 'En examen',
+  in_progress:  'En cours',
+  resolved:     'Résolu',
+  rejected:     'Rejeté',
 };
 
 export const STATUS_COLORS: Record<ReportStatus, string> = {
-  submitted: '#6366F1',
-  received: '#0EA5E9',
+  submitted:    '#6366F1',
+  received:     '#0EA5E9',
   under_review: '#F59E0B',
-  scheduled: '#8B5CF6',
-  in_progress: '#F97316',
-  resolved: '#22C55E',
-  closed: '#64748B',
-  rejected: '#EF4444',
+  in_progress:  '#F97316',
+  resolved:     '#22C55E',
+  rejected:     '#EF4444',
 };
 
 export const PRIORITY_COLORS: Record<Priority, string> = {

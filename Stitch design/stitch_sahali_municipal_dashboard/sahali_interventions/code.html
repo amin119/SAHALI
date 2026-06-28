@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sahali - Interventions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#747686",
+                        "status-progress": "#F97316",
+                        "surface-dim": "#d8dadf",
+                        "on-secondary-fixed": "#131b2e",
+                        "surface-container-high": "#e6e8ed",
+                        "on-tertiary-fixed": "#111c2d",
+                        "on-primary-fixed-variant": "#003ab3",
+                        "surface-container": "#eceef3",
+                        "status-review": "#F59E0B",
+                        "status-rejected": "#EF4444",
+                        "text-muted": "#94A3B8",
+                        "on-surface-variant": "#434655",
+                        "surface-bright": "#f7f9fe",
+                        "on-tertiary-fixed-variant": "#3c475a",
+                        "on-primary-container": "#cbd4ff",
+                        "primary-fixed": "#dce1ff",
+                        "outline-variant": "#c4c5d7",
+                        "status-resolved": "#22C55E",
+                        "priority-critical": "#EF4444",
+                        "status-scheduled": "#8B5CF6",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "primary": "#0038af",
+                        "tertiary-fixed-dim": "#bcc7de",
+                        "on-error-container": "#93000a",
+                        "surface": "#FFFFFF",
+                        "status-received": "#0EA5E9",
+                        "text-secondary": "#64748B",
+                        "priority-high": "#F97316",
+                        "on-tertiary-container": "#cbd6ee",
+                        "on-primary": "#ffffff",
+                        "priority-low": "#22C55E",
+                        "tertiary": "#3b4559",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "inverse-primary": "#b6c4ff",
+                        "background": "#f7f9fe",
+                        "tertiary-container": "#525d71",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#dae2fd",
+                        "secondary": "#565e74",
+                        "status-closed": "#64748B",
+                        "on-surface": "#181c20",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-variant": "#e0e2e7",
+                        "surface-container-low": "#f1f4f9",
+                        "on-error": "#ffffff",
+                        "priority-medium": "#F59E0B",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#1f51da",
+                        "inverse-on-surface": "#eff1f6",
+                        "surface-container-highest": "#e0e2e7",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#2d3135",
+                        "on-background": "#181c20",
+                        "status-submitted": "#6366F1",
+                        "text-primary": "#0F172A",
+                        "border": "#E2E8F0",
+                        "on-secondary-container": "#5c647a",
+                        "on-primary-fixed": "#001550",
+                        "error": "#ba1a1a",
+                        "primary-container": "#1b4fd8",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#d8e3fb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "gutter": "24px",
+                        "container_padding": "32px",
+                        "stack-lg": "24px",
+                        "sidebar_width": "260px",
+                        "stack-sm": "8px",
+                        "navbar_height": "64px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "code-id": ["JetBrains Mono"],
+                        "headline-sm": ["Inter"],
+                        "display-stat": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #F4F6FB; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .kanban-column { min-height: calc(100vh - 300px); }
+        .custom-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1); }
+        .active-tab { position: relative; }
+        .active-tab::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 100%; height: 2px; background: #0038af; }
+    </style>
+</head>
+<body class="text-on-background antialiased">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-screen w-[260px] bg-on-secondary-fixed dark:bg-on-background flex flex-col h-full py-stack-lg z-50 shadow-lg">
+<div class="px-6 mb-8">
+<h1 class="font-headline-sm text-headline-sm text-surface-container-lowest font-bold">Sahali</h1>
+<div class="mt-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface/10 flex items-center justify-center overflow-hidden border border-white/10">
+<img class="w-full h-full object-cover" data-alt="Official municipal crest of La Marsa city in Tunisia, featuring historical symbols in a clean, modern vector style against a subtle textured white background. The aesthetic is professional, institutional, and high-trust, using deep blue and gold accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_zUHgfkXtPTxbVm209hy_S0VfaqG1eg6LTECmQzBJEgQb4r6p173LvLgDRKYl6H252w0YuqE8-e3P1lgIDXh6Fle2b_KvKneITrM5HXcC9-zkYUrEPP6kJ4d9nY1cxxuIVMBOuOcf4Bk_cfp6_SdarqJmhuEqKkZAnnlYF2iJgOwFh1a4pevFLdtQhJ2vZcq6t6MhOTJfu_Yk9-oVsY9slv_VOgOEAQdOQg8PbKNmokbbC40k4uXV5U3xlmkMN07gxhDESiyVRu8"/>
+</div>
+<div>
+<p class="text-surface-container-lowest font-label-md text-label-md">La Marsa</p>
+<p class="text-on-tertiary-fixed-variant font-label-sm text-label-sm">Administration</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Tableau de bord</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Carte en direct</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">report_problem</span>
+<span class="font-label-md text-label-md">Signalements</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-surface-container-lowest bg-primary border-l-4 border-primary-fixed-dim translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">engineering</span>
+<span class="font-label-md text-label-md">Interventions</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Calendrier</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Équipes &amp; Agents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">location_city</span>
+<span class="font-label-md text-label-md">Municipalités</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">insert_chart</span>
+<span class="font-label-md text-label-md">Statistiques</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Paramètres</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-white/5 pt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant hover:bg-tertiary-container transition-all" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+<span class="ml-auto w-5 h-5 bg-status-rejected text-[10px] flex items-center justify-center rounded-full text-white font-bold">3</span>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-[260px] min-h-screen">
+<!-- Top Nav Bar -->
+<header class="sticky top-0 z-40 bg-surface flex items-center justify-between px-container_padding h-[64px] w-full border-b border-border">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 bg-surface-container-low px-4 py-2 rounded-lg border border-border w-96">
+<span class="material-symbols-outlined text-outline text-[20px]">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md w-full" placeholder="Rechercher une intervention, un agent..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">language</span>
+</button>
+<button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-status-rejected rounded-full"></span>
+</button>
+<div class="h-8 w-px bg-border mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="font-label-md text-label-md text-on-surface">Amin Ben Ali</p>
+<p class="font-label-sm text-label-sm text-text-secondary">Superviseur</p>
+</div>
+<img class="w-10 h-10 rounded-full object-cover border-2 border-surface-container" data-alt="Portrait of a middle-aged Tunisian male official, Amin Ben Ali, with a professional and friendly expression. He wears a sharp charcoal suit and a light blue shirt. The background is a blurred office setting with warm lighting, conveying authority and approachability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYu0ijWSj4ywn_pdYp4KMYqN4eGnIv_RSuGngs-cUBfB7M1lINaRY1FK1UVn53UKD0DhD60Mjxlr7AleOH_-8hoLu4FUF-bEUj8fzU7rsZgOmDhRANwn2vSYWaEmBmNR4OddDR0jEAjE5_cN4hbiPgNx7H3Qsvi0hTIctoqA2Y6x7HWDwjArirgnrKce7FLtmO4xZklMectBUAPgv-xwnhX-QFfKduAr3W0pIBJx3qjeFn56osxOaIua0OxmFWgSCtZSwupz5-Imo"/>
+</div>
+</div>
+</header>
+<!-- View Controls & Header -->
+<section class="p-container_padding">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-text-primary mb-2">Interventions</h2>
+<p class="text-text-secondary font-body-md text-body-md">Gestion et planification des équipes de terrain pour la municipalité.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="bg-surface-container rounded-lg p-1 flex">
+<button class="px-4 py-2 rounded-md font-label-md text-label-md bg-white shadow-sm text-primary transition-all flex items-center gap-2" id="btn-kanban" onclick="switchView('kanban')">
+<span class="material-symbols-outlined text-[18px]">view_kanban</span> Kanban
+                        </button>
+<button class="px-4 py-2 rounded-md font-label-md text-label-md text-secondary hover:text-on-surface transition-all flex items-center gap-2" id="btn-calendar" onclick="switchView('calendar')">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span> Calendrier
+                        </button>
+<button class="px-4 py-2 rounded-md font-label-md text-label-md text-secondary hover:text-on-surface transition-all flex items-center gap-2" id="btn-list" onclick="switchView('list')">
+<span class="material-symbols-outlined text-[18px]">format_list_bulleted</span> Liste
+                        </button>
+</div>
+<button class="bg-primary text-white px-6 py-2.5 rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity flex items-center gap-2 shadow-md">
+<span class="material-symbols-outlined">add</span> Planifier une intervention
+                    </button>
+</div>
+</div>
+<!-- Kanban Board View -->
+<div class="flex gap-gutter overflow-x-auto pb-4 scrollbar-hide" id="view-kanban">
+<!-- Column: À PLANIFIER -->
+<div class="flex-shrink-0 w-80">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-label-md text-label-md text-secondary tracking-wider">À PLANIFIER <span class="ml-2 text-outline bg-surface-container px-2 py-0.5 rounded-full text-[10px]">3</span></h3>
+<button class="text-outline hover:text-primary"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="kanban-column space-y-4">
+<!-- Card 1 -->
+<div class="bg-surface p-4 rounded-xl custom-shadow border border-border hover:border-primary-fixed cursor-pointer transition-all group">
+<div class="flex justify-between items-start mb-3">
+<span class="font-code-id text-code-id text-text-secondary">#INT-2940</span>
+<span class="bg-status-rejected/10 text-status-rejected px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-status-rejected"></span> CRITIQUE
+                                </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm mb-2 text-on-surface group-hover:text-primary transition-colors">Fuite d'eau majeure - Av. Bourguiba</h4>
+<div class="flex items-center gap-2 text-text-secondary mb-3">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<p class="text-label-sm font-label-sm">Avenue Habib Bourguiba, Centre</p>
+</div>
+<div class="flex items-center justify-between pt-3 border-t border-border">
+<div class="flex -space-x-2">
+<div class="w-7 h-7 rounded-full bg-surface-container border-2 border-surface flex items-center justify-center text-[10px] font-bold">?</div>
+</div>
+<span class="text-label-sm font-label-sm text-outline">Il y a 2h</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface p-4 rounded-xl custom-shadow border border-border hover:border-primary-fixed cursor-pointer transition-all group">
+<div class="flex justify-between items-start mb-3">
+<span class="font-code-id text-code-id text-text-secondary">#INT-2945</span>
+<span class="bg-status-review/10 text-status-review px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-status-review"></span> MOYEN
+                                </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm mb-2 text-on-surface">Éclairage public défectueux</h4>
+<div class="flex items-center gap-2 text-text-secondary mb-3">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<p class="text-label-sm font-label-sm">Rue des Jasmins, Marsa Plage</p>
+</div>
+<div class="flex items-center justify-between pt-3 border-t border-border">
+<div class="flex -space-x-2">
+<div class="w-7 h-7 rounded-full bg-surface-container border-2 border-surface flex items-center justify-center text-[10px] font-bold">?</div>
+</div>
+<span class="text-label-sm font-label-sm text-outline">Il y a 5h</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: PLANIFIÉS -->
+<div class="flex-shrink-0 w-80">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-label-md text-label-md text-secondary tracking-wider">PLANIFIÉS <span class="ml-2 text-outline bg-surface-container px-2 py-0.5 rounded-full text-[10px]">2</span></h3>
+<button class="text-outline hover:text-primary"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="kanban-column space-y-4 bg-surface-container-low/50 rounded-xl p-2 border border-dashed border-outline-variant">
+<!-- Card -->
+<div class="bg-surface p-4 rounded-xl custom-shadow border border-border hover:border-primary-fixed cursor-pointer transition-all">
+<div class="flex justify-between items-start mb-3">
+<span class="font-code-id text-code-id text-text-secondary">#INT-2899</span>
+<span class="bg-status-progress/10 text-status-progress px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-status-progress"></span> HAUTE
+                                </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm mb-2 text-on-surface">Élagage des arbres - Parc Saada</h4>
+<div class="flex items-center gap-2 text-text-secondary mb-3">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<p class="text-label-sm font-label-sm">Demain, 08:30</p>
+</div>
+<div class="flex items-center justify-between pt-3 border-t border-border">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="Close-up of a professional municipal field agent wearing high-visibility orange safety gear and a hard hat. The background is a bright, sunlit street in Tunisia. High-quality corporate photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCz0PIjzJFRgwBrEZd3Bv5pwEqoxBieyP99XXD_ZAFUmR7oy7-rIvoH74-zzC_W9Ud1Jhvwgei0JlSG965UCKDpf1mi9G0IkEkn84RCsoFoy7oiWCY_J4XSLhy6sI6SAPOhqqYrK9VMe6xIFbQxQSL3PIxyMqETdjM-3k-iXQ6ka2Hr2-odc9TjyLFZvLJt9SUzMmL0tsWOJIjFDdv2it4Jdnd4j4UXqyGoXWZLHRv2akRI75fubravtnQzW2Pp8jwZqRi9hmrS820"/>
+<span class="text-label-sm font-label-sm">Équipe Espaces Verts</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: EN COURS -->
+<div class="flex-shrink-0 w-80">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-label-md text-label-md text-secondary tracking-wider">EN COURS <span class="ml-2 text-outline bg-surface-container px-2 py-0.5 rounded-full text-[10px]">1</span></h3>
+<button class="text-outline hover:text-primary"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="kanban-column space-y-4">
+<!-- Card with active status -->
+<div class="bg-surface p-4 rounded-xl custom-shadow border-l-4 border-l-primary border-t border-r border-b border-border cursor-pointer transition-all">
+<div class="flex justify-between items-start mb-3">
+<span class="font-code-id text-code-id text-text-secondary">#INT-2850</span>
+<span class="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> ACTIF
+                                </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm mb-2 text-on-surface">Réparation chaussée - Rue Sidi Dhrif</h4>
+<div class="flex items-center gap-2 text-text-secondary mb-3">
+<span class="material-symbols-outlined text-[16px]">my_location</span>
+<p class="text-label-sm font-label-sm">GPS: 36.885, 10.334</p>
+</div>
+<div class="flex items-center justify-between pt-3 border-t border-border">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="Portrait of a municipal agent in a blue work uniform, with a focused and professional expression. The photo is well-lit with natural light, against a clean, out-of-focus urban background. Style is documentary and corporate." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQdHvYW4_PNuF7sD5VU9mnYkq1z6JWFSGujL4E7iDTu64wkKY3mHoL1OlgNgwwL5392HtYzOIFxcrDI_OfkWu_CoEr79lzddOqvy7vpwSgH8nDZfm2CTRb5Zj1AlqSDmenXrhPx2diRrteL-Sfid9VNEMHEfUZh_nUtdxx1PZh37lff3PrV_0Cxt8Exsp9KljCzXYqg83AmymClz-SoDsE4xbv_QzSCvf63vN45Qe_9cPSJEF6Q3IcuNeLRQJEofzsmn3budHM1Rw"/>
+<span class="text-label-sm font-label-sm">K. Mahmoud &amp; Équipe</span>
+</div>
+<span class="text-[10px] font-bold text-primary">DEPUIS 1H 20M</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: TERMINÉS -->
+<div class="flex-shrink-0 w-80">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-label-md text-label-md text-secondary tracking-wider">TERMINÉS <span class="ml-2 text-outline bg-surface-container px-2 py-0.5 rounded-full text-[10px]">12</span></h3>
+<button class="text-outline hover:text-primary"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="kanban-column space-y-4 opacity-75 grayscale-[0.5]">
+<div class="bg-surface p-4 rounded-xl custom-shadow border border-border">
+<div class="flex justify-between items-start mb-3">
+<span class="font-code-id text-code-id text-text-secondary">#INT-2812</span>
+<span class="bg-status-resolved/10 text-status-resolved px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-status-resolved"></span> RÉUSSI
+                                </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm mb-2 text-on-surface">Nettoyage Plage - Secteur A</h4>
+<div class="flex items-center justify-between pt-3 border-t border-border">
+<span class="text-label-sm font-label-sm text-outline">Terminé hier à 17:45</span>
+<span class="material-symbols-outlined text-status-resolved text-[18px]">check_circle</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: REJETÉS -->
+<div class="flex-shrink-0 w-80">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-label-md text-label-md text-secondary tracking-wider">REJETÉS <span class="ml-2 text-outline bg-surface-container px-2 py-0.5 rounded-full text-[10px]">1</span></h3>
+<button class="text-outline hover:text-primary"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="kanban-column space-y-4">
+<div class="bg-surface p-4 rounded-xl custom-shadow border border-border bg-error-container/10">
+<div class="flex justify-between items-start mb-3">
+<span class="font-code-id text-code-id text-text-secondary">#INT-2805</span>
+<span class="bg-status-rejected/10 text-status-rejected px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-status-rejected"></span> ANNULÉ
+                                </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm mb-2 text-on-surface">Curage canalisation - Privé</h4>
+<p class="text-label-sm font-label-sm text-error mb-3 italic">"Propriété privée - Hors juridiction municipale"</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Calendar View (Hidden by default) -->
+<div class="hidden" id="view-calendar">
+<div class="bg-surface rounded-2xl custom-shadow border border-border p-6 overflow-hidden">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-4">
+<h3 class="font-headline-md text-headline-md">Novembre 2023</h3>
+<div class="flex border border-border rounded-lg overflow-hidden">
+<button class="p-2 hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="p-2 hover:bg-surface-container transition-colors border-l border-border"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 border border-border rounded-lg text-label-sm font-label-sm hover:bg-surface-container transition-colors">Aujourd'hui</button>
+<div class="bg-surface-container rounded-lg p-1 flex">
+<button class="px-3 py-1.5 rounded-md bg-white shadow-sm text-primary text-label-sm font-label-sm">Mois</button>
+<button class="px-3 py-1.5 text-secondary text-label-sm font-label-sm">Semaine</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-7 border-t border-l border-border">
+<!-- Header -->
+<div class="p-3 border-r border-b border-border bg-surface-container-low font-label-md text-label-md text-center">Lun</div>
+<div class="p-3 border-r border-b border-border bg-surface-container-low font-label-md text-label-md text-center">Mar</div>
+<div class="p-3 border-r border-b border-border bg-surface-container-low font-label-md text-label-md text-center">Mer</div>
+<div class="p-3 border-r border-b border-border bg-surface-container-low font-label-md text-label-md text-center">Jeu</div>
+<div class="p-3 border-r border-b border-border bg-surface-container-low font-label-md text-label-md text-center">Ven</div>
+<div class="p-3 border-r border-b border-border bg-surface-container-low font-label-md text-label-md text-center">Sam</div>
+<div class="p-3 border-r border-b border-border bg-surface-container-low font-label-md text-label-md text-center">Dim</div>
+<!-- Row 1 -->
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm text-outline">30</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm text-outline">31</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm">1</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm">
+                            2
+                            <div class="mt-1 bg-status-progress/10 border-l-4 border-status-progress p-1.5 rounded-r text-[10px] leading-tight text-status-progress font-bold">
+                                FUITE EAU - CENTRE
+                            </div>
+</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm">3</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm">4</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm">5</div>
+<!-- Row 2 -->
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm">6</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm bg-primary/5 ring-1 ring-inset ring-primary/20">
+                            7 <span class="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded ml-1">AUJOURD'HUI</span>
+<div class="mt-1 bg-primary/10 border-l-4 border-primary p-1.5 rounded-r text-[10px] leading-tight text-primary font-bold">
+                                EN COURS: RUE SIDI DHRIF
+                            </div>
+</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm">
+                            8
+                            <div class="mt-1 bg-status-scheduled/10 border-l-4 border-status-scheduled p-1.5 rounded-r text-[10px] leading-tight text-status-scheduled font-bold">
+                                ÉLAGAGE PARC SAADA
+                            </div>
+</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm">9</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm">10</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm">11</div>
+<div class="h-32 p-2 border-r border-b border-border text-label-sm font-label-sm">12</div>
+</div>
+</div>
+</div>
+<!-- List View (Hidden by default) -->
+<div class="hidden" id="view-list">
+<div class="bg-surface rounded-2xl custom-shadow border border-border overflow-hidden">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low border-b border-border">
+<th class="px-6 py-4 font-label-md text-label-md text-secondary uppercase tracking-wider">ID</th>
+<th class="px-6 py-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Intervention</th>
+<th class="px-6 py-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Statut</th>
+<th class="px-6 py-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Priorité</th>
+<th class="px-6 py-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Équipe</th>
+<th class="px-6 py-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Date</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border">
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4 font-code-id text-code-id">#INT-2850</td>
+<td class="px-6 py-4">
+<p class="font-headline-sm text-headline-sm">Réparation chaussée</p>
+<p class="text-label-sm font-label-sm text-outline">Rue Sidi Dhrif</p>
+</td>
+<td class="px-6 py-4">
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-[11px] font-bold">EN COURS</span>
+</td>
+<td class="px-6 py-4">
+<span class="bg-status-progress/10 text-status-progress px-3 py-1 rounded-full text-[11px] font-bold">HAUTE</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container"></div>
+<span class="text-label-sm font-label-sm">K. Mahmoud</span>
+</div>
+</td>
+<td class="px-6 py-4 text-label-sm font-label-sm">Aujourd'hui, 09:00</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+</td>
+</tr>
+<!-- More rows as needed -->
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</main>
+<script>
+        function switchView(view) {
+            // Hide all views
+            document.getElementById('view-kanban').classList.add('hidden');
+            document.getElementById('view-calendar').classList.add('hidden');
+            document.getElementById('view-list').classList.add('hidden');
+            
+            // Show selected view
+            document.getElementById('view-' + view).classList.remove('hidden');
+            if (view === 'kanban') document.getElementById('view-kanban').classList.add('flex');
+            
+            // Reset button styles
+            const buttons = ['kanban', 'calendar', 'list'];
+            buttons.forEach(b => {
+                const btn = document.getElementById('btn-' + b);
+                btn.classList.remove('bg-white', 'shadow-sm', 'text-primary');
+                btn.classList.add('text-secondary');
+            });
+            
+            // Set active button style
+            const activeBtn = document.getElementById('btn-' + view);
+            activeBtn.classList.remove('text-secondary');
+            activeBtn.classList.add('bg-white', 'shadow-sm', 'text-primary');
+        }
+
+        // Add a simple drag-over effect visualization
+        const columns = document.querySelectorAll('.kanban-column');
+        columns.forEach(column => {
+            column.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                column.classList.add('bg-primary/5');
+            });
+            column.addEventListener('dragleave', () => {
+                column.classList.remove('bg-primary/5');
+            });
+        });
+    </script>
+</body></html>

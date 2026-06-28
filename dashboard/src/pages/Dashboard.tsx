@@ -8,11 +8,11 @@ const RANGE_TABS = ['7j', '30j', '3m', '1an']
 
 function pending(stats: AdminStats): number {
   const s = stats.by_status
-  return (s.submitted ?? 0) + (s.received ?? 0) + (s.under_review ?? 0) + (s.scheduled ?? 0) + (s.in_progress ?? 0)
+  return (s.submitted ?? 0) + (s.received ?? 0) + (s.under_review ?? 0) + (s.in_progress ?? 0)
 }
 
 function resolved(stats: AdminStats): number {
-  return (stats.by_status.resolved ?? 0) + (stats.by_status.closed ?? 0)
+  return stats.by_status.resolved ?? 0
 }
 
 function KpiSkeleton() {
@@ -92,7 +92,7 @@ export default function Dashboard() {
   const statusDistribution = stats
     ? [
         { label: 'Soumis', count: stats.by_status.submitted ?? 0, color: '#0038AF' },
-        { label: 'En cours', count: (stats.by_status.in_progress ?? 0) + (stats.by_status.scheduled ?? 0), color: '#F59E0B' },
+        { label: 'En cours', count: stats.by_status.in_progress ?? 0, color: '#F59E0B' },
         { label: 'Résolus', count: resolved(stats), color: '#22C55E' },
         { label: 'Rejetés', count: stats.by_status.rejected ?? 0, color: '#EF4444' },
       ]

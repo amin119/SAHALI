@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Nunito+Sans:wght@700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@100..900&family=Inter:wght@100..900&family=Nunito+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        
+        .map-container {
+            height: 50vh;
+            min-height: 350px;
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pin-drop {
+            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounceIn {
+            from { transform: translateY(-50px) scale(0.5); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        /* Logical properties for RTL support */
+        .ms-auto { margin-inline-start: auto; }
+        .me-md { margin-inline-end: 16px; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e8e7f3",
+                        "inverse-primary": "#b6c4ff",
+                        "secondary-fixed": "#d3e4fe",
+                        "surface-container-highest": "#e2e1ed",
+                        "tertiary-fixed": "#ffdbcf",
+                        "on-tertiary-container": "#ffc9b7",
+                        "primary-container": "#1b4fd8",
+                        "outline": "#747686",
+                        "surface": "#faf8ff",
+                        "outline-variant": "#c4c5d7",
+                        "surface-variant": "#e2e1ed",
+                        "error-container": "#ffdad6",
+                        "primary": "#0038af",
+                        "on-background": "#191b23",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "surface-container": "#ededf8",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb59b",
+                        "on-secondary-container": "#54647a",
+                        "inverse-on-surface": "#f0f0fb",
+                        "surface-dim": "#d9d9e4",
+                        "surface-tint": "#1f51da",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "surface-bright": "#faf8ff",
+                        "primary-fixed": "#dce1ff",
+                        "error": "#ba1a1a",
+                        "tertiary": "#7e2700",
+                        "on-secondary-fixed": "#0b1c30",
+                        "secondary-container": "#d0e1fb",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#434655",
+                        "background": "#faf8ff",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#191b23",
+                        "on-primary-fixed": "#001550",
+                        "on-primary-container": "#cbd4ff",
+                        "tertiary-container": "#a63600",
+                        "on-primary-fixed-variant": "#003ab3",
+                        "surface-container-low": "#f3f2fe",
+                        "on-tertiary-fixed": "#380d00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "secondary": "#505f76",
+                        "on-tertiary-fixed-variant": "#812800",
+                        "inverse-surface": "#2e3039"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "12px",
+                        "2xl": "16px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "screen-edge": "20px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "sm": "12px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md-arabic": ["Cairo"],
+                        "display-hero": ["Nunito Sans"],
+                        "caption": ["Inter"],
+                        "body-md": ["Inter"],
+                        "section-title": ["Nunito Sans"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-hero-arabic": ["Cairo"],
+                        "section-title-arabic": ["Cairo"]
+                    },
+                    "fontSize": {
+                        "body-md-arabic": ["16px", {"lineHeight": "28.8px", "fontWeight": "400"}],
+                        "display-hero": ["34px", {"lineHeight": "42px", "fontWeight": "800"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "section-title": ["22px", {"lineHeight": "28px", "fontWeight": "700"}],
+                        "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "500"}],
+                        "display-hero-arabic": ["32px", {"lineHeight": "58px", "fontWeight": "800"}],
+                        "section-title-arabic": ["20px", {"lineHeight": "36px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md-arabic antialiased min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 bg-surface border-b border-outline-variant shadow-sm w-full h-[64px] flex items-center px-screen-edge justify-between">
+<div class="flex items-center gap-md">
+<button aria-label="Back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors active:scale-95">
+<span class="material-symbols-outlined text-on-surface-variant">arrow_forward</span>
+</button>
+<h1 class="font-section-title-arabic text-section-title-arabic text-primary">بلاغ جديد</h1>
+</div>
+<div class="flex items-center gap-xs">
+<span class="text-label-sm font-label-sm text-on-surface-variant px-md py-xs bg-surface-container rounded-full">الخطوة 3/6</span>
+</div>
+</header>
+<main class="flex-grow flex flex-col">
+<!-- Content Instructions -->
+<div class="px-screen-edge py-lg">
+<h2 class="font-section-title-arabic text-section-title-arabic mb-base">تحديد الموقع</h2>
+<p class="text-on-surface-variant font-body-md-arabic">قم بسحب العلامة الحمراء لتحديد مكان المشكلة بدقة على الخريطة.</p>
+</div>
+<!-- Interactive Map Section -->
+<div class="relative w-full map-container overflow-hidden group">
+<!-- Map Placeholder with Location context -->
+<div class="absolute inset-0 bg-surface-container-highest" data-location="Tunis, Tunisia" style="">
+<div class="w-full h-full opacity-60 bg-cover bg-center" data-alt="A detailed, high-resolution satellite and road map of a Mediterranean urban area like Tunis. The map shows organized city blocks, streets, and green spaces in a clean, professional cartographic style. The lighting is bright and clear, reflecting a daytime setting. The color palette is composed of soft greys, muted greens, and clean whites, aligning with a corporate civic authority aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB2KW3-kb77z0bmIr45kpr-erh_rBxRXDczXQPLlcM2OWhe2tgDwxzz2_G4mXbFNgo7tdwtuFodVgSzwRBiQcRAgj_l1V8Pv2sjku1OVfOeb9rG9PZlFDkxBVNjw6Lt3i0kg4pqUea1irRXvrcMCk3ExI5ckj4Lgd8mwmgqX0tiPFNtCRYKvLb_hqiDMoXEu7kb82CypGBLoNvNCegBmb_fsQbhYHEvCOJsYoCCAnuCEXp-CyjU5dl6mkgF6GK0EgFBqsknKv61Kg')"></div>
+</div>
+<!-- Draggable Pin Interaction (Simulated) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-20 cursor-grab active:cursor-grabbing pin-drop" id="draggable-pin">
+<div class="relative flex flex-col items-center">
+<span class="material-symbols-outlined text-[48px] text-error drop-shadow-lg" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<div class="w-2 h-2 bg-black/20 rounded-full blur-[2px] mt-[-4px]"></div>
+</div>
+</div>
+<!-- Map Controls -->
+<div class="absolute bottom-md right-md flex flex-col gap-sm z-30">
+<button class="flex items-center gap-sm bg-surface text-primary font-label-sm text-label-sm px-md h-[52px] rounded-xl shadow-lg border border-outline-variant hover:bg-surface-container-high transition-all active:scale-95 group" id="recenter-btn">
+<span class="material-symbols-outlined text-[20px]">my_location</span>
+<span>توسيط على موقعي</span>
+</button>
+</div>
+<!-- Compass / Orientation -->
+<div class="absolute top-md right-md z-30">
+<div class="w-10 h-10 bg-surface/90 backdrop-blur-md rounded-lg flex items-center justify-center border border-outline-variant shadow-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">explore</span>
+</div>
+</div>
+</div>
+<!-- Address Result Section -->
+<div class="px-screen-edge py-lg space-y-lg flex-grow">
+<div class="space-y-base">
+<label class="block font-label-sm text-label-sm text-on-surface-variant ms-xs" for="detected-address">العنوان المكتشف</label>
+<div class="relative">
+<div class="absolute inset-y-0 right-0 pr-md flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-primary">location_on</span>
+</div>
+<input class="w-full h-[56px] pr-[48px] pl-md bg-surface border border-outline-variant rounded-xl font-body-md-arabic text-on-surface focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none" id="detected-address" readonly="" type="text" value="شارع الحبيب بورقيبة، تونس العاصمة"/>
+<div class="absolute inset-y-0 left-0 pl-sm flex items-center">
+<span class="material-symbols-outlined text-outline-variant text-[18px] pulse-animation">sync</span>
+</div>
+</div>
+<p class="text-[12px] text-on-surface-variant flex items-center gap-xs mt-xs">
+<span class="material-symbols-outlined text-[14px]">info</span>
+<span>يمكنك تعديل الموقع يدوياً بسحب العلامة.</span>
+</p>
+</div>
+<!-- Bento Card for Context -->
+<div class="grid grid-cols-1 gap-md">
+<div class="bg-primary-fixed/30 p-md rounded-2xl flex items-start gap-md border border-primary-fixed">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary">verified_user</span>
+</div>
+<div>
+<h4 class="font-label-sm text-label-sm text-on-primary-fixed">دقة الموقع</h4>
+<p class="text-caption text-on-primary-fixed-variant leading-relaxed">تساعدنا إحداثيات GPS الدقيقة في توجيه الفرق الميدانية التابعة للبلدية بشكل أسرع.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Action Bar (Contextual/Transactional - No BottomNavBar per filter rules) -->
+<footer class="p-screen-edge bg-surface border-t border-outline-variant flex gap-md">
+<button class="flex-1 h-[52px] bg-primary text-on-primary rounded-xl font-label-sm text-label-sm shadow-md hover:bg-primary-container transition-all active:scale-[0.98]">
+            استمرار
+        </button>
+<button class="w-[52px] h-[52px] border border-outline-variant flex items-center justify-center rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95">
+<span class="material-symbols-outlined">close</span>
+</button>
+</footer>
+<script>
+        // Simple Interaction: Draggable Pin Visual Logic
+        const pin = document.getElementById('draggable-pin');
+        const addressInput = document.getElementById('detected-address');
+        const recenterBtn = document.getElementById('recenter-btn');
+
+        let isDragging = false;
+
+        pin.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            pin.style.transition = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const mapRect = pin.parentElement.getBoundingClientRect();
+            let x = e.clientX - mapRect.left;
+            let y = e.clientY - mapRect.top;
+
+            // Constrain within map bounds
+            x = Math.max(0, Math.min(x, mapRect.width));
+            y = Math.max(0, Math.min(y, mapRect.height));
+
+            pin.style.left = `${x}px`;
+            pin.style.top = `${y}px`;
+            
+            // Randomize address for simulation effect
+            const addresses = [
+                "نهج لندرة، تونس 1000",
+                "شارع باريس، تونس العاصمة",
+                "نهج مختار عطية، تونس",
+                "ساحة النصر، تونس 1001"
+            ];
+            addressInput.value = addresses[Math.floor(Math.random() * addresses.length)];
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                pin.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            }
+        });
+
+        // Recenter Logic Simulation
+        recenterBtn.addEventListener('click', () => {
+            pin.style.left = '50%';
+            pin.style.top = '50%';
+            addressInput.value = "موقعي الحالي (نهج الحبيب ثامر)";
+            
+            // Add a temporary animation
+            pin.classList.remove('pin-drop');
+            void pin.offsetWidth; // trigger reflow
+            pin.classList.add('pin-drop');
+        });
+    </script>
+</body></html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sahali - تأكيد الإرسال</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Nunito+Sans:wght@700;800&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#0b1c30",
+                    "tertiary-container": "#a63600",
+                    "surface-container-high": "#e8e7f3",
+                    "on-tertiary-fixed": "#380d00",
+                    "inverse-primary": "#b6c4ff",
+                    "surface-container": "#ededf8",
+                    "surface-container-highest": "#e2e1ed",
+                    "surface-bright": "#faf8ff",
+                    "on-surface-variant": "#434655",
+                    "on-surface": "#191b23",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "outline-variant": "#c4c5d7",
+                    "on-primary": "#ffffff",
+                    "background": "#faf8ff",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "surface-variant": "#e2e1ed",
+                    "primary-container": "#1b4fd8",
+                    "primary": "#0038af",
+                    "primary-fixed": "#dce1ff",
+                    "surface-tint": "#1f51da",
+                    "secondary-fixed": "#d3e4fe",
+                    "secondary": "#505f76",
+                    "tertiary-fixed": "#ffdbcf",
+                    "on-secondary-container": "#54647a",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#d0e1fb",
+                    "on-tertiary-fixed-variant": "#812800",
+                    "on-primary-fixed": "#001550",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#2e3039",
+                    "on-primary-container": "#cbd4ff",
+                    "surface-container-low": "#f3f2fe",
+                    "on-tertiary-container": "#ffc9b7",
+                    "on-primary-fixed-variant": "#003ab3",
+                    "on-background": "#191b23",
+                    "surface-dim": "#d9d9e4",
+                    "surface": "#faf8ff",
+                    "error": "#ba1a1a",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#ffb59b",
+                    "outline": "#747686",
+                    "tertiary": "#7e2700",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f0f0fb"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "screen-edge": "20px",
+                    "sm": "12px",
+                    "base": "8px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "gutter": "16px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "caption": ["Inter"],
+                    "section-title": ["Nunito Sans"],
+                    "body-md": ["Inter"],
+                    "section-title-arabic": ["Cairo"],
+                    "display-hero": ["Nunito Sans"],
+                    "body-md-arabic": ["Cairo"],
+                    "display-hero-arabic": ["Cairo"],
+                    "label-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "mono": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "section-title": ["22px", {"lineHeight": "28px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "section-title-arabic": ["20px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "display-hero": ["34px", {"lineHeight": "42px", "fontWeight": "800"}],
+                    "body-md-arabic": ["16px", {"lineHeight": "28.8px", "fontWeight": "400"}],
+                    "display-hero-arabic": ["32px", {"lineHeight": "58px", "fontWeight": "800"}],
+                    "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .success-checkmark {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: #10b981;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px #10b981;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: #10b981;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+        @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
+        @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 60px #10b98115; } }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md-arabic min-h-screen flex flex-col">
+<!-- Transactional Success Content (No Shell per UX Goal) -->
+<main class="flex-grow flex flex-col items-center justify-center px-screen-edge py-xl">
+<!-- Success Animation -->
+<div class="mb-lg">
+<svg class="success-checkmark" viewbox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+<circle class="checkmark__circle" cx="26" cy="26" fill="none" r="25"></circle>
+<path class="checkmark__check" d="M14.1 27.2l7.1 7.2 16.7-16.8" fill="none"></path>
+</svg>
+</div>
+<!-- Success Message -->
+<div class="text-center mb-xl space-y-sm">
+<h1 class="font-display-hero-arabic text-display-hero-arabic text-primary">تم إرسال البلاغ بنجاح!</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-sm mx-auto">
+                شكراً لمساهمتكم في تحسين مدينتنا. سيقوم فريقنا بمراجعة البلاغ في أقرب وقت.
+            </p>
+</div>
+<!-- Tracking ID Section (Bento Style) -->
+<div class="w-full max-w-md space-y-md">
+<div class="glass-card rounded-xl p-lg shadow-sm">
+<div class="flex flex-col items-center gap-md">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">رقم التتبع</span>
+<div class="bg-surface-container-low px-lg py-md rounded-lg w-full flex items-center justify-between border border-outline-variant">
+<code class="font-mono text-body-lg font-bold text-primary">CA-2024-00892</code>
+<div class="flex gap-sm">
+<button class="p-xs hover:bg-surface-container-high rounded-md transition-colors active:scale-95" onclick="copyToClipboard('CA-2024-00892')">
+<span class="material-symbols-outlined text-primary" data-icon="content_copy">content_copy</span>
+</button>
+<button class="p-xs hover:bg-surface-container-high rounded-md transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary" data-icon="share">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Next Steps Timeline -->
+<div class="glass-card rounded-xl p-lg shadow-sm">
+<h3 class="font-section-title-arabic text-section-title-arabic mb-lg">الخطوات القادمة</h3>
+<div class="relative space-y-lg">
+<!-- Vertical Line -->
+<div class="absolute right-4 top-2 bottom-2 w-0.5 bg-outline-variant"></div>
+<!-- Step 1 -->
+<div class="relative flex items-start gap-md pr-10">
+<div class="absolute right-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center z-10 border-4 border-background">
+<span class="material-symbols-outlined text-on-primary text-[16px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary">تم الاستلام من قبل البلدية</span>
+<span class="font-caption text-caption text-outline">منذ لحظات</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative flex items-start gap-md pr-10">
+<div class="absolute right-0 w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center z-10 border-4 border-background">
+<span class="material-symbols-outlined text-outline text-[16px]" data-icon="engineering">engineering</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md-arabic text-body-md-arabic font-semibold text-on-surface">مراجعة تقنية</span>
+<span class="font-caption text-caption text-outline">عادة ما يتم في ظرف 24 ساعة</span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="relative flex items-start gap-md pr-10">
+<div class="absolute right-0 w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center z-10 border-4 border-background">
+<span class="material-symbols-outlined text-outline text-[16px]" data-icon="event_available">event_available</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md-arabic text-body-md-arabic font-semibold text-on-surface">جدولة التدخل</span>
+<span class="font-caption text-caption text-outline">سيتم إعلامكم بالموعد</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Actions Container -->
+<footer class="p-screen-edge space-y-md bg-surface-container-lowest border-t border-outline-variant shadow-[0_-4px_12px_rgba(15,23,42,0.04)]">
+<button class="w-full h-[52px] bg-primary text-on-primary rounded-xl font-body-lg flex items-center justify-center gap-sm active:scale-95 transition-transform">
+<span>Suivre mon بلاغ</span>
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<a class="w-full flex items-center justify-center text-primary font-body-md-arabic font-semibold py-sm active:opacity-70 transition-opacity" href="#">
+            العودة للرئيسية
+        </a>
+</footer>
+<script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Subtle feedback interaction
+                const btn = event.currentTarget;
+                const icon = btn.querySelector('.material-symbols-outlined');
+                const originalIcon = icon.innerText;
+                icon.innerText = 'done';
+                icon.classList.add('text-green-500');
+                
+                setTimeout(() => {
+                    icon.innerText = originalIcon;
+                    icon.classList.remove('text-green-500');
+                }, 2000);
+            });
+        }
+    </script>
+</body></html>

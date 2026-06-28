@@ -1,10 +1,58 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Android emulator → host 10.0.2.2 | iOS sim / physical on same LAN → change to your IP
-String get _baseUrl =>
-    Platform.isAndroid ? 'http://10.0.2.2:8000/v1' : 'http://localhost:8000/v1';
+// ─── BACKEND URL ──────────────────────────────────────────────────────────────
+// • Android emulator  → http://10.0.2.2:8000/v1   (default, maps to host)
+// • Physical device   → set URL at runtime via Profile → Server URL
+//   e.g. https://abc123.ngrok-free.app/v1  (ngrok)
+//        http://192.168.X.X:8000/v1        (same-WiFi)
+// ─────────────────────────────────────────────────────────────────────────────
+const String _kDefaultBackendUrl = String.fromEnvironment(
+  'BACKEND_URL',
+  defaultValue: 'http://10.0.2.2:8000/v1',
+);
+
+// Mutable at runtime — updated by BackendConfig.setUrl()
+String _runtimeBackendUrl = _kDefaultBackendUrl;
+
+String get _baseUrl => _runtimeBackendUrl;
+
+/// Manages the backend URL at runtime (stored in SharedPreferences).
+class BackendConfig {
+  static const String _key = 'sahali_backend_url';
+
+  /// Load stored URL before runApp(). No-op if nothing stored.
+  static Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(_key);
+    if (stored != null && stored.isNotEmpty) {
+      _runtimeBackendUrl = stored;
+    }
+  }
+
+  /// Persist a new URL and immediately update the live Dio instance.
+  static Future<void> setUrl(String url) async {
+    final trimmed = url.trim().replaceAll(RegExp(r'/$'), '');
+    if (trimmed.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, trimmed);
+    _runtimeBackendUrl = trimmed;
+    ApiClient.instance.dio.options.baseUrl = trimmed;
+  }
+
+  /// Reset to the compile-time default.
+  static Future<void> reset() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_key);
+    _runtimeBackendUrl = _kDefaultBackendUrl;
+    ApiClient.instance.dio.options.baseUrl = _kDefaultBackendUrl;
+  }
+
+  static String get current => _runtimeBackendUrl;
+  static String get defaultUrl => _kDefaultBackendUrl;
+}
 
 const _storage = FlutterSecureStorage();
 
@@ -19,7 +67,10 @@ class ApiClient {
       baseUrl: _baseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': '1', // skip ngrok interstitial page
+      },
     ));
     d.interceptors.add(_AuthInterceptor(d));
     return d;

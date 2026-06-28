@@ -50,6 +50,47 @@ class StatusHistoryOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class UserBrief(BaseModel):
+    id: UUID
+    full_name: str
+    role: str
+
+    model_config = {"from_attributes": True}
+
+
+class AssignCreate(BaseModel):
+    agent_ids: list[str]
+    note: str | None = None
+
+
+class AssignmentOut(BaseModel):
+    id: UUID
+    agent: UserBrief
+    assigned_by_user: UserBrief
+    note: str | None
+    is_active: bool
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ResolutionReportCreate(BaseModel):
+    comment: str
+    materials: str | None = None
+    photo_url: str | None = None
+
+
+class ResolutionReportOut(BaseModel):
+    id: UUID
+    comment: str
+    materials: str | None
+    photo_url: str | None
+    resolved_by_user: UserBrief
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class ReportOut(BaseModel):
     id: UUID
     tracking_code: str
@@ -67,6 +108,7 @@ class ReportOut(BaseModel):
     lat: float | None = None
     lng: float | None = None
     assigned_to: UUID | None
+    analyzed_by: UUID | None = None
     department_id: int | None
     ai_category_id: int | None
     ai_confidence: float | None

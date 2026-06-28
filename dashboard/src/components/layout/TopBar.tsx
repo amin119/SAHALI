@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { api } from '../../lib/api'
 import type { Notification } from '../../types/api'
@@ -19,6 +20,7 @@ interface TopBarProps {
 
 export default function TopBar({ title, subtitle }: TopBarProps) {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [showNotifs, setShowNotifs] = useState(false)
@@ -42,9 +44,13 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
     .join('')
     .toUpperCase() ?? '??'
 
-  async function markRead(id: string) {
-    await api.patch(`/notifications/${id}/read`).catch(() => {})
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
+  async function handleNotifClick(n: Notification) {
+    await api.patch(`/notifications/${n.id}/read`).catch(() => {})
+    setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x))
+    setShowNotifs(false)
+    if (n.report_id) {
+      navigate(`/reports?report=${n.report_id}`)
+    }
   }
 
   return (
@@ -107,11 +113,21 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
                     notifications.slice(0, 10).map(n => (
                       <button
                         key={n.id}
-                        onClick={() => markRead(n.id)}
+                        onClick={() => handleNotifClick(n)}
                         className={`w-full text-left px-4 py-3 hover:bg-[#f7f9fe] transition-colors ${!n.is_read ? 'bg-[#f0f4ff]' : ''}`}
                       >
-                        <p className="text-sm font-medium text-[#0F172A] truncate">{n.title}</p>
-                        <p className="text-xs text-[#64748B] mt-0.5 line-clamp-2">{n.body}</p>
+                        <div className="flex items-start gap-2">
+                          <span className="material-symbols-outlined text-[#0038AF] flex-shrink-0 mt-0.5" style={{ fontSize: 14 }}>
+                            {n.report_id ? 'flag' : 'notifications'}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-[#0F172A] truncate">{n.title}</p>
+                            <p className="text-xs text-[#64748B] mt-0.5 line-clamp-2">{n.body}</p>
+                            {n.report_id && (
+                              <p className="text-[10px] text-[#0038AF] mt-1 font-medium">Voir le signalement →</p>
+                            )}
+                          </div>
+                        </div>
                       </button>
                     ))
                   )}

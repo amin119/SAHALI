@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { categoryIcon } from '../lib/categoryIcon'
+import { useLang } from '../context/LangContext'
 
 interface Category {
   id: number
@@ -41,6 +43,7 @@ function Skeleton() {
 }
 
 export default function Categories() {
+  const { t, lang } = useLang()
   const [categories, setCategories] = useState<Category[]>([])
   const [enabled, setEnabled] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
@@ -91,9 +94,9 @@ export default function Categories() {
     <div>
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
         <div>
-          <h2 className="text-[#0F172A] text-2xl font-bold">Catégories</h2>
+          <h2 className="text-[#0F172A] text-2xl font-bold">{t('categories_title')}</h2>
           <p className="text-[#64748B] text-sm mt-1">
-            {loading ? 'Chargement...' : `${displayCats.length} catégories configurées`}
+            {loading ? t('loading') : `${displayCats.length} ${t('categories_configured')}`}
           </p>
         </div>
       </div>
@@ -109,7 +112,7 @@ export default function Categories() {
       {!loading && categories.length > 0 && (
         <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4 mb-6 flex items-center gap-6 overflow-x-auto">
           <div className="flex-shrink-0">
-            <p className="text-xs text-[#64748B] uppercase tracking-wider font-semibold">Catégories racines</p>
+            <p className="text-xs text-[#64748B] uppercase tracking-wider font-semibold">{t('root_categories')}</p>
             <p className="text-3xl font-bold text-[#181c20]">{categories.length}</p>
           </div>
           <div className="h-12 w-px bg-[#E2E8F0] flex-shrink-0" />
@@ -150,11 +153,13 @@ export default function Categories() {
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                         style={{ backgroundColor: `${color}18` }}>
                         <span className="material-symbols-outlined" style={{ fontSize: 20, color }}>
-                          {cat.icon ?? 'category'}
+                          {categoryIcon(cat.icon)}
                         </span>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-[#181c20]">{cat.label_fr}</p>
+                        <p className="text-sm font-bold text-[#181c20]">
+                          {lang === 'ar' ? (cat as Category & { label_ar?: string }).label_ar ?? cat.label_fr : cat.label_fr}
+                        </p>
                         <p className="text-xs text-[#94A3B8] font-mono">{cat.slug}</p>
                       </div>
                     </div>
@@ -185,10 +190,10 @@ export default function Categories() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                       style={{ backgroundColor: slaMeta.bg, color: slaMeta.text }}>
-                      Priorité {slaLabel(cat.sla_hours)}
+                      {t('priority_label')} {slaLabel(cat.sla_hours)}
                     </span>
                     <span className="text-xs text-[#94A3B8]">
-                      {cat.parent_id ? 'Sous-catégorie' : 'Catégorie racine'}
+                      {cat.parent_id ? t('sub_categories') : t('root_category')}
                     </span>
                   </div>
                 </div>

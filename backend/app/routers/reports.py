@@ -6,11 +6,13 @@ from typing import Annotated
 import asyncio
 
 from app.database import get_db
-from app.models.report import Report, ReportStatus, ReportStatusHistory
+from app.models.report import Report, ReportStatus, ReportStatusHistory, Assignment, ResolutionReport
 from app.models.user import User, UserRole
 from app.schemas.report import (
     ReportCreate, ReportOut, ReportListOut, StatusUpdate,
-    CommentCreate, PresignedUrlRequest, PresignedUrlResponse
+    CommentCreate, PresignedUrlRequest, PresignedUrlResponse,
+    AssignCreate, AssignmentOut, ResolutionReportCreate, ResolutionReportOut,
+    UserBrief,
 )
 from app.utils.deps import get_current_user, require_staff, require_supervisor
 from app.utils.pagination import PaginationParams
@@ -24,14 +26,12 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 # Allowed forward status transitions
 _TRANSITIONS: dict[ReportStatus, list[ReportStatus]] = {
-    ReportStatus.SUBMITTED: [ReportStatus.RECEIVED, ReportStatus.REJECTED],
-    ReportStatus.RECEIVED: [ReportStatus.UNDER_REVIEW],
-    ReportStatus.UNDER_REVIEW: [ReportStatus.SCHEDULED, ReportStatus.REJECTED],
-    ReportStatus.SCHEDULED: [ReportStatus.IN_PROGRESS],
-    ReportStatus.IN_PROGRESS: [ReportStatus.RESOLVED, ReportStatus.UNDER_REVIEW],
-    ReportStatus.RESOLVED: [ReportStatus.CLOSED],
-    ReportStatus.CLOSED: [],
-    ReportStatus.REJECTED: [],
+    ReportStatus.SUBMITTED:    [ReportStatus.RECEIVED, ReportStatus.REJECTED],
+    ReportStatus.RECEIVED:     [ReportStatus.UNDER_REVIEW, ReportStatus.REJECTED],
+    ReportStatus.UNDER_REVIEW: [ReportStatus.IN_PROGRESS, ReportStatus.REJECTED],
+    ReportStatus.IN_PROGRESS:  [ReportStatus.RESOLVED, ReportStatus.REJECTED],
+    ReportStatus.RESOLVED:     [],
+    ReportStatus.REJECTED:     [],
 }
 
 
@@ -45,6 +45,28 @@ def _report_to_out(r: Report) -> ReportOut:
     data.lat = lat
     data.lng = lng
     return data
+
+
+def _assignment_to_out(a: Assignment) -> AssignmentOut:
+    return AssignmentOut(
+        id=a.id,
+        agent=UserBrief(id=a.agent.id, full_name=a.agent.full_name, role=a.agent.role),
+        assigned_by_user=UserBrief(id=a.assigner.id, full_name=a.assigner.full_name, role=a.assigner.role),
+        note=a.note,
+        is_active=a.is_active,
+        created_at=a.created_at,
+    )
+
+
+def _resolution_to_out(rr: ResolutionReport) -> ResolutionReportOut:
+    return ResolutionReportOut(
+        id=rr.id,
+        comment=rr.comment,
+        materials=rr.materials,
+        photo_url=rr.photo_url,
+        resolved_by_user=UserBrief(id=rr.resolver.id, full_name=rr.resolver.full_name, role=rr.resolver.role),
+        created_at=rr.created_at,
+    )
 
 
 @router.post("/presigned-url", response_model=PresignedUrlResponse)
@@ -159,15 +181,22 @@ def list_reports(
     status: ReportStatus | None = Query(None),
     category_id: int | None = Query(None),
     city: str | None = Query(None),
+    agent_id: str | None = Query(None),
 ):
     query = db.query(Report)
 
-    # Citizens only see their own reports
     if current_user.role == UserRole.citizen:
         query = query.filter(Report.citizen_id == current_user.id)
-    # Field agents only see their assigned reports
     elif current_user.role == UserRole.field_agent:
-        query = query.filter(Report.assigned_to == current_user.id)
+        # Field agents see reports assigned to them
+        query = query.join(Assignment, Assignment.report_id == Report.id)\
+                     .filter(Assignment.agent_id == current_user.id, Assignment.is_active == True)\
+                     .filter(Report.status != ReportStatus.SUBMITTED)
+    else:
+        # Admin / supervisor / analyst see ALL reports including submitted
+        if agent_id:
+            query = query.join(Assignment, Assignment.report_id == Report.id)\
+                         .filter(Assignment.agent_id == agent_id, Assignment.is_active == True)
 
     if status:
         query = query.filter(Report.status == status)
@@ -199,7 +228,7 @@ def reports_nearby(
     reports = (
         db.query(Report)
         .filter(ST_DWithin(Report.location.cast("geography"), point.cast("geography"), radius))
-        .filter(Report.status.notin_([ReportStatus.CLOSED, ReportStatus.REJECTED]))
+        .filter(Report.status.notin_([ReportStatus.REJECTED]))
         .limit(50)
         .all()
     )
@@ -264,6 +293,11 @@ def update_status(
     db.add(history)
 
     report.status = body.status
+
+    # Auto-set analyzed_by when moving to UNDER_REVIEW
+    if body.status == ReportStatus.UNDER_REVIEW and not report.analyzed_by:
+        report.analyzed_by = current_user.id
+
     if body.status == ReportStatus.RESOLVED:
         from datetime import datetime, timezone
         report.resolved_at = datetime.now(timezone.utc)
@@ -283,27 +317,148 @@ def update_status(
     return _report_to_out(report)
 
 
-@router.patch("/{report_id}/assign")
+@router.post("/{report_id}/assign", response_model=list[AssignmentOut])
 def assign_report(
     report_id: str,
-    assignee_id: str,
+    body: AssignCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(require_supervisor),
+    current_user: User = Depends(require_supervisor),
 ):
     report = db.get(Report, report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
-    assignee = db.get(User, assignee_id)
-    if not assignee:
-        raise HTTPException(status_code=404, detail="Assignee not found")
 
-    report.assigned_to = assignee.id
+    if not body.agent_ids:
+        raise HTTPException(status_code=400, detail="At least one agent_id is required")
+
+    # Deactivate all previous assignments for this report
+    db.query(Assignment).filter(
+        Assignment.report_id == report.id,
+        Assignment.is_active == True,
+    ).update({"is_active": False})
+
+    new_assignments: list[Assignment] = []
+    for agent_id in body.agent_ids:
+        agent = db.get(User, agent_id)
+        if not agent:
+            raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
+        a = Assignment(
+            report_id=report.id,
+            agent_id=agent.id,
+            assigned_by=current_user.id,
+            note=body.note,
+            is_active=True,
+        )
+        db.add(a)
+        new_assignments.append(a)
+
+    # Keep assigned_to pointing to the first agent (backward compat / field_agent filter)
+    first_agent = db.get(User, body.agent_ids[0])
+    report.assigned_to = first_agent.id
+
     db.commit()
+    for a in new_assignments:
+        db.refresh(a)
 
     publish_report_event("report_assigned", {
         "id": str(report.id),
         "tracking_code": report.tracking_code,
-        "assigned_to": str(assignee.id),
+        "agent_ids": body.agent_ids,
+        "assigned_by": str(current_user.id),
     })
 
-    return {"message": "Assigned"}
+    return [_assignment_to_out(a) for a in new_assignments]
+
+
+@router.get("/{report_id}/assignments", response_model=list[AssignmentOut])
+def get_assignments(
+    report_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff),
+):
+    report = db.get(Report, report_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    assignments = (
+        db.query(Assignment)
+        .filter(Assignment.report_id == report.id)
+        .order_by(Assignment.created_at.desc())
+        .all()
+    )
+    return [_assignment_to_out(a) for a in assignments]
+
+
+@router.post("/{report_id}/resolution-report", response_model=ResolutionReportOut, status_code=status.HTTP_201_CREATED)
+def create_resolution_report(
+    report_id: str,
+    body: ResolutionReportCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff),
+):
+    report = db.get(Report, report_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    if report.status != ReportStatus.RESOLVED:
+        raise HTTPException(status_code=400, detail="Resolution report requires status RESOLVED")
+    existing = db.query(ResolutionReport).filter(ResolutionReport.report_id == report.id).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="Resolution report already exists for this report")
+
+    rr = ResolutionReport(
+        report_id=report.id,
+        resolved_by=current_user.id,
+        comment=body.comment,
+        materials=body.materials,
+        photo_url=body.photo_url,
+    )
+    db.add(rr)
+    db.commit()
+    db.refresh(rr)
+
+    return _resolution_to_out(rr)
+
+
+@router.get("/{report_id}/resolution-report", response_model=ResolutionReportOut)
+def get_resolution_report(
+    report_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff),
+):
+    report = db.get(Report, report_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    rr = db.query(ResolutionReport).filter(ResolutionReport.report_id == report.id).first()
+    if not rr:
+        raise HTTPException(status_code=404, detail="No resolution report for this report")
+    return _resolution_to_out(rr)
+
+
+@router.get("/{report_id}/history", response_model=list)
+def get_status_history(
+    report_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    report = db.get(Report, report_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    if current_user.role == UserRole.citizen and report.citizen_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    history = (
+        db.query(ReportStatusHistory)
+        .filter(ReportStatusHistory.report_id == report.id)
+        .order_by(ReportStatusHistory.created_at)
+        .all()
+    )
+    return [
+        {
+            "id": str(h.id),
+            "from_status": h.from_status.value if h.from_status else None,
+            "to_status": h.to_status.value,
+            "note": h.note,
+            "changed_by": str(h.changed_by),
+            "changed_by_name": h.changed_by_user.full_name if h.changed_by_user else None,
+            "created_at": h.created_at.isoformat(),
+        }
+        for h in history
+    ]

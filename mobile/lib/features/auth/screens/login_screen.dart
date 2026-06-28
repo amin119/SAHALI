@@ -19,13 +19,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _otpCtrl = TextEditingController();
+  // Register tab fields
+  final _regNameCtrl = TextEditingController();
+  final _regEmailCtrl = TextEditingController();
+  final _regPassCtrl = TextEditingController();
   bool _otpSent = false;
   bool _obscure = true;
+  bool _regObscure = true;
 
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 2, vsync: this);
+    _tabs = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -35,6 +40,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     _emailCtrl.dispose();
     _passCtrl.dispose();
     _otpCtrl.dispose();
+    _regNameCtrl.dispose();
+    _regEmailCtrl.dispose();
+    _regPassCtrl.dispose();
     super.dispose();
   }
 
@@ -90,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   labelColor: AppColors.primary,
                   unselectedLabelColor: AppColors.textHint,
                   labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                  tabs: [Tab(text: l10n.tabPhoneOtp), Tab(text: l10n.tabEmail)],
+                  tabs: [Tab(text: l10n.tabPhoneOtp), Tab(text: l10n.tabEmail), const Tab(text: 'Créer compte')],
                 ),
               ),
               const SizedBox(height: 24),
@@ -98,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 height: 240,
                 child: TabBarView(
                   controller: _tabs,
-                  children: [_otpTab(l10n), _emailTab(l10n)],
+                  children: [_otpTab(l10n), _emailTab(l10n), _registerTab()],
                 ),
               ),
               if (auth.error != null) ...[
@@ -207,6 +215,43 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
+  Widget _registerTab() {
+    return Column(
+      children: [
+        TextField(
+          controller: _regNameCtrl,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(
+            labelText: 'Nom complet',
+            prefixIcon: Icon(Icons.person_outline),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _regEmailCtrl,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            prefixIcon: Icon(Icons.email_outlined),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _regPassCtrl,
+          obscureText: _regObscure,
+          decoration: InputDecoration(
+            labelText: 'Mot de passe',
+            prefixIcon: const Icon(Icons.lock_outline),
+            suffixIcon: IconButton(
+              icon: Icon(_regObscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+              onPressed: () => setState(() => _regObscure = !_regObscure),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _sendOtp(BuildContext context) async {
     final phone = _phoneCtrl.text.trim();
     if (phone.isEmpty) return;
@@ -232,10 +277,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         _phoneCtrl.text.trim(),
         _otpCtrl.text.trim(),
       );
-    } else {
+    } else if (_tabs.index == 1) {
       success = await auth.loginWithPassword(
         _emailCtrl.text.trim(),
         _passCtrl.text,
+      );
+    } else {
+      success = await auth.register(
+        fullName: _regNameCtrl.text.trim(),
+        email: _regEmailCtrl.text.trim(),
+        password: _regPassCtrl.text,
+        preferredLanguage: 'fr',
       );
     }
 

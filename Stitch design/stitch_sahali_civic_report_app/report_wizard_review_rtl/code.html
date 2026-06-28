@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sahali - مراجعة البلاغ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Nunito+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#e8e7f3",
+                    "inverse-primary": "#b6c4ff",
+                    "secondary-fixed": "#d3e4fe",
+                    "surface-container-highest": "#e2e1ed",
+                    "tertiary-fixed": "#ffdbcf",
+                    "on-tertiary-container": "#ffc9b7",
+                    "primary-container": "#1b4fd8",
+                    "outline": "#747686",
+                    "surface": "#faf8ff",
+                    "outline-variant": "#c4c5d7",
+                    "surface-variant": "#e2e1ed",
+                    "error-container": "#ffdad6",
+                    "primary": "#0038af",
+                    "on-background": "#191b23",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "surface-container": "#ededf8",
+                    "on-primary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#ffb59b",
+                    "on-secondary-container": "#54647a",
+                    "inverse-on-surface": "#f0f0fb",
+                    "surface-dim": "#d9d9e4",
+                    "surface-tint": "#1f51da",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "surface-bright": "#faf8ff",
+                    "primary-fixed": "#dce1ff",
+                    "error": "#ba1a1a",
+                    "tertiary": "#7e2700",
+                    "on-secondary-fixed": "#0b1c30",
+                    "secondary-container": "#d0e1fb",
+                    "on-secondary": "#ffffff",
+                    "on-surface-variant": "#434655",
+                    "background": "#faf8ff",
+                    "on-tertiary": "#ffffff",
+                    "on-surface": "#191b23",
+                    "on-primary-fixed": "#001550",
+                    "on-primary-container": "#cbd4ff",
+                    "tertiary-container": "#a63600",
+                    "on-primary-fixed-variant": "#003ab3",
+                    "surface-container-low": "#f3f2fe",
+                    "on-tertiary-fixed": "#380d00",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "secondary": "#505f76",
+                    "on-tertiary-fixed-variant": "#812800",
+                    "inverse-surface": "#2e3039"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xl": "32px",
+                    "xs": "4px",
+                    "lg": "24px",
+                    "screen-edge": "20px",
+                    "gutter": "16px",
+                    "base": "8px",
+                    "sm": "12px",
+                    "md": "16px"
+            },
+            "fontFamily": {
+                    "body-md-arabic": ["Cairo"],
+                    "display-hero": ["Nunito Sans"],
+                    "caption": ["Inter"],
+                    "body-md": ["Inter"],
+                    "section-title": ["Nunito Sans"],
+                    "label-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "display-hero-arabic": ["Cairo"],
+                    "section-title-arabic": ["Cairo"]
+            },
+            "fontSize": {
+                    "body-md-arabic": ["16px", {"lineHeight": "28.8px", "fontWeight": "400"}],
+                    "display-hero": ["34px", {"lineHeight": "42px", "fontWeight": "800"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "section-title": ["22px", {"lineHeight": "28px", "fontWeight": "700"}],
+                    "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "500"}],
+                    "display-hero-arabic": ["32px", {"lineHeight": "58px", "fontWeight": "800"}],
+                    "section-title-arabic": ["20px", {"lineHeight": "36px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #faf8ff;
+            color: #191b23;
+            font-family: 'Cairo', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .step-progress-bar {
+            background: linear-gradient(to left, #0038af 83.33%, #e2e8f0 83.33%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex flex-col">
+<!-- Top App Bar (Shared Component Logic) -->
+<header class="bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline shadow-sm flex justify-between items-center px-screen-edge py-md w-full sticky top-0 z-40">
+<div class="flex items-center gap-md">
+<button class="active:scale-95 transition-transform p-xs hover:bg-surface-container-high rounded-full">
+<span class="material-symbols-outlined text-primary">arrow_forward</span>
+</button>
+<h1 class="font-section-title-arabic text-section-title-arabic text-primary">بلاغ جديد</h1>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged Tunisian man with a friendly expression, wearing a clean white shirt. The lighting is soft and natural, emphasizing trust and civic duty. The background is a soft-focus urban setting in Tunis, maintaining a bright and authoritative corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9g-AMQVvw765zb8jYtFFL5bEuzTyWr_-iSwyf-lYfrXqweQ88m2wnJKyvRVZng485z8D-1OFN3cAV9hceolJX6nh3zneWa1D9Jv2IornHyYryO8KnLnf0W47zbmp7NZoUF7EoTVpsIgbMBJU3O5mlUK8Dui6NTRh1UKOi2zGP30bcscYtcEdBbeidlUzj3Y4k_Hor3ym1ZzehmbAl3gPQYzbUWJOsu5DuzuQ0NDR2ihaqGlDGHd34L2nObF7cgzv8rt-ay3KfKg"/>
+</div>
+</div>
+</header>
+<main class="flex-grow px-screen-edge py-lg max-w-2xl mx-auto w-full">
+<!-- Progress Indicator -->
+<div class="mb-xl">
+<div class="flex justify-between items-center mb-base">
+<span class="font-label-sm text-label-sm text-on-surface-variant">الخطوة 5 من 6</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">مراجعة البيانات</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[83.33%] rounded-full transition-all duration-500"></div>
+</div>
+</div>
+<h2 class="font-section-title-arabic text-section-title-arabic mb-lg text-on-background">يرجى مراجعة تفاصيل بلاغك</h2>
+<!-- Review Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Photo & Category Card -->
+<div class="glass-card rounded-xl p-md shadow-[0_2px_8px_rgba(15,23,42,0.05)] flex flex-col gap-md">
+<div class="relative w-full aspect-video rounded-lg overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A detailed wide shot of a damaged sidewalk with broken tiles and a small pothole on a sunny street in a residential Tunisian neighborhood. The lighting is bright and realistic, capturing the textures of the stone and concrete. The overall mood is objective and clear, designed for an official civic reporting platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKasnGJvQyH-5vL05TLU1u-1KfZ10qCldTtB7tJmASfpQsednEeQA-4XE_tvhBCN6hiTBOUlFhyo0bU1ziYFvA11y7UCTlFRjsDklw50-setOwSb06Av_Ka8kB0xiCSc_z72RvwE7qmcejXxk5mf-FiLcxUrBK1nt1Fi1o9HHqEIzRGdb1Hl-F6h303tSbG2jzvvR0HBDFdPSI20inVcCu-JKB1DXPacb8GroyycLbbEmn3Fkg362qLLtwbEn4jJw_hgZ1ICLONg"/>
+<div class="absolute top-2 right-2 bg-primary/90 text-on-primary px-sm py-xs rounded-full flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">photo_camera</span>
+<span class="text-xs font-bold">صورة المرفق</span>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">add_road</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">الصنف</p>
+<p class="font-body-md-arabic text-body-md-arabic font-bold text-primary">الطرقات والأرصفة</p>
+</div>
+</div>
+</div>
+<!-- Location Card -->
+<div class="glass-card rounded-xl p-md shadow-[0_2px_8px_rgba(15,23,42,0.05)] flex flex-col gap-md">
+<div class="flex-grow flex flex-col">
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-xs">العنوان والموقع</p>
+<div class="flex gap-xs items-start mb-base">
+<span class="material-symbols-outlined text-primary mt-1">location_on</span>
+<p class="font-body-md-arabic text-body-md-arabic leading-relaxed">شارع الحبيب بورقيبة، تونس العاصمة، بالقرب من المحطة الرئيسية</p>
+</div>
+<!-- Map Preview -->
+<div class="mt-auto rounded-lg overflow-hidden h-32 border border-outline-variant relative">
+<div class="absolute inset-0 bg-surface-container flex items-center justify-center" data-location="Tunis, Tunisia" style="">
+<img class="w-full h-full object-cover grayscale-[0.5] opacity-80" data-alt="A clean, minimalist map view of a central Tunis street intersection. The map uses a soft corporate palette of blues, grays, and whites. A distinct blue location pin with a soft shadow is placed accurately in the center of the frame to represent a civic report location." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXKuYxahfUmcoJ6f7js-n8WLgvqHFoTvUQlo56XDintyR6QdHEUZp3XwVkRmlh9VrxfJLhKUWuH1-_-vq1r5OCG4-C9ivugrVN2ooHWT2ki0u-d2X9YleIqAzPWnAmVrZTfA3Sc69P96tfp1Xmmn8PjH9TYxrdFypQpJBRj_FaJ1cGjKcvMxPuGKq-h7zy30nQ2r8i_JAxT9P1TDQJi_oeSuNp6pcqaGSrLvVqENGPZ6C__7urAQEzl6AoD-8yeDqMPh2l5_WJog"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Description Card (Full Width) -->
+<div class="md:col-span-2 glass-card rounded-xl p-md shadow-[0_2px_8px_rgba(15,23,42,0.05)]">
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-xs">وصف المشكلة</p>
+<div class="bg-surface-container-low p-md rounded-lg border border-outline-variant/30">
+<p class="font-body-md-arabic text-body-md-arabic text-on-surface leading-relaxed italic">
+                        "هناك حفرة كبيرة وسط الرصيف تعيق حركة المارة وخاصة كبار السن. المشكلة تزداد سوءاً عند هطول الأمطار حيث تصبح الحفرة غير مرئية ومغطاة بالمياه."
+                    </p>
+</div>
+</div>
+</div>
+<!-- Call to Action Section -->
+<div class="mt-xl space-y-md">
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary font-bold py-[14px] px-lg rounded-xl text-lg flex items-center justify-center gap-md active:scale-95 transition-all shadow-lg">
+<span>إرسال البلاغ</span>
+<span class="material-symbols-outlined">send</span>
+</button>
+<button class="w-full bg-transparent border border-outline-variant text-on-surface-variant font-semibold py-[14px] px-lg rounded-xl text-md flex items-center justify-center gap-md hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">edit</span>
+<span>تعديل البيانات</span>
+</button>
+</div>
+</main>
+<!-- Support/Info Message -->
+<footer class="px-screen-edge py-md text-center">
+<p class="font-caption text-on-surface-variant flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">info</span>
+            بمجرد الإرسال، سيتم مراجعة بلاغك من قبل السلطات المختصة.
+        </p>
+</footer>
+<!-- Bottom Navigation (Shared Component Style - Suppressed context check) -->
+<!-- Navigation suppressed as this is a focused transactional "Step 5/6" wizard page -->
+<script>
+        // Micro-interaction for the primary button
+        const submitBtn = document.querySelector('button.bg-primary');
+        submitBtn.addEventListener('click', function() {
+            this.innerHTML = `
+                <span class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-on-primary border-t-transparent mr-2"></span>
+                <span>جاري الإرسال...</span>
+            `;
+            this.classList.add('opacity-80', 'cursor-not-allowed');
+            setTimeout(() => {
+                window.location.reload(); // Simulate submission
+            }, 2000);
+        });
+    </script>
+</body></html>

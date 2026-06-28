@@ -1,25 +1,21 @@
 import type { ReportStatus } from '../../types/api'
 
 const STATUS_LABELS: Record<ReportStatus, string> = {
-  submitted: 'Soumis',
-  received: 'Reçu',
-  under_review: 'En révision',
-  scheduled: 'Planifié',
-  in_progress: 'En cours',
-  resolved: 'Résolu',
-  closed: 'Fermé',
-  rejected: 'Rejeté',
+  submitted:    'Nouveau',
+  received:     'Reçu',
+  under_review: 'En examen',
+  in_progress:  'En cours',
+  resolved:     'Résolu',
+  rejected:     'Rejeté',
 }
 
 const STATUS_COLORS: Record<ReportStatus, string> = {
-  submitted: '#6366F1',
-  received: '#0EA5E9',
+  submitted:    '#8B5CF6',
+  received:     '#0EA5E9',
   under_review: '#F59E0B',
-  scheduled: '#8B5CF6',
-  in_progress: '#F97316',
-  resolved: '#22C55E',
-  closed: '#64748B',
-  rejected: '#EF4444',
+  in_progress:  '#F97316',
+  resolved:     '#22C55E',
+  rejected:     '#EF4444',
 }
 
 export default function StatusBadge({ status }: { status: ReportStatus }) {

@@ -141,8 +141,8 @@ def list_municipalities(db: Session = Depends(get_db), _: User = Depends(require
         SELECT
             m.id, m.name, m.subscription_tier,
             COUNT(DISTINCT r.id)                                         AS total_reports,
-            COUNT(DISTINCT CASE WHEN r.status IN ('resolved','closed') THEN r.id END) AS resolved_reports,
-            COUNT(DISTINCT CASE WHEN r.status NOT IN ('resolved','closed','rejected') THEN r.id END) AS open_reports,
+            COUNT(DISTINCT CASE WHEN r.status = 'resolved' THEN r.id END) AS resolved_reports,
+            COUNT(DISTINCT CASE WHEN r.status NOT IN ('resolved','rejected') THEN r.id END) AS open_reports,
             COUNT(DISTINCT u.id) FILTER (WHERE u.role = 'field_agent')  AS agent_count
         FROM municipalities m
         LEFT JOIN reports r ON r.city ILIKE '%' || m.name || '%'

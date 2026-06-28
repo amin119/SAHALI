@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sahali - Calendrier des Interventions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: minmax(140px, auto);
+        }
+        .intervention-block {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .intervention-block:hover {
+            transform: translateY(-2px);
+            z-index: 10;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                "secondary-container": "#dae2fd",
+                "tertiary-fixed-dim": "#bcc7de",
+                "priority-low": "#22C55E",
+                "primary-fixed-dim": "#b6c4ff",
+                "on-primary-container": "#cbd4ff",
+                "on-tertiary-fixed": "#111c2d",
+                "outline": "#747686",
+                "surface-dim": "#d8dadf",
+                "text-secondary": "#64748B",
+                "error-container": "#ffdad6",
+                "outline-variant": "#c4c5d7",
+                "status-rejected": "#EF4444",
+                "inverse-primary": "#b6c4ff",
+                "secondary": "#565e74",
+                "status-progress": "#F97316",
+                "on-secondary-fixed": "#131b2e",
+                "on-tertiary-container": "#cbd6ee",
+                "status-scheduled": "#8B5CF6",
+                "tertiary": "#3b4559",
+                "primary-fixed": "#dce1ff",
+                "surface-container-low": "#f1f4f9",
+                "priority-medium": "#F59E0B",
+                "surface-container-high": "#e6e8ed",
+                "on-primary-fixed-variant": "#003ab3",
+                "background": "#f7f9fe",
+                "inverse-on-surface": "#eff1f6",
+                "primary-container": "#1b4fd8",
+                "surface": "#FFFFFF",
+                "on-secondary-fixed-variant": "#3f465c",
+                "surface-container-highest": "#e0e2e7",
+                "error": "#ba1a1a",
+                "on-background": "#181c20",
+                "surface-container": "#eceef3",
+                "on-secondary-container": "#5c647a",
+                "surface-tint": "#1f51da",
+                "on-primary": "#ffffff",
+                "priority-high": "#F97316",
+                "secondary-fixed": "#dae2fd",
+                "surface-variant": "#e0e2e7",
+                "surface-container-lowest": "#ffffff",
+                "on-secondary": "#ffffff",
+                "on-tertiary": "#ffffff",
+                "status-submitted": "#6366F1",
+                "tertiary-container": "#525d71",
+                "priority-critical": "#EF4444",
+                "inverse-surface": "#2d3135",
+                "primary": "#0038af",
+                "on-error": "#ffffff",
+                "status-review": "#F59E0B",
+                "tertiary-fixed": "#d8e3fb",
+                "status-received": "#0EA5E9",
+                "status-closed": "#64748B",
+                "on-surface-variant": "#434655",
+                "secondary-fixed-dim": "#bec6e0",
+                "status-resolved": "#22C55E",
+                "border": "#E2E8F0",
+                "surface-bright": "#f7f9fe",
+                "on-surface": "#181c20",
+                "text-primary": "#0F172A",
+                "on-tertiary-fixed-variant": "#3c475a",
+                "on-error-container": "#93000a",
+                "on-primary-fixed": "#001550",
+                "text-muted": "#94A3B8"
+              },
+              "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+              "spacing": { "container_padding": "32px", "gutter": "24px", "stack-md": "16px", "navbar_height": "64px", "stack-sm": "8px", "stack-lg": "24px", "sidebar_width": "260px" },
+              "fontFamily": { "headline-lg": ["Inter"], "label-md": ["Inter"], "label-sm": ["Inter"], "body-lg": ["Inter"], "code-id": ["JetBrains Mono"], "headline-sm": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"], "display-stat": ["Inter"] },
+              "fontSize": {
+                "headline-lg": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+                "code-id": ["13px", { "lineHeight": "16px", "fontWeight": "400" }],
+                "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+                "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                "display-stat": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Shell: Sidebar -->
+<aside class="fixed left-0 top-0 h-screen w-[260px] bg-on-secondary-fixed dark:bg-on-background flex flex-col py-stack-lg shadow-lg z-50">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">location_city</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-surface-container-lowest">La Marsa</h1>
+<p class="font-label-sm text-label-sm text-on-secondary-fixed-variant">Administration</p>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto px-2 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Tableau de bord</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Carte en direct</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">report_problem</span>
+<span class="font-label-md text-label-md">Signalements</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-surface-container-lowest bg-primary dark:bg-primary-container border-l-4 border-primary-fixed-dim translate-x-1 duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Calendrier</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">engineering</span>
+<span class="font-label-md text-label-md">Interventions</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Équipes &amp; Agents</span>
+</a>
+<div class="pt-4 pb-2 px-4">
+<span class="font-label-sm text-label-sm text-on-secondary-fixed-variant uppercase tracking-wider">Analyses</span>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">insert_chart</span>
+<span class="font-label-md text-label-md">Statistiques</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Rapports</span>
+</a>
+</nav>
+<div class="px-2 mt-auto border-t border-on-secondary-fixed-variant/20 pt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-fixed-variant dark:text-on-tertiary-fixed-variant hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Paramètres</span>
+</a>
+</div>
+</aside>
+<!-- Shell: TopBar -->
+<header class="sticky top-0 z-40 flex items-center justify-between px-container_padding h-[64px] w-[calc(100%-260px)] ml-[260px] bg-surface border-b border-border">
+<div class="flex items-center gap-8">
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Calendrier</h2>
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-border rounded-lg text-body-md focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="Rechercher une intervention (ID, Agent, Rue)..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined text-secondary">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="h-8 w-[1px] bg-border mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">Amin Ben Ali</p>
+<p class="font-label-sm text-label-sm text-secondary">Superviseur</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-primary-container object-cover" data-alt="Portrait of Amin Ben Ali, a municipal supervisor in La Marsa, Tunisia. He has a professional and authoritative demeanor, wearing a clean, modern shirt. The background is a soft-focus municipal office environment with warm natural light filtering through window blinds. High-end, corporate photography style with natural skin tones and deep contrast." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1rs0LmujW98nPDNSSt4G4ggHMouTiFANGIdhygPXcPM2raGiIpIdLVonGeFAQekTccwVGuMn8pZtiMdmMFNJowvE07399lkixrlacMqJ6gv6vEsuR0pGDZlw51RCFtFk-uk6SUhsopYUDnNa5PZY_ztnGf4XhZ0Fc1nzKpDSo1oHasOTpo3f2T9cXK2qad7L5jP9qmBXMBKMw5zsoYQIrOpVZXiptHp0-uRyFNd1WyMyOkNHn1RsJz1bZt5qrzLdpSMK_HHMm_LA"/>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<main class="ml-[260px] p-container_padding min-h-[calc(100vh-64px)] bg-background">
+<!-- Calendar Header Controls -->
+<div class="flex flex-wrap items-center justify-between gap-gutter mb-stack-lg bg-surface p-4 rounded-xl shadow-sm border border-border">
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1 px-4 py-2 text-secondary border border-border rounded-lg font-label-md hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+                    Précédent
+                </button>
+<button class="px-6 py-2 bg-primary-container text-white rounded-lg font-label-md hover:opacity-90 transition-opacity">Aujourd'hui</button>
+<button class="flex items-center gap-1 px-4 py-2 text-secondary border border-border rounded-lg font-label-md hover:bg-surface-container-low transition-colors">
+                    Suivant
+                    <span class="material-symbols-outlined">chevron_right</span>
+</button>
+<span class="ml-4 font-headline-sm text-headline-sm text-on-surface">Octobre 2024</span>
+</div>
+<div class="flex bg-surface-container border border-border rounded-lg p-1">
+<button class="px-6 py-1.5 bg-surface text-primary shadow-sm rounded-md font-label-md">Mois</button>
+<button class="px-6 py-1.5 text-secondary hover:text-on-surface font-label-md">Semaine</button>
+<button class="px-6 py-1.5 text-secondary hover:text-on-surface font-label-md">Jour</button>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-label-md hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined">add</span>
+                    Planifier
+                </button>
+<button class="p-2 border border-border rounded-lg text-secondary hover:bg-surface-container-low">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex gap-6 mb-stack-lg px-2">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-orange-500"></div>
+<span class="text-label-sm text-secondary">Voirie</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+<span class="text-label-sm text-secondary">Éclairage</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-green-500"></div>
+<span class="text-label-sm text-secondary">Déchets</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-blue-500"></div>
+<span class="text-label-sm text-secondary">Eau/Assainissement</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-red-500"></div>
+<span class="text-label-sm text-secondary">Sécurité/Urgence</span>
+</div>
+</div>
+<!-- Calendar Interface -->
+<div class="bg-surface rounded-xl shadow-sm border border-border overflow-hidden">
+<!-- Day Names -->
+<div class="grid grid-cols-7 bg-surface-container-low border-b border-border">
+<div class="py-3 text-center border-r border-border"><span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Lun</span></div>
+<div class="py-3 text-center border-r border-border"><span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Mar</span></div>
+<div class="py-3 text-center border-r border-border"><span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Mer</span></div>
+<div class="py-3 text-center border-r border-border"><span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Jeu</span></div>
+<div class="py-3 text-center border-r border-border"><span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Ven</span></div>
+<div class="py-3 text-center border-r border-border"><span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Sam</span></div>
+<div class="py-3 text-center"><span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Dim</span></div>
+</div>
+<!-- Calendar Cells -->
+<div class="calendar-grid">
+<!-- Day 1-30 (Sample Simulation) -->
+<!-- Prev Month Buffer -->
+<div class="p-2 border-r border-b border-border bg-background/50">
+<span class="text-label-md font-medium text-muted">26</span>
+</div>
+<div class="p-2 border-r border-b border-border bg-background/50">
+<span class="text-label-md font-medium text-muted">27</span>
+</div>
+<div class="p-2 border-r border-b border-border bg-background/50">
+<span class="text-label-md font-medium text-muted">28</span>
+</div>
+<div class="p-2 border-r border-b border-border bg-background/50">
+<span class="text-label-md font-medium text-muted">29</span>
+</div>
+<div class="p-2 border-r border-b border-border bg-background/50">
+<span class="text-label-md font-medium text-muted">30</span>
+</div>
+<!-- Current Month Start -->
+<div class="p-2 border-r border-b border-border relative">
+<span class="text-label-md font-medium text-on-surface">1</span>
+<div class="mt-2 space-y-1">
+<div class="intervention-block bg-orange-50 text-orange-700 border-l-4 border-orange-500 p-1.5 rounded cursor-pointer">
+<p class="text-[10px] font-bold">08:00 • CA-12042</p>
+<p class="text-[11px] font-semibold truncate">M. Gammarth - Pavage</p>
+<p class="text-[10px] opacity-80">Agent: Sami B.</p>
+</div>
+</div>
+</div>
+<div class="p-2 border-r border-b border-border">
+<span class="text-label-md font-medium text-on-surface">2</span>
+<div class="mt-2 space-y-1">
+<div class="intervention-block bg-blue-50 text-blue-700 border-l-4 border-blue-500 p-1.5 rounded cursor-pointer">
+<p class="text-[10px] font-bold">10:30 • CA-12045</p>
+<p class="text-[11px] font-semibold truncate">Fuite Sidi Bou Said</p>
+<p class="text-[10px] opacity-80">Agent: Kais W.</p>
+</div>
+</div>
+</div>
+<div class="p-2 border-r border-b border-border bg-surface-container-lowest">
+<span class="text-label-md font-medium text-on-surface">3</span>
+</div>
+<div class="p-2 border-r border-b border-border bg-surface-container-lowest">
+<span class="text-label-md font-medium text-on-surface">4</span>
+<div class="mt-2 space-y-1">
+<div class="intervention-block bg-yellow-50 text-yellow-700 border-l-4 border-yellow-500 p-1.5 rounded cursor-pointer">
+<p class="text-[10px] font-bold">21:00 • CA-12050</p>
+<p class="text-[11px] font-semibold truncate">Lampadaires Corniche</p>
+<p class="text-[10px] opacity-80">Agent: Walid M.</p>
+</div>
+</div>
+</div>
+<div class="p-2 border-r border-b border-border bg-surface-container-lowest">
+<span class="text-label-md font-medium text-on-surface">5</span>
+<div class="mt-2 space-y-1">
+<div class="intervention-block bg-green-50 text-green-700 border-l-4 border-green-500 p-1.5 rounded cursor-pointer">
+<p class="text-[10px] font-bold">06:00 • CA-12055</p>
+<p class="text-[11px] font-semibold truncate">Ramassage Zone A</p>
+<p class="text-[10px] opacity-80">Agent: Équipe 4</p>
+</div>
+<div class="intervention-block bg-red-50 text-red-700 border-l-4 border-red-500 p-1.5 rounded cursor-pointer">
+<p class="text-[10px] font-bold">14:00 • CA-12058</p>
+<p class="text-[11px] font-semibold truncate">Arbre tombé - Route Tunis</p>
+<p class="text-[10px] opacity-80">Agent: Hamza L.</p>
+</div>
+</div>
+</div>
+<div class="p-2 border-r border-b border-border bg-surface-container-lowest">
+<span class="text-label-md font-medium text-on-surface">6</span>
+</div>
+<div class="p-2 border-b border-border bg-surface-container-lowest">
+<span class="text-label-md font-medium text-on-surface">7</span>
+</div>
+<!-- Week 2 -->
+<div class="p-2 border-r border-b border-border bg-primary-container/5">
+<div class="flex justify-between items-start">
+<span class="text-label-md font-bold text-primary px-2 py-0.5 bg-primary-container/10 rounded-full">8</span>
+<span class="text-[10px] text-primary font-bold">AUJOURD'HUI</span>
+</div>
+<div class="mt-2 space-y-1">
+<div class="intervention-block bg-orange-50 text-orange-700 border-l-4 border-orange-500 p-1.5 rounded cursor-pointer shadow-sm">
+<p class="text-[10px] font-bold">09:00 • CA-12060</p>
+<p class="text-[11px] font-semibold truncate">Réparation Nid-de-poule</p>
+<p class="text-[10px] opacity-80">Agent: Yassine K.</p>
+</div>
+<div class="intervention-block bg-blue-50 text-blue-700 border-l-4 border-blue-500 p-1.5 rounded cursor-pointer shadow-sm">
+<p class="text-[10px] font-bold">11:00 • CA-12061</p>
+<p class="text-[11px] font-semibold truncate">Maintenance Réservoir</p>
+<p class="text-[10px] opacity-80">Agent: Kais W.</p>
+</div>
+</div>
+</div>
+<div class="p-2 border-r border-b border-border">
+<span class="text-label-md font-medium text-on-surface">9</span>
+</div>
+<div class="p-2 border-r border-b border-border">
+<span class="text-label-md font-medium text-on-surface">10</span>
+</div>
+<div class="p-2 border-r border-b border-border">
+<span class="text-label-md font-medium text-on-surface">11</span>
+<div class="mt-2 space-y-1">
+<div class="intervention-block bg-yellow-50 text-yellow-700 border-l-4 border-yellow-500 p-1.5 rounded cursor-pointer">
+<p class="text-[10px] font-bold">19:30 • CA-12070</p>
+<p class="text-[11px] font-semibold truncate">Audit Nocturne Zone B</p>
+<p class="text-[10px] opacity-80">Agent: Walid M.</p>
+</div>
+</div>
+</div>
+<div class="p-2 border-r border-b border-border">
+<span class="text-label-md font-medium text-on-surface">12</span>
+</div>
+<div class="p-2 border-r border-b border-border">
+<span class="text-label-md font-medium text-on-surface">13</span>
+</div>
+<div class="p-2 border-b border-border">
+<span class="text-label-md font-medium text-on-surface">14</span>
+</div>
+<!-- Fill Remaining Grid (Simplified for UI view) -->
+<script>
+                    const container = document.querySelector('.calendar-grid');
+                    for (let i = 15; i <= 31; i++) {
+                        const div = document.createElement('div');
+                        div.className = 'p-2 border-r border-b border-border h-full';
+                        if (i % 7 === 0 || (i+1) % 7 === 0) div.className = 'p-2 border-b border-border bg-background/20';
+                        div.innerHTML = `<span class="text-label-md font-medium text-on-surface">${i}</span>`;
+                        
+                        // Randomly add some dummy blocks
+                        if (i === 18) {
+                            div.innerHTML += `
+                                <div class="mt-2 space-y-1">
+                                    <div class="intervention-block bg-orange-50 text-orange-700 border-l-4 border-orange-500 p-1.5 rounded cursor-pointer">
+                                        <p class="text-[10px] font-bold">08:00 • CA-12101</p>
+                                        <p class="text-[11px] font-semibold truncate">Marquage au sol</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        if (i === 22) {
+                            div.innerHTML += `
+                                <div class="mt-2 space-y-1">
+                                    <div class="intervention-block bg-green-50 text-green-700 border-l-4 border-green-500 p-1.5 rounded cursor-pointer">
+                                        <p class="text-[10px] font-bold">10:00 • CA-12120</p>
+                                        <p class="text-[11px] font-semibold truncate">Nettoyage Plage</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        container.appendChild(div);
+                    }
+                    // Next Month Buffer
+                    for (let i = 1; i <= 4; i++) {
+                        const div = document.createElement('div');
+                        div.className = 'p-2 border-r border-b border-border bg-background/50 opacity-40';
+                        div.innerHTML = `<span class="text-label-md font-medium text-muted">${i}</span>`;
+                        container.appendChild(div);
+                    }
+                </script>
+</div>
+</div>
+<!-- Secondary Information / Upcoming List (Bento-style extra details) -->
+<div class="mt-stack-lg grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="bg-surface p-6 rounded-xl border border-border shadow-sm flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm">Aperçu Hebdomadaire</h3>
+<span class="px-3 py-1 bg-primary-container/10 text-primary rounded-full text-label-sm font-bold">12 Tâches</span>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg">
+<div class="w-2 h-10 bg-orange-500 rounded-full"></div>
+<div>
+<p class="text-body-md font-semibold">Réfection de chaussée</p>
+<p class="text-label-sm text-secondary">Avenue Habib Bourguiba</p>
+</div>
+<div class="ml-auto text-right">
+<p class="text-label-sm font-bold text-on-surface">Demain</p>
+<p class="text-[10px] text-secondary">08:00</p>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg">
+<div class="w-2 h-10 bg-blue-500 rounded-full"></div>
+<div>
+<p class="text-body-md font-semibold">Entretien pompes</p>
+<p class="text-label-sm text-secondary">Station Marsa Plage</p>
+</div>
+<div class="ml-auto text-right">
+<p class="text-label-sm font-bold text-on-surface">Mer 10</p>
+<p class="text-[10px] text-secondary">09:30</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface p-6 rounded-xl border border-border shadow-sm">
+<h3 class="font-headline-sm text-headline-sm mb-4">Disponibilité Agents</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-primary text-[10px] font-bold">YK</div>
+<span class="text-body-md">Yassine K. (Voirie)</span>
+</div>
+<div class="w-12 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-priority-high w-4/5"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-primary text-[10px] font-bold">SB</div>
+<span class="text-body-md">Sami B. (Eau)</span>
+</div>
+<div class="w-12 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-priority-low w-1/4"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-primary text-[10px] font-bold">WM</div>
+<span class="text-body-md">Walid M. (Élec)</span>
+</div>
+<div class="w-12 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-priority-medium w-3/5"></div>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border border-border rounded-lg text-primary font-label-md hover:bg-surface-container-low transition-colors">Gérer les équipes</button>
+</div>
+<div class="bg-on-secondary-fixed text-white p-6 rounded-xl border border-on-secondary-fixed-variant shadow-lg relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="font-headline-sm text-headline-sm mb-2">Rapport d'activité</h3>
+<p class="text-label-sm text-on-secondary-fixed-variant mb-6">Mise à jour : il y a 2 min</p>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-3 bg-white/5 rounded-lg">
+<p class="text-[10px] text-on-secondary-fixed-variant uppercase">Taux de réalisation</p>
+<p class="text-headline-md font-bold text-priority-low">94%</p>
+</div>
+<div class="p-3 bg-white/5 rounded-lg">
+<p class="text-[10px] text-on-secondary-fixed-variant uppercase">Interv. ce mois</p>
+<p class="text-headline-md font-bold">128</p>
+</div>
+</div>
+<button class="mt-6 flex items-center gap-2 text-primary-fixed-dim hover:text-white transition-colors">
+<span class="font-label-md">Exporter le calendrier PDF</span>
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+<!-- Abstract Design Decor -->
+<div class="absolute -bottom-8 -right-8 w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
+<div class="absolute -top-8 -right-4 w-24 h-24 bg-tertiary-container/30 rounded-full blur-2xl"></div>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions for calendar items
+        document.querySelectorAll('.intervention-block').forEach(block => {
+            block.addEventListener('click', () => {
+                // Future implementation: Open detail modal
+                console.log('Opening intervention details...');
+                block.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+                setTimeout(() => block.classList.remove('ring-2', 'ring-primary', 'ring-offset-2'), 1000);
+            });
+        });
+    </script>
+</body></html>

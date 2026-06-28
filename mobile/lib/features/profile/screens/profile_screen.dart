@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/providers/language_provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -23,6 +24,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ReportsProvider>().loadMyReports(refresh: true);
+    });
+  }
+
+  void _showServerUrlDialog(BuildContext context) {
+    final ctrl = TextEditingController(text: BackendConfig.current);
+    showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Server URL', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter your backend URL.\n'
+              '• Emulator: http://10.0.2.2:8000/v1\n'
+              '• ngrok: https://xxx.ngrok-free.app/v1\n'
+              '• WiFi: http://192.168.X.X:8000/v1',
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              keyboardType: TextInputType.url,
+              autocorrect: false,
+              decoration: const InputDecoration(
+                hintText: 'http://10.0.2.2:8000/v1',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              ),
+              style: const TextStyle(fontSize: 13),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await BackendConfig.reset();
+              ctrl.text = BackendConfig.current;
+              if (ctx.mounted) Navigator.pop(ctx, true);
+            },
+            child: const Text('Reset', style: TextStyle(color: AppColors.textHint)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await BackendConfig.setUrl(ctrl.text);
+              if (ctx.mounted) Navigator.pop(ctx, true);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    ).then((changed) {
+      if ((changed ?? false) && mounted) setState(() {});
     });
   }
 
@@ -205,6 +264,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     label: l10n.language,
                     trailing: langLabel,
                     onTap: () => _showLanguagePicker(context, l10n),
+                  ),
+                  _SettingsTile(
+                    icon: Icons.dns_outlined,
+                    label: 'Server URL',
+                    trailing: BackendConfig.current.replaceFirst(RegExp(r'^https?://'), '').replaceFirst(RegExp(r'/v1$'), ''),
+                    onTap: () => _showServerUrlDialog(context),
                   ),
                   _SettingsTile(icon: Icons.privacy_tip_outlined, label: l10n.privacyPolicy, onTap: () {}),
                   _SettingsTile(icon: Icons.help_outline_rounded, label: l10n.helpSupport, onTap: () {}),

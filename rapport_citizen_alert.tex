@@ -1,0 +1,416 @@
+% ============================================================
+%  RAPPORT — CITIZEN ALERT
+%  Plateforme civique de signalement et de gestion d'infrastructure
+% ============================================================
+\documentclass[12pt, a4paper]{article}
+
+% --- Encodage et langue ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+% --- Mise en page ---
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=3cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% --- Typographie ---
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% --- Couleurs et graphiques ---
+\usepackage[dvipsnames]{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+
+% --- Tableaux ---
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+
+% --- Listes ---
+\usepackage{enumitem}
+
+% --- En-têtes et pieds de page ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{gray}{Citizen Alert — Rapport de Présentation}}
+\fancyhead[R]{\small\textcolor{gray}{Juin 2026}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Hyperliens ---
+\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
+
+% --- Couleurs personnalisées ---
+\definecolor{primary}{HTML}{0038AF}
+\definecolor{amber}{HTML}{F59E0B}
+\definecolor{dark}{HTML}{0D1B35}
+\definecolor{light}{HTML}{F5F7FF}
+\definecolor{muted}{HTML}{64748B}
+
+% --- Commandes personnalisées ---
+\newcommand{\kpi}[2]{%
+  \begin{minipage}{0.22\textwidth}
+    \centering
+    {\large\bfseries\color{primary}#1}\\[2pt]
+    {\small\color{muted}#2}
+  \end{minipage}%
+}
+
+\newcommand{\module}[2]{%
+  \item \textbf{#1} — #2
+}
+
+% ============================================================
+%  DÉBUT DU DOCUMENT
+% ============================================================
+\begin{document}
+
+% ---- PAGE DE TITRE ----
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\color{primary}\rule{\textwidth}{2pt}}
+  \vspace{0.8cm}
+
+  {\fontsize{36}{40}\selectfont\bfseries\color{dark} CITIZEN ALERT}
+
+  \vspace{0.4cm}
+  {\large\color{muted}\itshape Plateforme civique de signalement et de gestion d'infrastructure municipale}
+
+  \vspace{0.8cm}
+  {\color{amber}\rule{\textwidth}{1pt}}
+
+  \vspace{2cm}
+
+  {\large\bfseries Rapport de Présentation}\\[0.4cm]
+  {\color{muted} Version 1.0 — Juin 2026}
+
+  \vfill
+
+  \begin{tabular}{ll}
+    \textbf{Type de document} & Rapport fonctionnel \\
+    \textbf{Public cible}     & Décideurs municipaux, partenaires \\
+    \textbf{Statut}           & Document de présentation \\
+    \textbf{Date}             & Juin 2026 \\
+  \end{tabular}
+
+  \vspace{1.5cm}
+  {\color{primary}\rule{\textwidth}{2pt}}
+\end{titlepage}
+
+% ---- TABLE DES MATIÈRES ----
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Présentation Générale}
+% ============================================================
+
+\subsection{Qu'est-ce que Citizen Alert ?}
+
+Citizen Alert est une plateforme numérique qui facilite la communication entre les citoyens et leurs municipalités. Elle permet à tout habitant de signaler un problème d'infrastructure urbaine — un nid-de-poule, une panne d'éclairage, un tuyau qui fuit, des déchets abandonnés — directement depuis son téléphone, en moins de deux minutes.
+
+Du côté des autorités municipales, la plateforme fournit un tableau de bord complet appelé \textbf{Sahali} qui centralise tous les signalements reçus, permet de les affecter aux équipes terrain, de suivre leur résolution et d'analyser les tendances sur le territoire.
+
+\subsection{Le problème résolu}
+
+Aujourd'hui, dans de nombreuses villes, les problèmes d'infrastructure sont signalés par téléphone, par email ou sur les réseaux sociaux. Ces canaux sont fragmentés, difficiles à suivre, et offrent peu de retour au citoyen qui a fait la démarche de signaler un problème. Les agents municipaux, de leur côté, n'ont souvent pas de vue d'ensemble sur l'état du territoire et travaillent sans outils adaptés à la gestion de ces signalements.
+
+Citizen Alert répond à trois besoins fondamentaux :
+
+\begin{enumerate}[leftmargin=*, label=\textbf{\arabic*.}]
+  \item \textbf{Pour le citoyen} : avoir un canal unique, simple et traçable pour signaler un problème et suivre son traitement.
+  \item \textbf{Pour la municipalité} : disposer d'un outil centralisé de gestion, de suivi et de pilotage des interventions.
+  \item \textbf{Pour la relation ville-citoyens} : renforcer la confiance en apportant de la transparence et des réponses concrètes.
+\end{enumerate}
+
+% ============================================================
+\section{Les Composantes de la Plateforme}
+% ============================================================
+
+La plateforme Citizen Alert est composée de quatre éléments qui fonctionnent ensemble :
+
+\subsection{L'application mobile citoyenne}
+
+L'application mobile est le point d'entrée pour les habitants. Elle est disponible sur iOS et Android et fonctionne en trois langues : \textbf{arabe, français et anglais}. Elle a été conçue pour être accessible à tous, y compris aux personnes peu habituées au numérique.
+
+\textbf{Ce que permet l'application :}
+\begin{itemize}[leftmargin=*]
+  \item Prendre une photo du problème et la joindre au signalement
+  \item Sélectionner la catégorie du problème (voirie, eau, éclairage, déchets, etc.)
+  \item Localiser automatiquement le problème grâce au GPS, avec possibilité de correction manuelle
+  \item Ajouter une description complémentaire
+  \item Recevoir un numéro de suivi unique dès la soumission
+  \item Être notifié à chaque étape du traitement (accusé de réception, prise en charge, résolution)
+  \item Soumettre un signalement même sans connexion internet (envoi différé)
+\end{itemize}
+
+\subsection{Le tableau de bord Sahali}
+
+Sahali est l'interface web destinée aux équipes municipales. C'est depuis ce tableau de bord que les superviseurs, agents et analystes gèrent l'ensemble des signalements et des interventions.
+
+Il est organisé en \textbf{dix modules} :
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \module{Tableau de bord principal}{Vue synthétique avec indicateurs clés, graphiques d'activité, carte de chaleur et résumé des signalements récents.}
+  \module{Carte en direct}{Visualisation géographique de tous les signalements actifs sur le territoire, avec filtres par statut et par catégorie.}
+  \module{Gestion des signalements}{Liste complète des signalements avec recherche, filtres avancés et panneau de détail pour chaque cas.}
+  \module{Interventions}{Tableau kanban (À planifier — Planifiés — En cours — Terminés) pour le suivi des interventions terrain.}
+  \module{Calendrier}{Planning hebdomadaire des interventions avec visualisation par type de mission.}
+  \module{Équipes et agents}{Fiche de chaque agent avec son statut, sa charge de travail et ses performances.}
+  \module{Municipalités}{Gestion des communes partenaires avec tableau de performance comparatif.}
+  \module{Catégories}{Configuration des types de signalements (activer/désactiver, définir les délais de traitement).}
+  \module{Statistiques}{Analyses de tendance par période, par catégorie et par zone géographique.}
+  \module{Paramètres}{Configuration du profil municipal, des notifications, des modèles de messages et des seuils de performance.}
+\end{itemize}
+
+\subsection{L'API backend}
+
+Le backend est le moteur invisible de la plateforme. Il assure la communication entre l'application mobile et le tableau de bord, gère le stockage des données, les autorisations d'accès et les intégrations avec des services externes (cartographie, SMS, stockage des photos).
+
+Il est conçu pour être performant, sécurisé et capable de gérer un grand nombre d'utilisateurs simultanément.
+
+\subsection{Le module d'intelligence artificielle}
+
+Un service d'intelligence artificielle s'active automatiquement à chaque nouveau signalement pour assister les équipes sans les remplacer. Il réalise quatre tâches :
+
+\begin{enumerate}[leftmargin=*, label=\textbf{\arabic*.}]
+  \item \textbf{Classification automatique} : il identifie la catégorie du signalement à partir du texte et de la photo, avec une précision cible de 85~\% ou plus.
+  \item \textbf{Détection des doublons} : il repère les signalements identiques soumis par plusieurs citoyens pour le même problème et les regroupe automatiquement.
+  \item \textbf{Analyse des photos} : il analyse l'image pour valider ou préciser la nature du problème signalé.
+  \item \textbf{Score de priorité} : il attribue une note de 1 à 10 à chaque signalement en tenant compte de sa gravité, de son ancienneté, du nombre de doublons et de la sensibilité de la zone (proximité d'une école, d'un hôpital, etc.).
+\end{enumerate}
+
+% ============================================================
+\section{Les Types de Signalements}
+% ============================================================
+
+La plateforme couvre sept grandes catégories de problèmes urbains :
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Catégorie} & \textbf{Exemples de signalements} \\
+\midrule
+Voirie et routes      & Nid-de-poule, trottoir dégradé, signalisation manquante \\
+Éclairage public      & Lampadaire en panne, câble exposé, zone non éclairée \\
+Gestion des déchets   & Dépôt sauvage, benne débordante, déchets non collectés \\
+Eau et assainissement & Fuite de canalisation, bouche d'égout cassée, inondation \\
+Espaces verts         & Arbre dangereux, mobilier urbain dégradé, parc dégradé \\
+Sécurité publique     & Obstacle sur la voie publique, bâtiment dangereux \\
+Environnement         & Pollution, nuisances sonores, déversements illégaux \\
+\bottomrule
+\end{tabularx}
+\caption{Catégories de signalements disponibles sur Citizen Alert}
+\end{table}
+
+% ============================================================
+\section{Le Cycle de Vie d'un Signalement}
+% ============================================================
+
+Chaque signalement passe par plusieurs étapes, visibles à la fois par le citoyen (dans l'application) et par les agents municipaux (dans le tableau de bord).
+
+\begin{center}
+\begin{tikzpicture}[
+  node distance=1.6cm,
+  box/.style={draw=primary, fill=light, rounded corners=4pt, minimum width=2.8cm, minimum height=0.9cm, font=\small\bfseries, text=dark, align=center},
+  arrow/.style={->, thick, color=primary}
+]
+  \node[box] (s1) {Soumis};
+  \node[box, right of=s1, xshift=1.2cm] (s2) {Reçu};
+  \node[box, right of=s2, xshift=1.2cm] (s3) {En révision};
+  \node[box, right of=s3, xshift=1.2cm] (s4) {Planifié};
+  \node[box, below of=s4] (s5) {En cours};
+  \node[box, left of=s5, xshift=-1.2cm] (s6) {Résolu};
+  \node[box, left of=s6, xshift=-1.2cm] (s7) {Fermé};
+
+  \draw[arrow] (s1) -- (s2);
+  \draw[arrow] (s2) -- (s3);
+  \draw[arrow] (s3) -- (s4);
+  \draw[arrow] (s4) -- (s5);
+  \draw[arrow] (s5) -- (s6);
+  \draw[arrow] (s6) -- (s7);
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{description}[leftmargin=*, style=nextline]
+  \item[\color{primary}Soumis] Le citoyen a envoyé son signalement. L'IA analyse la photo et le texte.
+  \item[\color{primary}Reçu] La municipalité a accusé réception. Le citoyen est notifié.
+  \item[\color{primary}En révision] Un superviseur examine le signalement et vérifie les informations.
+  \item[\color{primary}Planifié] Une intervention est programmée avec une date et une équipe assignée.
+  \item[\color{primary}En cours] L'équipe terrain est sur place et travaille à la résolution.
+  \item[\color{primary}Résolu] Le problème est réglé. Le citoyen est invité à confirmer.
+  \item[\color{primary}Fermé] Le dossier est archivé.
+\end{description}
+
+% ============================================================
+\section{Les Engagements de Performance}
+% ============================================================
+
+La plateforme est conçue autour d'objectifs de performance contractuels, affichés en temps réel dans le tableau de bord pour permettre aux responsables municipaux de piloter leur activité :
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{Xr}
+\toprule
+\textbf{Indicateur de performance} & \textbf{Objectif} \\
+\midrule
+Temps de première réponse au citoyen   & Moins de 24 heures \\
+Délai moyen de résolution              & Moins de 7 jours \\
+Taux de résolution des signalements    & 90~\% ou plus \\
+Satisfaction citoyenne                 & 85 / 100 ou plus \\
+Précision de la classification IA      & 85~\% ou plus \\
+Détection des signalements en double   & 80~\% ou plus \\
+Durée de soumission d'un signalement   & Moins de 2 minutes \\
+\bottomrule
+\end{tabularx}
+\caption{Indicateurs clés de performance (KPI)}
+\end{table}
+
+% ============================================================
+\section{Sécurité et Protection des Données}
+% ============================================================
+
+La protection des données personnelles des citoyens est une priorité de conception. La plateforme est conforme à la législation tunisienne sur la protection des données (loi n\textdegree~63-2004) et alignée sur les principes du Règlement Général sur la Protection des Données (RGPD) européen.
+
+\subsection{Mesures de sécurité principales}
+
+\begin{itemize}[leftmargin=*]
+  \item Toutes les communications sont chiffrées (protocole HTTPS / TLS 1.2+)
+  \item L'accès au tableau de bord est protégé par authentification sécurisée avec code unique par SMS
+  \item Les droits d'accès sont définis par rôle : administrateur, superviseur, agent terrain, analyste
+  \item Les photos sont stockées de façon anonymisée et inaccessibles sans autorisation explicite
+  \item Les données personnelles peuvent être exportées ou supprimées à la demande du citoyen
+  \item Un audit de sécurité indépendant est réalisé avant chaque mise en production
+
+\end{itemize}
+
+\subsection{Niveaux d'accès}
+
+La plateforme définit quatre profils d'utilisateurs côté municipal, chacun avec des permissions adaptées à ses responsabilités :
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Rôle} & \textbf{Accès et responsabilités} \\
+\midrule
+Administrateur  & Accès complet. Gestion des utilisateurs, des municipalités et de la configuration. \\
+Superviseur     & Gestion des signalements et des interventions. Affectation des équipes. \\
+Agent terrain   & Consultation et mise à jour des dossiers qui lui sont assignés. \\
+Analyste        & Accès aux statistiques et rapports. Pas de modification des signalements. \\
+\bottomrule
+\end{tabularx}
+\caption{Niveaux d'accès au tableau de bord Sahali}
+\end{table}
+
+% ============================================================
+\section{Plan de Déploiement}
+% ============================================================
+
+Le déploiement de la plateforme est prévu en six phases sur une période de 40 semaines :
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Phase} & \textbf{Durée} & \textbf{Description} \\
+\midrule
+1 — Découverte       & Semaines 1–4   & Entretiens avec les municipalités pilotes, définition des catégories, choix technologiques et revue juridique. \\[4pt]
+2 — Design           & Semaines 5–8   & Maquettes, identité visuelle, prototype cliquable et tests utilisateurs. \\[4pt]
+3 — Développement    & Semaines 9–20  & Construction de l'application mobile, du tableau de bord et de l'API backend. \\[4pt]
+4 — IA               & Semaines 21–26 & Entraînement du modèle de classification, service de déduplication et analyse d'images. \\[4pt]
+5 — Tests            & Semaines 27–30 & Tests fonctionnels, recette avec les municipalités, tests de charge et audit de sécurité. \\[4pt]
+6 — Lancement        & Semaines 31–40 & Déploiement progressif, campagne de communication et intégration de nouvelles communes. \\
+\bottomrule
+\end{tabularx}
+\caption{Phases de déploiement de Citizen Alert}
+\end{table}
+
+% ============================================================
+\section{Estimation Budgétaire}
+% ============================================================
+
+L'investissement initial pour le développement complet de la plateforme est estimé entre \textbf{95 000 et 185 000 euros}, selon le périmètre retenu et le profil des prestataires choisis.
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{Xrr}
+\toprule
+\textbf{Poste de dépense} & \textbf{Min (EUR)} & \textbf{Max (EUR)} \\
+\midrule
+Application mobile (iOS + Android)         & 40\,000 & 70\,000 \\
+Tableau de bord administratif Sahali       & 20\,000 & 40\,000 \\
+Cartographie GIS et intégrations           &  5\,000 & 15\,000 \\
+Module d'intelligence artificielle         & 15\,000 & 30\,000 \\
+Infrastructure et DevOps                   &  5\,000 & 10\,000 \\
+Audit de sécurité                          &  3\,000 &  6\,000 \\
+Communication et formation                 & 10\,000 & 20\,000 \\
+\midrule
+\textbf{Total}                             & \textbf{98\,000} & \textbf{191\,000} \\
+\bottomrule
+\end{tabularx}
+\caption{Estimation budgétaire du projet Citizen Alert}
+\end{table}
+
+Le coût annuel récurrent (hébergement, maintenance, mises à jour) est estimé entre \textbf{20 000 et 45 000 euros} par an selon le nombre de municipalités actives.
+
+% ============================================================
+\section{Bénéfices Attendus}
+% ============================================================
+
+\subsection{Pour les citoyens}
+
+\begin{itemize}[leftmargin=*]
+  \item Un canal de signalement simple, rapide et accessible depuis un téléphone
+  \item Une visibilité complète sur le traitement de leur signalement
+  \item Une relation plus transparente et réactive avec leur municipalité
+  \item La possibilité de contribuer concrètement à l'amélioration de leur quartier
+\end{itemize}
+
+\subsection{Pour les municipalités}
+
+\begin{itemize}[leftmargin=*]
+  \item Centralisation de tous les signalements en un seul outil
+  \item Réduction du temps de traitement grâce à la priorisation automatique
+  \item Meilleure organisation des équipes terrain avec le planning intégré
+  \item Données et statistiques pour orienter les décisions d'investissement
+  \item Amélioration de l'image de la collectivité auprès des habitants
+\end{itemize}
+
+\subsection{Pour le territoire}
+
+\begin{itemize}[leftmargin=*]
+  \item Détection plus rapide des problèmes d'infrastructure
+  \item Réduction de la dégradation par une intervention précoce
+  \item Meilleure allocation des ressources humaines et financières
+  \item Historique complet des interventions sur chaque zone
+\end{itemize}
+
+% ============================================================
+\section{Conclusion}
+% ============================================================
+
+Citizen Alert est plus qu'un simple outil de signalement. C'est un pont numérique entre les habitants et leurs institutions municipales, conçu pour rendre la ville plus réactive, plus transparente et plus efficace dans la gestion de son patrimoine d'infrastructure.
+
+En combinant une application mobile accessible, un tableau de bord de pilotage professionnel et des capacités d'intelligence artificielle, la plateforme offre une réponse complète et moderne aux défis de la gestion urbaine participative.
+
+\vspace{1cm}
+
+\begin{center}
+  {\color{primary}\rule{0.5\textwidth}{1pt}}\\[0.5cm]
+  {\large\bfseries\color{dark} Citizen Alert}\\[0.3cm]
+  {\color{muted}\itshape « La voix des citoyens. L'action des municipalités. »}\\[0.3cm]
+  {\small\color{muted} Version 1.0 — Juin 2026}
+  \\[0.5cm]
+  {\color{primary}\rule{0.5\textwidth}{1pt}}
+\end{center}
+
+\end{document}

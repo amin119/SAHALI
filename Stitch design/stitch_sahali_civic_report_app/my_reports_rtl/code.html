@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sahali - Mes signalements</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@700;800&family=Cairo:wght@400;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@100..900&family=Inter:wght@100..900&family=Nunito+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#c4c5d7",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f3f2fe",
+                        "inverse-primary": "#b6c4ff",
+                        "outline": "#747686",
+                        "tertiary-fixed-dim": "#ffb59b",
+                        "tertiary": "#7e2700",
+                        "on-tertiary-fixed": "#380d00",
+                        "on-primary-fixed": "#001550",
+                        "inverse-surface": "#2e3039",
+                        "secondary-fixed": "#d3e4fe",
+                        "background": "#faf8ff",
+                        "on-secondary-container": "#54647a",
+                        "surface-tint": "#1f51da",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "on-surface": "#191b23",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e2e1ed",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-surface-variant": "#434655",
+                        "tertiary-fixed": "#ffdbcf",
+                        "surface-container": "#ededf8",
+                        "surface": "#faf8ff",
+                        "primary": "#0038af",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "surface-variant": "#e2e1ed",
+                        "secondary-container": "#d0e1fb",
+                        "on-tertiary-fixed-variant": "#812800",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "secondary": "#505f76",
+                        "tertiary-container": "#a63600",
+                        "on-primary-container": "#cbd4ff",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d9d9e4",
+                        "surface-bright": "#faf8ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#1b4fd8",
+                        "on-background": "#191b23",
+                        "inverse-on-surface": "#f0f0fb",
+                        "surface-container-high": "#e8e7f3",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#dce1ff",
+                        "on-tertiary-container": "#ffc9b7",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#003ab3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "screen-edge": "20px",
+                        "md": "16px",
+                        "sm": "12px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "lg": "24px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "display-hero": ["Nunito Sans"],
+                        "caption": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "section-title-arabic": ["Cairo"],
+                        "section-title": ["Nunito Sans"],
+                        "display-hero-arabic": ["Cairo"],
+                        "body-md-arabic": ["Cairo"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-hero": ["34px", { "lineHeight": "42px", "fontWeight": "800" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "label-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "section-title-arabic": ["20px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "section-title": ["22px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "display-hero-arabic": ["32px", { "lineHeight": "58px", "fontWeight": "800" }],
+                        "body-md-arabic": ["16px", { "lineHeight": "28.8px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "26px", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #F4F6FB;
+            font-family: 'Cairo', 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .card-shadow {
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+        }
+        .active-tab-indicator {
+            position: relative;
+        }
+        .active-tab-indicator::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: #0038af;
+            border-radius: 9999px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- Top AppBar -->
+<header class="bg-background sticky top-0 z-40 flex justify-between items-center w-full px-screen-edge py-md">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged Tunisian man with a kind expression, wearing a smart casual blazer. The background is a soft-focus modern office with warm, professional lighting. The overall aesthetic is clean, corporate, and authoritative, aligning with a civic service platform's trust-focused visual identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEmS73Ms0GhKqXHpuz4sahgQSDrEPD7L4QH15S7xrNABZAfgA362xBR-PyXpWiUA7PE_0-5BNIM4kHnTIhZ5onIKfkAz9IFn4K8O3o9buW1R90kRx-lNRZethtfHYMYLqrwVDEnTsCK0-xhOSkilRA1mWrrvspeajQ9tkLTYYXXm5hvmT8C_YR5E1oh0lB6KekCPcu6jlKVOOf12bxmT155EZPu-QpREZHfADck6hXJZ6zcRp0pH67Mdg5xkNIwW_8rX9Gp0oiQA"/>
+</div>
+<h1 class="font-display-hero text-[24px] text-primary leading-tight">Sahali</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-surface-variant/20 rounded-full transition-opacity active:opacity-70">
+<span class="material-symbols-outlined text-primary text-[24px]">notifications</span>
+</button>
+</header>
+<main class="px-screen-edge mt-base">
+<!-- Title Section -->
+<div class="mb-lg">
+<h2 class="font-section-title-arabic text-section-title-arabic text-on-surface">Mes signalements</h2>
+<p class="font-body-md-arabic text-on-surface-variant opacity-80">Suivez l'état de vos demandes citoyennes</p>
+</div>
+<!-- Stats Row - Bento Style -->
+<div class="grid grid-cols-3 gap-sm mb-xl">
+<div class="bg-surface-container-lowest p-md rounded-xl card-shadow flex flex-col items-center">
+<span class="text-primary font-bold text-[24px]">12</span>
+<span class="text-on-surface-variant text-caption font-medium">Total</span>
+</div>
+<div class="bg-primary-container p-md rounded-xl card-shadow flex flex-col items-center">
+<span class="text-on-primary font-bold text-[24px]">4</span>
+<span class="text-on-primary/90 text-caption font-medium">En cours</span>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl card-shadow flex flex-col items-center">
+<span class="text-secondary font-bold text-[24px]">8</span>
+<span class="text-on-surface-variant text-caption font-medium">Résolus</span>
+</div>
+</div>
+<!-- Filter Tabs -->
+<div class="flex items-center gap-md mb-lg border-b border-outline-variant/30 overflow-x-auto no-scrollbar">
+<button class="pb-base px-xs font-label-sm text-primary active-tab-indicator whitespace-nowrap">Tout</button>
+<button class="pb-base px-xs font-label-sm text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap">En attente</button>
+<button class="pb-base px-xs font-label-sm text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap">En cours</button>
+<button class="pb-base px-xs font-label-sm text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap">Traités</button>
+</div>
+<!-- Reports List -->
+<div class="flex flex-col gap-md">
+<!-- Report Card 1 -->
+<div class="bg-surface-container-lowest p-md rounded-xl card-shadow flex flex-col gap-sm border border-transparent hover:border-primary/20 transition-all active:scale-[0.98]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+</div>
+<div>
+<h3 class="font-label-sm text-on-surface">Fuite d'eau importante</h3>
+<p class="text-caption text-on-surface-variant flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                Avenue Habib Bourguiba, Tunis
+                            </p>
+</div>
+</div>
+<span class="bg-blue-100 text-primary text-[11px] px-3 py-1 rounded-full font-bold uppercase tracking-wider">En cours</span>
+</div>
+<div class="h-[1px] bg-outline-variant/20 w-full"></div>
+<div class="flex justify-between items-center text-caption text-on-surface-variant">
+<span>Il y a 2 heures</span>
+<div class="flex items-center gap-xs text-primary font-semibold cursor-pointer">
+                        Détails
+                        <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</div>
+</div>
+</div>
+<!-- Report Card 2 -->
+<div class="bg-surface-container-lowest p-md rounded-xl card-shadow flex flex-col gap-sm border border-transparent hover:border-primary/20 transition-all active:scale-[0.98]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<div>
+<h3 class="font-label-sm text-on-surface">Éclairage public défectueux</h3>
+<p class="text-caption text-on-surface-variant flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                Rue de Palestine, Ariana
+                            </p>
+</div>
+</div>
+<span class="bg-orange-100 text-orange-700 text-[11px] px-3 py-1 rounded-full font-bold uppercase tracking-wider">En attente</span>
+</div>
+<div class="h-[1px] bg-outline-variant/20 w-full"></div>
+<div class="flex justify-between items-center text-caption text-on-surface-variant">
+<span>Hier, 18:30</span>
+<div class="flex items-center gap-xs text-primary font-semibold cursor-pointer">
+                        Détails
+                        <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</div>
+</div>
+</div>
+<!-- Report Card 3 -->
+<div class="bg-surface-container-lowest p-md rounded-xl card-shadow flex flex-col gap-sm border border-transparent hover:border-primary/20 transition-all active:scale-[0.98]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">delete_outline</span>
+</div>
+<div>
+<h3 class="font-label-sm text-on-surface">Accumulation de déchets</h3>
+<p class="text-caption text-on-surface-variant flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                Cité Ennasr 2, Tunis
+                            </p>
+</div>
+</div>
+<span class="bg-green-100 text-green-700 text-[11px] px-3 py-1 rounded-full font-bold uppercase tracking-wider">Résolu</span>
+</div>
+<div class="h-[1px] bg-outline-variant/20 w-full"></div>
+<div class="flex justify-between items-center text-caption text-on-surface-variant">
+<span>3 Octobre 2023</span>
+<div class="flex items-center gap-xs text-primary font-semibold cursor-pointer">
+                        Voir rapport
+                        <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</div>
+</div>
+</div>
+<!-- Report Card 4 (Roads) -->
+<div class="bg-surface-container-lowest p-md rounded-xl card-shadow flex flex-col gap-sm border border-transparent hover:border-primary/20 transition-all active:scale-[0.98]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">construction</span>
+</div>
+<div>
+<h3 class="font-label-sm text-on-surface">Nid de poule dangereux</h3>
+<p class="text-caption text-on-surface-variant flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                Route de la Marsa, GP9
+                            </p>
+</div>
+</div>
+<span class="bg-blue-100 text-primary text-[11px] px-3 py-1 rounded-full font-bold uppercase tracking-wider">En cours</span>
+</div>
+<div class="h-[1px] bg-outline-variant/20 w-full"></div>
+<div class="flex justify-between items-center text-caption text-on-surface-variant">
+<span>Il y a 3 jours</span>
+<div class="flex items-center gap-xs text-primary font-semibold cursor-pointer">
+                        Détails
+                        <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container-lowest shadow-[0_-2px_8px_rgba(15,23,42,0.05)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant hover:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Accueil</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold transition-transform duration-150 scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment</span>
+<span class="font-label-sm text-label-sm">Signaux</span>
+</a>
+<div class="relative -top-6">
+<button class="w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</button>
+</div>
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant hover:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-sm text-label-sm">Alertes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant hover:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profil</span>
+</a>
+</nav>
+<script>
+        // Simple interaction for cards
+        document.querySelectorAll('.card-shadow').forEach(card => {
+            card.addEventListener('click', () => {
+                card.classList.add('ring-2', 'ring-primary/10');
+                setTimeout(() => {
+                    card.classList.remove('ring-2', 'ring-primary/10');
+                }, 400);
+            });
+        });
+
+        // Tab switching logic (Visual only)
+        document.querySelectorAll('button.pb-base').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('button.pb-base').forEach(b => {
+                    b.classList.remove('text-primary', 'active-tab-indicator');
+                    b.classList.add('text-on-surface-variant');
+                });
+                this.classList.add('text-primary', 'active-tab-indicator');
+                this.classList.remove('text-on-surface-variant');
+            });
+        });
+    </script>
+</body></html>
