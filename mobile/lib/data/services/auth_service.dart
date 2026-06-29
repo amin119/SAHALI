@@ -24,8 +24,8 @@ class AuthService {
   }) async {
     final res = await _dio.post('/auth/register', data: {
       'full_name': fullName,
-      if (phone != null) 'phone': phone,
-      if (email != null) 'email': email,
+      if (phone != null && phone.isNotEmpty) 'phone': phone,
+      if (email != null && email.isNotEmpty) 'email': email,
       'password': password,
       'preferred_language': preferredLanguage,
     });
@@ -48,6 +48,35 @@ class AuthService {
       res.data['access_token'] as String,
       res.data['refresh_token'] as String,
     );
+  }
+
+  /// Sends email verification code. Returns debug_code in dev mode.
+  Future<String?> sendEmailVerification(String email) async {
+    final res = await _dio.post('/auth/verify-email/send', data: {'email': email});
+    return res.data['debug_code'] as String?;
+  }
+
+  /// Confirms email verification. Returns true on success.
+  Future<void> confirmEmailVerification(String email, String code) async {
+    await _dio.post('/auth/verify-email/confirm', data: {
+      'email': email,
+      'code': code,
+    });
+  }
+
+  /// Sends forgot password code. Returns debug_code in dev mode.
+  Future<String?> forgotPassword(String identifier) async {
+    final res = await _dio.post('/auth/forgot-password', data: {'identifier': identifier});
+    return res.data['debug_code'] as String?;
+  }
+
+  /// Resets password with code. Returns true on success.
+  Future<void> resetPassword(String identifier, String code, String newPassword) async {
+    await _dio.post('/auth/reset-password', data: {
+      'identifier': identifier,
+      'code': code,
+      'new_password': newPassword,
+    });
   }
 
   Future<UserModel> getMe() async {

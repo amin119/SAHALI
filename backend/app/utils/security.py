@@ -22,24 +22,35 @@ def _load_key(path: str) -> str:
         return f.read()
 
 
+def _get_private_key() -> str:
+    if settings.JWT_PRIVATE_KEY_B64:
+        import base64
+        return base64.b64decode(settings.JWT_PRIVATE_KEY_B64).decode()
+    return _load_key(settings.JWT_PRIVATE_KEY_PATH)
+
+
+def _get_public_key() -> str:
+    if settings.JWT_PUBLIC_KEY_B64:
+        import base64
+        return base64.b64decode(settings.JWT_PUBLIC_KEY_B64).decode()
+    return _load_key(settings.JWT_PUBLIC_KEY_PATH)
+
+
 def create_access_token(subject: str, role: str) -> str:
-    private_key = _load_key(settings.JWT_PRIVATE_KEY_PATH)
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {"sub": subject, "role": role, "exp": expire, "type": "access"}
-    return jwt.encode(payload, private_key, algorithm="RS256")
+    return jwt.encode(payload, _get_private_key(), algorithm="RS256")
 
 
 def create_refresh_token(subject: str) -> str:
-    private_key = _load_key(settings.JWT_PRIVATE_KEY_PATH)
     expire = datetime.now(timezone.utc) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
     payload = {"sub": subject, "exp": expire, "type": "refresh"}
-    return jwt.encode(payload, private_key, algorithm="RS256")
+    return jwt.encode(payload, _get_private_key(), algorithm="RS256")
 
 
 def decode_token(token: str) -> dict:
-    public_key = _load_key(settings.JWT_PUBLIC_KEY_PATH)
     try:
-        return jwt.decode(token, public_key, algorithms=["RS256"])
+        return jwt.decode(token, _get_public_key(), algorithms=["RS256"])
     except JWTError as e:
         raise ValueError(f"Invalid token: {e}")
 

@@ -8,9 +8,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-in-production"
     DEBUG: bool = True
 
-    # JWT
+    # JWT — file paths for local dev, base64 env vars for production (Render)
     JWT_PRIVATE_KEY_PATH: str = "./private.pem"
     JWT_PUBLIC_KEY_PATH: str = "./public.pem"
+    JWT_PRIVATE_KEY_B64: str = ""
+    JWT_PUBLIC_KEY_B64: str = ""
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
@@ -51,6 +53,9 @@ class Settings(BaseSettings):
 
     # Sentry
     SENTRY_DSN: str = ""
+
+    # CORS — "*" for dev, comma-separated origins for production
+    CORS_ORIGINS: str = "*"
 
     # Rate limiting
     RATE_LIMIT_PER_MINUTE: int = 100

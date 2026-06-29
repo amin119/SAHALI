@@ -207,6 +207,47 @@ class AppLocalizations {
   String get emailAddress => _t('emailAddress');
   String get password => _t('password');
   String get skipForNow => _t('skipForNow');
+  String get forgotPassword => _t('forgotPassword');
+  String get loginWithPhone => _t('loginWithPhone');
+  String get dontHaveAccount => _t('dontHaveAccount');
+  String get signUpInstead => _t('signUpInstead');
+  // ── Register ──────────────────────────────────────────────────────────────────
+  String get createAccount => _t('createAccount');
+  String get createAccountSub => _t('createAccountSub');
+  String get alreadyHaveAccount => _t('alreadyHaveAccount');
+  String get signInInstead => _t('signInInstead');
+  String get fullName => _t('fullName');
+  String get fullNameHint => _t('fullNameHint');
+  String get confirmPassword => _t('confirmPassword');
+  String get passwordsDoNotMatch => _t('passwordsDoNotMatch');
+  String get passwordTooShort => _t('passwordTooShort');
+  // ── Phone OTP ─────────────────────────────────────────────────────────────────
+  String get phoneOtpTitle => _t('phoneOtpTitle');
+  String get phoneOtpSub => _t('phoneOtpSub');
+  String get otpSentTo => _t('otpSentTo');
+  String get verifyOtpBtn => _t('verifyOtpBtn');
+  String get resendCode => _t('resendCode');
+  String resendCodeIn(int s) => _t('resendCodeIn').replaceAll('{s}', '$s');
+  // ── Forgot / Reset password ───────────────────────────────────────────────────
+  String get forgotPasswordTitle => _t('forgotPasswordTitle');
+  String get forgotPasswordSub => _t('forgotPasswordSub');
+  String get emailOrPhone => _t('emailOrPhone');
+  String get sendResetCode => _t('sendResetCode');
+  String get resetPasswordTitle => _t('resetPasswordTitle');
+  String get resetPasswordSub => _t('resetPasswordSub');
+  String get resetCode => _t('resetCode');
+  String get newPassword => _t('newPassword');
+  String get resetPasswordBtn => _t('resetPasswordBtn');
+  String get passwordResetSuccess => _t('passwordResetSuccess');
+  String get backToLogin => _t('backToLogin');
+  // ── Email verification ────────────────────────────────────────────────────────
+  String get verifyEmailTitle => _t('verifyEmailTitle');
+  String get verifyEmailSub => _t('verifyEmailSub');
+  String get verificationCode => _t('verificationCode');
+  String get verifyBtn => _t('verifyBtn');
+  String get skipVerification => _t('skipVerification');
+  // ── Dev hint ──────────────────────────────────────────────────────────────────
+  String get devCodeHint => _t('devCodeHint');
 
   // ── Photo screen ──────────────────────────────────────────────────────────────
   String get tapToTakePhoto => _t('tapToTakePhoto');
@@ -414,7 +455,7 @@ const _en = <String, String>{
   'ob3Sub': 'Thousands of Tunisians have already improved their neighborhoods with سهلي.',
 
   'welcomeBack': 'Welcome back',
-  'loginSubtitle': 'Sign in to report issues in your city.',
+  'loginSubtitle': 'Sign in to your account.',
   'tabPhoneOtp': 'Phone / OTP',
   'tabEmail': 'Email',
   'phoneNumber': 'Phone number',
@@ -424,6 +465,42 @@ const _en = <String, String>{
   'emailAddress': 'Email address',
   'password': 'Password',
   'skipForNow': 'Skip for now',
+  'forgotPassword': 'Forgot password?',
+  'loginWithPhone': 'Login with phone number',
+  'dontHaveAccount': "Don't have an account?",
+  'signUpInstead': 'Sign up',
+  'createAccount': 'Create account',
+  'createAccountSub': 'Join Sahali and start reporting.',
+  'alreadyHaveAccount': 'Already have an account?',
+  'signInInstead': 'Sign in',
+  'fullName': 'Full name',
+  'fullNameHint': 'First Last',
+  'confirmPassword': 'Confirm password',
+  'passwordsDoNotMatch': 'Passwords do not match',
+  'passwordTooShort': 'Minimum 8 characters',
+  'phoneOtpTitle': 'Phone login',
+  'phoneOtpSub': 'Enter your phone number to receive a verification code.',
+  'otpSentTo': 'Code sent to',
+  'verifyOtpBtn': 'Verify',
+  'resendCode': 'Resend code',
+  'resendCodeIn': 'Resend in {s}s',
+  'forgotPasswordTitle': 'Forgot password',
+  'forgotPasswordSub': 'Enter your email or phone number and we\'ll send you a reset code.',
+  'emailOrPhone': 'Email or phone number',
+  'sendResetCode': 'Send reset code',
+  'resetPasswordTitle': 'Reset password',
+  'resetPasswordSub': 'Enter the code you received and choose a new password.',
+  'resetCode': 'Reset code',
+  'newPassword': 'New password',
+  'resetPasswordBtn': 'Reset password',
+  'passwordResetSuccess': 'Password reset successfully!',
+  'backToLogin': 'Back to sign in',
+  'verifyEmailTitle': 'Verify your email',
+  'verifyEmailSub': 'A verification code was sent to',
+  'verificationCode': 'Verification code',
+  'verifyBtn': 'Verify',
+  'skipVerification': 'Skip for now',
+  'devCodeHint': 'Dev mode — code:',
 
   'tapToTakePhoto': 'Tap to take a photo',
   'orChooseGallery': 'or choose from gallery below',
@@ -621,7 +698,7 @@ const _fr = <String, String>{
   'ob3Sub': 'Des milliers de Tunisiens ont déjà amélioré leur quartier grâce à سهلي.',
 
   'welcomeBack': 'Bon retour',
-  'loginSubtitle': 'Connectez-vous pour signaler des problèmes dans votre ville.',
+  'loginSubtitle': 'Connectez-vous à votre compte.',
   'tabPhoneOtp': 'Téléphone / OTP',
   'tabEmail': 'E-mail',
   'phoneNumber': 'Numéro de téléphone',
@@ -631,6 +708,42 @@ const _fr = <String, String>{
   'emailAddress': 'Adresse e-mail',
   'password': 'Mot de passe',
   'skipForNow': 'Passer pour l\'instant',
+  'forgotPassword': 'Mot de passe oublié ?',
+  'loginWithPhone': 'Connexion par téléphone',
+  'dontHaveAccount': 'Pas encore de compte ?',
+  'signUpInstead': "S'inscrire",
+  'createAccount': 'Créer un compte',
+  'createAccountSub': 'Rejoignez Sahali et commencez à signaler.',
+  'alreadyHaveAccount': 'Vous avez déjà un compte ?',
+  'signInInstead': 'Se connecter',
+  'fullName': 'Nom complet',
+  'fullNameHint': 'Prénom Nom',
+  'confirmPassword': 'Confirmer le mot de passe',
+  'passwordsDoNotMatch': 'Les mots de passe ne correspondent pas',
+  'passwordTooShort': 'Minimum 8 caractères',
+  'phoneOtpTitle': 'Connexion par téléphone',
+  'phoneOtpSub': 'Entrez votre numéro de téléphone pour recevoir un code.',
+  'otpSentTo': 'Code envoyé au',
+  'verifyOtpBtn': 'Vérifier',
+  'resendCode': 'Renvoyer le code',
+  'resendCodeIn': 'Renvoyer dans {s}s',
+  'forgotPasswordTitle': 'Mot de passe oublié',
+  'forgotPasswordSub': 'Entrez votre email ou téléphone pour recevoir un code de réinitialisation.',
+  'emailOrPhone': 'Email ou téléphone',
+  'sendResetCode': 'Envoyer le code',
+  'resetPasswordTitle': 'Nouveau mot de passe',
+  'resetPasswordSub': 'Entrez le code reçu et choisissez un nouveau mot de passe.',
+  'resetCode': 'Code de réinitialisation',
+  'newPassword': 'Nouveau mot de passe',
+  'resetPasswordBtn': 'Réinitialiser',
+  'passwordResetSuccess': 'Mot de passe réinitialisé avec succès !',
+  'backToLogin': 'Retour à la connexion',
+  'verifyEmailTitle': 'Vérifiez votre email',
+  'verifyEmailSub': 'Un code de vérification a été envoyé à',
+  'verificationCode': 'Code de vérification',
+  'verifyBtn': 'Vérifier',
+  'skipVerification': 'Passer pour l\'instant',
+  'devCodeHint': 'Mode dev — code :',
 
   'tapToTakePhoto': 'Appuyez pour prendre une photo',
   'orChooseGallery': 'ou choisissez dans la galerie ci-dessous',
@@ -828,7 +941,7 @@ const _ar = <String, String>{
   'ob3Sub': 'آلاف التونسيين حسّنوا أحياءهم بالفعل بفضل سهلي.',
 
   'welcomeBack': 'مرحباً بعودتك',
-  'loginSubtitle': 'سجّل دخولك للإبلاغ عن مشاكل في مدينتك.',
+  'loginSubtitle': 'سجّل الدخول إلى حسابك.',
   'tabPhoneOtp': 'الهاتف / OTP',
   'tabEmail': 'البريد الإلكتروني',
   'phoneNumber': 'رقم الهاتف',
@@ -838,6 +951,42 @@ const _ar = <String, String>{
   'emailAddress': 'عنوان البريد الإلكتروني',
   'password': 'كلمة المرور',
   'skipForNow': 'تخطي الآن',
+  'forgotPassword': 'نسيت كلمة المرور؟',
+  'loginWithPhone': 'الدخول برقم الهاتف',
+  'dontHaveAccount': 'ليس لديك حساب؟',
+  'signUpInstead': 'إنشاء حساب',
+  'createAccount': 'إنشاء حساب',
+  'createAccountSub': 'انضم إلى سهلي وابدأ الإبلاغ.',
+  'alreadyHaveAccount': 'هل لديك حساب؟',
+  'signInInstead': 'تسجيل الدخول',
+  'fullName': 'الاسم الكامل',
+  'fullNameHint': 'الاسم الأول والأخير',
+  'confirmPassword': 'تأكيد كلمة المرور',
+  'passwordsDoNotMatch': 'كلمتا المرور غير متطابقتين',
+  'passwordTooShort': '8 أحرف كحد أدنى',
+  'phoneOtpTitle': 'الدخول برمز OTP',
+  'phoneOtpSub': 'أدخل رقم هاتفك لاستلام رمز التحقق.',
+  'otpSentTo': 'تم إرسال الرمز إلى',
+  'verifyOtpBtn': 'تحقق',
+  'resendCode': 'إعادة إرسال الرمز',
+  'resendCodeIn': 'إعادة الإرسال بعد {s}ث',
+  'forgotPasswordTitle': 'نسيت كلمة المرور',
+  'forgotPasswordSub': 'أدخل بريدك الإلكتروني أو رقم هاتفك لاستلام رمز إعادة التعيين.',
+  'emailOrPhone': 'البريد الإلكتروني أو رقم الهاتف',
+  'sendResetCode': 'إرسال رمز إعادة التعيين',
+  'resetPasswordTitle': 'إعادة تعيين كلمة المرور',
+  'resetPasswordSub': 'أدخل الرمز المستلم واختر كلمة مرور جديدة.',
+  'resetCode': 'رمز إعادة التعيين',
+  'newPassword': 'كلمة مرور جديدة',
+  'resetPasswordBtn': 'إعادة التعيين',
+  'passwordResetSuccess': 'تم إعادة تعيين كلمة المرور بنجاح!',
+  'backToLogin': 'العودة لتسجيل الدخول',
+  'verifyEmailTitle': 'تأكيد بريدك الإلكتروني',
+  'verifyEmailSub': 'تم إرسال رمز التحقق إلى',
+  'verificationCode': 'رمز التحقق',
+  'verifyBtn': 'تحقق',
+  'skipVerification': 'تخطي الآن',
+  'devCodeHint': 'وضع المطور — الرمز:',
 
   'tapToTakePhoto': 'اضغط للتقاط صورة',
   'orChooseGallery': 'أو اختر من المعرض أدناه',

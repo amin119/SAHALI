@@ -3,6 +3,11 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/language_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
+import '../../features/auth/screens/register_screen.dart';
+import '../../features/auth/screens/phone_otp_screen.dart';
+import '../../features/auth/screens/forgot_password_screen.dart';
+import '../../features/auth/screens/reset_password_screen.dart';
+import '../../features/auth/screens/email_verify_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/report/screens/category_screen.dart';
 import '../../features/report/screens/photo_screen.dart';
@@ -23,6 +28,11 @@ class AppRoutes {
   static const onboarding = '/onboarding';
   static const language = '/language';
   static const login = '/login';
+  static const register = '/register';
+  static const phoneOtp = '/auth/phone-otp';
+  static const forgotPassword = '/auth/forgot-password';
+  static const resetPassword = '/auth/reset-password';
+  static const emailVerify = '/auth/verify-email';
   static const home = '/home';
   static const reportCategory = '/report/category';
   static const reportPhoto = '/report/photo';
@@ -50,9 +60,7 @@ GoRouter buildRouter(AuthProvider auth) => GoRouter(
   initialLocation: AppRoutes.splash,
   redirect: (context, state) {
     final path = state.uri.path;
-    // Already logged in and explicitly navigating to login → send to home
     if (path == AppRoutes.login && auth.isLoggedIn) return AppRoutes.home;
-    // Everything else is accessible — auth is optional until submission
     return null;
   },
   routes: [
@@ -61,6 +69,24 @@ GoRouter buildRouter(AuthProvider auth) => GoRouter(
     GoRoute(path: AppRoutes.onboarding,   builder: (_, s) => const OnboardingScreen()),
     GoRoute(path: AppRoutes.language,     builder: (_, s) => const LanguageScreen()),
     GoRoute(path: AppRoutes.login,        builder: (_, s) => const LoginScreen()),
+    GoRoute(path: AppRoutes.register,     builder: (_, s) => const RegisterScreen()),
+    GoRoute(path: AppRoutes.phoneOtp,     builder: (_, s) => const PhoneOtpScreen()),
+    GoRoute(
+      path: AppRoutes.forgotPassword,
+      builder: (_, s) => const ForgotPasswordScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.resetPassword,
+      builder: (_, s) => ResetPasswordScreen(
+        identifier: s.extra as String? ?? '',
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.emailVerify,
+      builder: (_, s) => EmailVerifyScreen(
+        email: s.extra as String? ?? '',
+      ),
+    ),
     GoRoute(path: AppRoutes.reportCategory,    builder: (_, s) => const CategoryScreen()),
     GoRoute(path: AppRoutes.reportPhoto,       builder: (_, s) => const PhotoScreen()),
     GoRoute(path: AppRoutes.reportLocation,    builder: (_, s) => const LocationScreen()),
