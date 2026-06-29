@@ -21,6 +21,7 @@ class ReportCreate(BaseModel):
     ward: str | None = None
     photo_url: str | None = None
     thumbnail_url: str | None = None
+    photo_urls: list[str] = []
 
     @field_validator("description")
     @classmethod
@@ -102,6 +103,7 @@ class ReportOut(BaseModel):
     description: str | None
     photo_url: str | None
     thumbnail_url: str | None
+    photo_urls: list[str] = []
     address: str | None
     city: str | None
     ward: str | None
@@ -135,5 +137,10 @@ class PresignedUrlRequest(BaseModel):
 
 class PresignedUrlResponse(BaseModel):
     upload_url: str
+    photo_url: str
+    thumbnail_url: str
+
+
+class PhotoUploadResponse(BaseModel):
     photo_url: str
     thumbnail_url: str

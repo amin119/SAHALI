@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +21,7 @@ class ReviewScreen extends StatefulWidget {
 
 class _ReviewScreenState extends State<ReviewScreen> {
   bool _submitting = false;
+  bool _uploadingPhoto = false;
   String? _error;
 
   Future<void> _submit() async {
@@ -40,6 +43,35 @@ class _ReviewScreenState extends State<ReviewScreen> {
     });
 
     try {
+      String? photoUrl;
+      String? thumbnailUrl;
+
+      final List<String> uploadedUrls = [];
+      if (form.photos.isNotEmpty) {
+        setState(() => _uploadingPhoto = true);
+        for (final file in form.photos) {
+          final filename = file.path.split(Platform.pathSeparator).last;
+          final ext = filename.split('.').last.toLowerCase();
+          final contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
+          final formData = FormData.fromMap({
+            'file': await MultipartFile.fromFile(
+              file.path,
+              filename: filename,
+              contentType: DioMediaType.parse(contentType),
+            ),
+          });
+          final res = await ApiClient.instance.dio.post(
+            '/reports/photo',
+            data: formData,
+            options: Options(sendTimeout: const Duration(seconds: 60)),
+          );
+          uploadedUrls.add(res.data['photo_url'] as String);
+        }
+        photoUrl = uploadedUrls.first;
+        thumbnailUrl = uploadedUrls.first;
+        setState(() => _uploadingPhoto = false);
+      }
+
       final title = form.categoryLabel ?? 'Report';
       final report = await ReportService().submitReport(
         categoryId: form.categoryId!,
@@ -47,6 +79,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
         description: form.description.isNotEmpty ? form.description : null,
         lat: form.location.latitude,
         lng: form.location.longitude,
+        photoUrl: photoUrl,
+        thumbnailUrl: thumbnailUrl,
+        photoUrls: uploadedUrls,
       );
       if (mounted) {
         context.go(AppRoutes.reportConfirmation, extra: report.trackingCode);
@@ -54,6 +89,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     } catch (e) {
       setState(() {
         _submitting = false;
+        _uploadingPhoto = false;
         _error = dioMessage(e);
       });
     }
@@ -137,15 +173,21 @@ class _ReviewScreenState extends State<ReviewScreen> {
               label: l10n.reviewPhoto,
               editLabel: l10n.edit,
               onEdit: () => context.go(AppRoutes.reportPhoto),
-              child: form.photo != null
+              child: form.photos.isNotEmpty
                   ? Row(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(form.photo!, width: 64, height: 64, fit: BoxFit.cover),
+                        ...form.photos.take(3).map((f) => Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(f, width: 56, height: 56, fit: BoxFit.cover),
+                          ),
+                        )),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${form.photos.length} photo${form.photos.length > 1 ? 's' : ''}',
+                          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
                         ),
-                        const SizedBox(width: 12),
-                        Text(l10n.photoAttached, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                       ],
                     )
                   : Text(l10n.noPhoto, style: const TextStyle(fontSize: 14, color: AppColors.textHint)),
@@ -216,7 +258,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
             const SizedBox(height: 20),
             SaButton(
-              label: l10n.submitReport,
+              label: _uploadingPhoto ? 'Envoi des photos...' : l10n.submitReport,
               isLoading: _submitting,
               onPressed: _submitting ? null : _submit,
             ),

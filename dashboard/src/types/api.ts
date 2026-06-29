@@ -36,6 +36,7 @@ export interface Report {
   description?: string
   photo_url?: string
   thumbnail_url?: string
+  photo_urls?: string[]
   lat?: number
   lng?: number
   address: string | null

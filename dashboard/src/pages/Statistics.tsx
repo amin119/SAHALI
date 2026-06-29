@@ -1,20 +1,12 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { useLang } from '../context/LangContext'
 
 interface AdminStats {
   total_reports: number
   today_reports: number
   by_status: Record<string, number>
   avg_resolution_hours: number
-}
-
-const STATUS_META: Record<string, { label: string; color: string }> = {
-  submitted:    { label: 'Soumis',    color: '#94A3B8' },
-  received:     { label: 'Reçus',     color: '#0EA5E9' },
-  under_review: { label: 'En examen', color: '#F59E0B' },
-  in_progress:  { label: 'En cours',  color: '#0038AF' },
-  resolved:     { label: 'Résolus',   color: '#22C55E' },
-  rejected:     { label: 'Rejetés',   color: '#EF4444' },
 }
 
 function KPICard({ label, value, icon, color, sub }: {
@@ -48,6 +40,7 @@ function SkeletonCard() {
 }
 
 export default function Statistics() {
+  const { t, locale } = useLang()
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -61,24 +54,41 @@ export default function Statistics() {
 
   const byStatus = stats?.by_status ?? {}
   const total = Object.values(byStatus).reduce((s, v) => s + v, 0) || 1
-  const resolved = byStatus['resolved'] ?? 0
+  const resolvedCount = byStatus['resolved'] ?? 0
   const active = byStatus['in_progress'] ?? 0
-  const resolutionRate = stats ? Math.round((resolved / total) * 100) : 0
+  const resolutionRate = stats ? Math.round((resolvedCount / total) * 100) : 0
 
   const statusOrder = ['submitted', 'received', 'under_review', 'in_progress', 'resolved', 'rejected']
+
+  const statusMeta: Record<string, { label: string; color: string }> = {
+    submitted:    { label: t('stat_submitted'),        color: '#94A3B8' },
+    received:     { label: t('status_received'),       color: '#0EA5E9' },
+    under_review: { label: t('status_under_review'),   color: '#F59E0B' },
+    in_progress:  { label: t('status_in_progress'),    color: '#0038AF' },
+    resolved:     { label: t('status_resolved'),       color: '#22C55E' },
+    rejected:     { label: t('status_rejected'),       color: '#EF4444' },
+  }
+
   const barData = statusOrder.map(key => ({
-    key, ...STATUS_META[key],
+    key, ...statusMeta[key],
     count: byStatus[key] ?? 0,
     pct: Math.round(((byStatus[key] ?? 0) / total) * 100),
   })).filter(d => d.count > 0)
 
   const maxCount = Math.max(...barData.map(d => d.count), 1)
 
+  const overviewItems = [
+    { label: t('stats_to_treat'), value: (byStatus['submitted'] ?? 0) + (byStatus['received'] ?? 0), color: '#0EA5E9' },
+    { label: t('dist_in_progress'), value: active, color: '#F97316' },
+    { label: t('dist_resolved'), value: resolvedCount, color: '#22C55E' },
+    { label: t('dist_rejected'), value: byStatus['rejected'] ?? 0, color: '#EF4444' },
+  ]
+
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-[#0F172A] text-2xl font-bold">Statistiques</h2>
-        <p className="text-[#64748B] text-sm mt-1">Tableau de bord analytique — données en temps réel</p>
+        <h2 className="text-[#0F172A] text-2xl font-bold">{t('nav_statistics')}</h2>
+        <p className="text-[#64748B] text-sm mt-1">{t('stats_subtitle')}</p>
       </div>
 
       {error && (
@@ -94,14 +104,14 @@ export default function Statistics() {
           Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
         ) : (
           <>
-            <KPICard label="Total signalements" value={stats?.total_reports ?? 0} icon="assignment" color="#0038AF"
-              sub={`+${stats?.today_reports ?? 0} aujourd'hui`} />
-            <KPICard label="Taux de résolution" value={`${resolutionRate}%`} icon="check_circle" color="#22C55E"
-              sub={`${resolved} résolus sur ${stats?.total_reports ?? 0}`} />
-            <KPICard label="En cours de traitement" value={active} icon="pending" color="#F97316"
-              sub="Interventions actives" />
-            <KPICard label="Résolution moyenne" value={`${stats?.avg_resolution_hours ?? 0}h`}
-              icon="schedule" color="#8B5CF6" sub="Délai moyen observé" />
+            <KPICard label={t('kpi_total')} value={stats?.total_reports ?? 0} icon="assignment" color="#0038AF"
+              sub={`+${stats?.today_reports ?? 0} ${t('kpi_today')}`} />
+            <KPICard label={t('stats_kpi_rate')} value={`${resolutionRate}%`} icon="check_circle" color="#22C55E"
+              sub={`${resolvedCount} ${t('stats_resolved_pct')} / ${stats?.total_reports ?? 0}`} />
+            <KPICard label={t('stats_kpi_active')} value={active} icon="pending" color="#F97316"
+              sub={t('stats_kpi_active_sub')} />
+            <KPICard label={t('stats_kpi_avg')} value={`${stats?.avg_resolution_hours ?? 0}h`}
+              icon="schedule" color="#8B5CF6" sub={t('stats_kpi_avg_sub')} />
           </>
         )}
       </div>
@@ -109,7 +119,7 @@ export default function Statistics() {
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-5 mb-6">
         {/* Bar chart */}
         <div className="xl:col-span-3 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-5">
-          <h3 className="text-sm font-bold text-[#181c20] mb-5">Répartition par statut</h3>
+          <h3 className="text-sm font-bold text-[#181c20] mb-5">{t('chart_by_status')}</h3>
           {loading ? (
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -145,7 +155,7 @@ export default function Statistics() {
 
         {/* Summary with SVG gauge */}
         <div className="xl:col-span-2 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-5">
-          <h3 className="text-sm font-bold text-[#181c20] mb-5">Vue d'ensemble</h3>
+          <h3 className="text-sm font-bold text-[#181c20] mb-5">{t('stats_overview')}</h3>
           {loading ? (
             <div className="flex flex-col items-center justify-center h-48 gap-3">
               <div className="w-36 h-36 rounded-full bg-[#E2E8F0] animate-pulse" />
@@ -162,17 +172,12 @@ export default function Statistics() {
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-3xl font-bold text-[#181c20]">{resolutionRate}%</span>
-                    <span className="text-xs text-[#64748B]">résolus</span>
+                    <span className="text-xs text-[#64748B]">{t('stats_resolved_pct')}</span>
                   </div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: 'À traiter', value: (byStatus['submitted'] ?? 0) + (byStatus['received'] ?? 0), color: '#0EA5E9' },
-                  { label: 'En cours', value: active, color: '#F97316' },
-                  { label: 'Résolus', value: resolved, color: '#22C55E' },
-                  { label: 'Rejetés', value: byStatus['rejected'] ?? 0, color: '#EF4444' },
-                ].map(s => (
+                {overviewItems.map(s => (
                   <div key={s.label} className="p-3 rounded-xl text-center" style={{ backgroundColor: `${s.color}10` }}>
                     <p className="text-xl font-bold" style={{ color: s.color }}>{s.value}</p>
                     <p className="text-xs text-[#64748B]">{s.label}</p>
@@ -187,12 +192,12 @@ export default function Statistics() {
       {/* Status detail table */}
       <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-[#E2E8F0]">
-          <h3 className="text-sm font-bold text-[#181c20]">Détail par statut</h3>
+          <h3 className="text-sm font-bold text-[#181c20]">{t('stats_detail')}</h3>
         </div>
         <table className="w-full text-left">
           <thead>
             <tr className="bg-[#f7f9fe] border-b border-[#E2E8F0]">
-              {['Statut', 'Signalements', 'Part (%)', 'Indicateur'].map(h => (
+              {[t('col_status'), t('col_reports_count'), t('col_share_pct'), t('col_indicator')].map(h => (
                 <th key={h} className="px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wider">{h}</th>
               ))}
             </tr>
@@ -207,7 +212,7 @@ export default function Statistics() {
                   </tr>
                 ))
               : statusOrder.map(key => {
-                  const meta = STATUS_META[key]
+                  const meta = statusMeta[key]
                   const count = byStatus[key] ?? 0
                   const pct = Math.round((count / total) * 100)
                   return (

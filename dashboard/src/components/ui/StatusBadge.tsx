@@ -1,13 +1,5 @@
 import type { ReportStatus } from '../../types/api'
-
-const STATUS_LABELS: Record<ReportStatus, string> = {
-  submitted:    'Nouveau',
-  received:     'Reçu',
-  under_review: 'En examen',
-  in_progress:  'En cours',
-  resolved:     'Résolu',
-  rejected:     'Rejeté',
-}
+import { useLang } from '../../context/LangContext'
 
 const STATUS_COLORS: Record<ReportStatus, string> = {
   submitted:    '#8B5CF6',
@@ -18,9 +10,18 @@ const STATUS_COLORS: Record<ReportStatus, string> = {
   rejected:     '#EF4444',
 }
 
-export default function StatusBadge({ status }: { status: ReportStatus }) {
-  const color = STATUS_COLORS[status] ?? '#94A3B8'
-  const label = STATUS_LABELS[status] ?? status
+export default function StatusBadge({ status }: { status: ReportStatus | string }) {
+  const { t } = useLang()
+  const color = STATUS_COLORS[status as ReportStatus] ?? '#94A3B8'
+  const labelMap: Record<string, ReturnType<typeof t>> = {
+    submitted:    t('status_submitted'),
+    received:     t('status_received'),
+    under_review: t('status_under_review'),
+    in_progress:  t('status_in_progress'),
+    resolved:     t('status_resolved'),
+    rejected:     t('status_rejected'),
+  }
+  const label = labelMap[status] ?? status
   return (
     <span
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"

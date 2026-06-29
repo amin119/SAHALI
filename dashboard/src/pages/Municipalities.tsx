@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { useLang } from '../context/LangContext'
 
 interface Municipality {
   id: number
@@ -35,6 +36,7 @@ function Skeleton() {
 }
 
 export default function Municipalities() {
+  const { t } = useLang()
   const [municipalities, setMunicipalities] = useState<Municipality[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -54,13 +56,18 @@ export default function Municipalities() {
   const totalAgents = municipalities.reduce((s, m) => s + m.agent_count, 0)
   const detail = municipalities.find(m => m.id === selectedId)
 
+  const tableHeaders = [
+    t('col_muni'), t('col_subscription'), t('col_reports_count'),
+    t('col_open_reports'), t('stat_resolved_n'), t('col_agents_m'), t('col_rate'),
+  ]
+
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
         <div>
-          <h2 className="text-[#0F172A] text-2xl font-bold">Municipalités</h2>
+          <h2 className="text-[#0F172A] text-2xl font-bold">{t('nav_municipalities')}</h2>
           <p className="text-[#64748B] text-sm mt-1">
-            {loading ? 'Chargement...' : `${municipalities.length} municipalités enregistrées`}
+            {loading ? t('loading') : `${municipalities.length} ${t('muni_registered')}`}
           </p>
         </div>
       </div>
@@ -75,10 +82,10 @@ export default function Municipalities() {
       {/* Summary strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Municipalités', value: loading ? '—' : municipalities.length, icon: 'location_city', color: '#0038AF' },
-          { label: 'Signalements totaux', value: loading ? '—' : totalReports, icon: 'assignment', color: '#F97316' },
-          { label: 'Taux de résolution moyen', value: loading ? '—' : `${avgResolution}%`, icon: 'check_circle', color: '#22C55E' },
-          { label: 'Agents terrain', value: loading ? '—' : totalAgents, icon: 'badge', color: '#8B5CF6' },
+          { label: t('nav_municipalities'), value: loading ? '—' : municipalities.length, icon: 'location_city', color: '#0038AF' },
+          { label: t('muni_total_reports'), value: loading ? '—' : totalReports, icon: 'assignment', color: '#F97316' },
+          { label: t('muni_avg_resolution'), value: loading ? '—' : `${avgResolution}%`, icon: 'check_circle', color: '#22C55E' },
+          { label: t('muni_field_agents'), value: loading ? '—' : totalAgents, icon: 'badge', color: '#8B5CF6' },
         ].map(kpi => (
           <div key={kpi.label} className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4">
             <div className="flex items-center justify-between mb-2">
@@ -97,7 +104,7 @@ export default function Municipalities() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-[#f7f9fe] border-b border-[#E2E8F0]">
-                {['Municipalité', 'Abonnement', 'Signalements', 'Ouverts', 'Résolus', 'Agents', 'Taux'].map(h => (
+                {tableHeaders.map(h => (
                   <th key={h} className="px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
@@ -152,7 +159,7 @@ export default function Municipalities() {
           return (
             <div className="w-64 flex-shrink-0 bg-white rounded-xl border border-[#E2E8F0] shadow-sm h-fit sticky top-24">
               <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
-                <h4 className="text-[#181c20] font-semibold text-sm">Détails</h4>
+                <h4 className="text-[#181c20] font-semibold text-sm">{t('muni_detail')}</h4>
                 <button onClick={() => setSelectedId(null)} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-[#f1f4f9]">
                   <span className="material-symbols-outlined text-[#64748B]" style={{ fontSize: 18 }}>close</span>
                 </button>
@@ -170,10 +177,10 @@ export default function Municipalities() {
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   {[
-                    { label: 'Signalements', value: detail.total_reports, color: '#0038AF' },
-                    { label: 'Ouverts', value: detail.open_reports, color: '#F97316' },
-                    { label: 'Résolus', value: detail.resolved_reports, color: '#22C55E' },
-                    { label: 'Agents', value: detail.agent_count, color: '#8B5CF6' },
+                    { label: t('col_reports_count'), value: detail.total_reports, color: '#0038AF' },
+                    { label: t('col_open_reports'),  value: detail.open_reports,  color: '#F97316' },
+                    { label: t('stat_resolved_n'),   value: detail.resolved_reports, color: '#22C55E' },
+                    { label: t('col_agents_m'),      value: detail.agent_count,   color: '#8B5CF6' },
                   ].map(s => (
                     <div key={s.label} className="text-center p-3 rounded-xl" style={{ backgroundColor: `${s.color}10` }}>
                       <p className="text-xl font-bold" style={{ color: s.color }}>{s.value}</p>
@@ -184,7 +191,7 @@ export default function Municipalities() {
 
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-xs font-semibold text-[#64748B]">Taux de résolution</span>
+                    <span className="text-xs font-semibold text-[#64748B]">{t('muni_detail_rate')}</span>
                     <span className="text-sm font-bold" style={{ color: rateColor }}>{detail.resolution_rate}%</span>
                   </div>
                   <div className="w-full h-2 bg-[#f1f4f9] rounded-full overflow-hidden">

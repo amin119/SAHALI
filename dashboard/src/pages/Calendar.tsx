@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import type { Report } from '../types/api'
+import { useLang } from '../context/LangContext'
 
-const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 const HOURS = Array.from({ length: 10 }, (_, i) => i + 8)
 
-const STATUS_META: Record<string, { label: string; bg: string; text: string }> = {
-  received:     { label: 'Reçu',     bg: '#0EA5E918', text: '#0EA5E9' },
-  under_review: { label: 'En examen',bg: '#F59E0B18', text: '#F59E0B' },
-  in_progress:  { label: 'En cours', bg: '#0038AF18', text: '#0038AF' },
-  resolved:     { label: 'Résolu',   bg: '#22C55E18', text: '#22C55E' },
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  received:     { bg: '#0EA5E918', text: '#0EA5E9' },
+  under_review: { bg: '#F59E0B18', text: '#F59E0B' },
+  in_progress:  { bg: '#0038AF18', text: '#0038AF' },
+  resolved:     { bg: '#22C55E18', text: '#22C55E' },
 }
 
 const PRIORITY_COLOR: Record<string, string> = {
@@ -35,16 +35,17 @@ function sameDay(a: Date, b: Date): boolean {
 }
 
 export default function Calendar() {
+  const { t, locale } = useLang()
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [weekOffset, setWeekOffset] = useState(0)
   const [selectedReport, setSelectedReport] = useState<Report | null>(null)
 
+  const DAYS = [t('day_mon'), t('day_tue'), t('day_wed'), t('day_thu'), t('day_fri'), t('day_sat'), t('day_sun')]
+
   useEffect(() => {
-    api.get<{ items: Report[]; total: number }>('/reports', {
-      page_size: '200',
-    })
+    api.get<{ items: Report[]; total: number }>('/reports', { page_size: '200' })
       .then(d => {
         const relevant = d.items.filter(r =>
           r.status === 'received' || r.status === 'under_review' || r.status === 'in_progress' || r.status === 'resolved'
@@ -59,10 +60,7 @@ export default function Calendar() {
   const today = new Date()
 
   function getEventsForDay(date: Date): Report[] {
-    return reports.filter(r => {
-      const d = new Date(r.updated_at)
-      return sameDay(d, date)
-    })
+    return reports.filter(r => sameDay(new Date(r.updated_at), date))
   }
 
   function getHourSlot(r: Report): number {
@@ -70,33 +68,46 @@ export default function Calendar() {
   }
 
   function monthLabel(): string {
-    const months = weekDates.map(d => d.toLocaleDateString('fr-FR', { month: 'long' }))
+    const months = weekDates.map(d => d.toLocaleDateString(locale, { month: 'long' }))
     const unique = [...new Set(months)]
     const year = weekDates[0].getFullYear()
     return `${unique.join(' / ')} ${year}`
   }
 
+  const statusLabel = (s: string) => t(
+    s === 'received' ? 'status_received' :
+    s === 'under_review' ? 'status_under_review' :
+    s === 'in_progress' ? 'status_in_progress' :
+    s === 'resolved' ? 'status_resolved' : 'status_received'
+  )
+
+  const summaryStrip = [
+    { key: 'under_review', label: t('status_under_review'), icon: 'search',       color: '#F59E0B' },
+    { key: 'in_progress',  label: t('cal_in_progress'),     icon: 'pending',       color: '#0038AF' },
+    { key: 'resolved_week',label: t('cal_done_week'),       icon: 'check_circle',  color: '#22C55E' },
+    { key: 'total',        label: t('cal_total'),           icon: 'assignment',    color: '#F97316' },
+  ]
+
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
         <div>
-          <h2 className="text-[#0F172A] text-2xl font-bold">Calendrier</h2>
+          <h2 className="text-[#0F172A] text-2xl font-bold">{t('nav_calendar')}</h2>
           <p className="text-[#64748B] text-sm mt-1 capitalize">{monthLabel()}</p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Status legend */}
           <div className="hidden md:flex items-center gap-3">
-            {Object.entries(STATUS_META).map(([k, v]) => (
+            {Object.entries(STATUS_COLORS).map(([k, v]) => (
               <div key={k} className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: v.text }} />
-                <span className="text-xs text-[#64748B]">{v.label}</span>
+                <span className="text-xs text-[#64748B]">{statusLabel(k)}</span>
               </div>
             ))}
           </div>
           <div className="flex items-center gap-1">
             <button onClick={() => setWeekOffset(0)}
               className="px-3 py-1.5 text-sm bg-white border border-[#E2E8F0] rounded-lg text-[#64748B] hover:bg-[#f7f9fe] transition-colors">
-              Aujourd'hui
+              {t('week_today')}
             </button>
             <button onClick={() => setWeekOffset(w => w - 1)}
               className="w-8 h-8 flex items-center justify-center bg-white border border-[#E2E8F0] rounded-lg text-[#64748B] hover:bg-[#f7f9fe] transition-colors">
@@ -124,9 +135,8 @@ export default function Calendar() {
           {weekDates.map((d, i) => {
             const isToday = sameDay(d, today)
             return (
-              <div key={i} className={`p-3 text-center border-r border-[#E2E8F0] last:border-r-0
-                ${isToday ? 'bg-[#0038AF08]' : ''}`}>
-                <p className="text-xs font-semibold text-[#64748B]">{DAYS_FR[i]}</p>
+              <div key={i} className={`p-3 text-center border-r border-[#E2E8F0] last:border-r-0 ${isToday ? 'bg-[#0038AF08]' : ''}`}>
+                <p className="text-xs font-semibold text-[#64748B]">{DAYS[i]}</p>
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center mx-auto mt-1 text-sm font-bold
                   ${isToday ? 'bg-[#0038AF] text-white' : 'text-[#181c20]'}`}>
                   {d.getDate()}
@@ -142,7 +152,7 @@ export default function Calendar() {
             <div className="p-8 flex items-center justify-center">
               <div className="text-center">
                 <div className="w-12 h-12 rounded-full border-4 border-[#0038AF] border-t-transparent animate-spin mx-auto mb-3" />
-                <p className="text-sm text-[#64748B]">Chargement des événements...</p>
+                <p className="text-sm text-[#64748B]">{t('cal_loading')}</p>
               </div>
             </div>
           ) : (
@@ -156,10 +166,9 @@ export default function Calendar() {
                   const isToday = sameDay(d, today)
                   const events = getEventsForDay(d).filter(r => getHourSlot(r) === hour)
                   return (
-                    <div key={di} className={`p-1.5 border-r border-[#E2E8F0] last:border-r-0 min-h-14
-                      ${isToday ? 'bg-[#0038AF04]' : ''}`}>
+                    <div key={di} className={`p-1.5 border-r border-[#E2E8F0] last:border-r-0 min-h-14 ${isToday ? 'bg-[#0038AF04]' : ''}`}>
                       {events.map(r => {
-                        const sm = STATUS_META[r.status] ?? STATUS_META.in_progress
+                        const sm = STATUS_COLORS[r.status] ?? STATUS_COLORS.in_progress
                         const pc = PRIORITY_COLOR[r.priority] ?? '#94A3B8'
                         return (
                           <button key={r.id} onClick={() => setSelectedReport(r === selectedReport ? null : r)}
@@ -184,23 +193,25 @@ export default function Calendar() {
 
       {/* Summary strip */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'En examen', value: reports.filter(r => r.status === 'under_review').length, color: '#F59E0B', icon: 'search' },
-          { label: 'En cours', value: reports.filter(r => r.status === 'in_progress').length, color: '#0038AF', icon: 'pending' },
-          { label: 'Terminés cette semaine', value: reports.filter(r => r.status === 'resolved' && weekDates.some(d => sameDay(d, new Date(r.updated_at)))).length, color: '#22C55E', icon: 'check_circle' },
-          { label: 'Total à suivre', value: reports.length, color: '#F97316', icon: 'assignment' },
-        ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: `${s.color}18` }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 20, color: s.color }}>{s.icon}</span>
+        {summaryStrip.map(s => {
+          const value = loading ? '—' :
+            s.key === 'under_review' ? reports.filter(r => r.status === 'under_review').length :
+            s.key === 'in_progress' ? reports.filter(r => r.status === 'in_progress').length :
+            s.key === 'resolved_week' ? reports.filter(r => r.status === 'resolved' && weekDates.some(d => sameDay(d, new Date(r.updated_at)))).length :
+            reports.length
+          return (
+            <div key={s.key} className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: `${s.color}18` }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: s.color }}>{s.icon}</span>
+              </div>
+              <div>
+                <p className="text-xl font-bold text-[#181c20]">{value}</p>
+                <p className="text-xs text-[#64748B]">{s.label}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xl font-bold text-[#181c20]">{loading ? '—' : s.value}</p>
-              <p className="text-xs text-[#64748B]">{s.label}</p>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Event detail popup */}
@@ -223,10 +234,10 @@ export default function Calendar() {
             )}
             <div className="flex items-center gap-2">
               {(() => {
-                const sm = STATUS_META[selectedReport.status] ?? STATUS_META.in_progress
+                const sm = STATUS_COLORS[selectedReport.status] ?? STATUS_COLORS.in_progress
                 return (
                   <span className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                    style={{ backgroundColor: sm.bg, color: sm.text }}>{sm.label}</span>
+                    style={{ backgroundColor: sm.bg, color: sm.text }}>{statusLabel(selectedReport.status)}</span>
                 )
               })()}
               <span className="px-2.5 py-1 rounded-full text-xs font-semibold"
@@ -234,7 +245,7 @@ export default function Calendar() {
                 {selectedReport.priority}
               </span>
               <span className="text-xs text-[#94A3B8] ml-auto">
-                {new Date(selectedReport.updated_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                {new Date(selectedReport.updated_at).toLocaleString(locale, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           </div>

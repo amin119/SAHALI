@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { api } from '../lib/api'
+import { api, API_BASE } from '../lib/api'
 import type { Report, ReportStatus, Category, User, Assignment, ResolutionReport, StatusHistoryEntry } from '../types/api'
 import { useReportEvents } from '../hooks/useReportEvents'
 import StatusBadge from '../components/ui/StatusBadge'
@@ -453,27 +453,59 @@ export default function Reports() {
                   <p className="text-[#94A3B8] text-xs mb-1">Adresse</p>
                   <p className="text-sm text-[#181c20]">{[detailReport.address, detailReport.city].filter(Boolean).join(', ') || '—'}</p>
                 </div>
+                {detailReport.lat != null && detailReport.lng != null && (
+                  <div>
+                    <p className="text-[#94A3B8] text-xs mb-1.5">Coordonnées GPS</p>
+                    <a
+                      href={`https://www.google.com/maps?q=${detailReport.lat},${detailReport.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#f0f4ff] border border-[#0038AF]/20 hover:bg-[#e0e9ff] transition-colors group w-full"
+                    >
+                      <span className="material-symbols-outlined text-[#0038AF]" style={{ fontSize: 16 }}>location_on</span>
+                      <span className="text-xs font-mono text-[#0038AF] flex-1">
+                        {detailReport.lat.toFixed(6)}, {detailReport.lng.toFixed(6)}
+                      </span>
+                      <span className="material-symbols-outlined text-[#0038AF] opacity-60 group-hover:opacity-100 transition-opacity" style={{ fontSize: 13 }}>open_in_new</span>
+                    </a>
+                  </div>
+                )}
                 {detailReport.description && (
                   <div>
                     <p className="text-[#94A3B8] text-xs mb-1">Description</p>
                     <p className="text-sm text-[#64748B] leading-relaxed">{detailReport.description}</p>
                   </div>
                 )}
-                {detailReport.photo_url && (
-                  <div>
-                    <p className="text-[#94A3B8] text-xs mb-2">Photo</p>
-                    <a href={detailReport.photo_url} target="_blank" rel="noopener noreferrer">
-                      <img
-                        src={detailReport.thumbnail_url ?? detailReport.photo_url}
-                        alt="Photo du signalement"
-                        className="w-full rounded-xl object-cover cursor-zoom-in hover:opacity-90 transition-opacity"
-                        style={{ maxHeight: 200 }}
-                        onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = 'none' }}
-                      />
-                    </a>
-                    <p className="text-[10px] text-[#94A3B8] mt-1">Cliquer pour agrandir</p>
-                  </div>
-                )}
+                {(() => {
+                  // Build a deduplicated list from photo_urls, falling back to photo_url
+                  const rawUrls: string[] = detailReport.photo_urls?.length
+                    ? detailReport.photo_urls
+                    : detailReport.photo_url ? [detailReport.photo_url] : []
+                  // Resolve relative paths (/reports/photo/...) to full API URLs
+                  const photos = rawUrls.map(u => u.startsWith('/') ? `${API_BASE}${u}` : u)
+                  if (!photos.length) return null
+                  return (
+                    <div>
+                      <p className="text-[#94A3B8] text-xs mb-2">
+                        {photos.length > 1 ? `Photos (${photos.length})` : 'Photo'}
+                      </p>
+                      <div className={`grid gap-2 ${photos.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                        {photos.map((src, i) => (
+                          <a key={i} href={src} target="_blank" rel="noopener noreferrer">
+                            <img
+                              src={src}
+                              alt={`Photo ${i + 1}`}
+                              className="w-full rounded-xl object-cover cursor-zoom-in hover:opacity-90 transition-opacity"
+                              style={{ maxHeight: photos.length > 1 ? 120 : 200 }}
+                              onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = 'none' }}
+                            />
+                          </a>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-[#94A3B8] mt-1">Cliquer pour agrandir</p>
+                    </div>
+                  )
+                })()}
                 <div>
                   <p className="text-[#94A3B8] text-xs mb-1">Soumis le</p>
                   <p className="text-sm text-[#181c20]">

@@ -2,13 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/api'
 import type { Report, ReportStatus } from '../types/api'
 import StatusBadge from '../components/ui/StatusBadge'
-
-const COLUMNS: { id: string; label: string; statuses: ReportStatus[]; color: string }[] = [
-  { id: 'reception',  label: 'Réception',  statuses: ['received'],               color: '#0EA5E9' },
-  { id: 'examen',     label: 'En examen',  statuses: ['under_review'],            color: '#F59E0B' },
-  { id: 'en_cours',   label: 'En cours',   statuses: ['in_progress'],             color: '#0038AF' },
-  { id: 'termines',   label: 'Terminés',   statuses: ['resolved'],                color: '#22C55E' },
-]
+import { useLang } from '../context/LangContext'
 
 const NEXT_STATUSES: Record<ReportStatus, ReportStatus[]> = {
   received:     ['under_review', 'rejected'],
@@ -18,19 +12,8 @@ const NEXT_STATUSES: Record<ReportStatus, ReportStatus[]> = {
   rejected:     [],
 }
 
-const PRIORITY_META: Record<string, { label: string; color: string }> = {
-  low:      { label: 'Basse',    color: '#22C55E' },
-  medium:   { label: 'Moyenne',  color: '#F59E0B' },
-  high:     { label: 'Haute',    color: '#F97316' },
-  critical: { label: 'Critique', color: '#EF4444' },
-}
-
-const STATUS_LABELS: Record<ReportStatus, string> = {
-  received:     'Reçu',
-  under_review: 'En examen',
-  in_progress:  'En cours',
-  resolved:     'Résolu',
-  rejected:     'Rejeté',
+const PRIORITY_COLORS: Record<string, string> = {
+  low: '#22C55E', medium: '#F59E0B', high: '#F97316', critical: '#EF4444',
 }
 
 function CardSkeleton() {
@@ -47,12 +30,35 @@ function CardSkeleton() {
 }
 
 export default function Interventions() {
+  const { t, locale } = useLang()
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<Report | null>(null)
   const [transitioning, setTransitioning] = useState(false)
   const [note, setNote] = useState('')
+
+  const columns = [
+    { id: 'reception',  label: t('int_reception'),       statuses: ['received'] as ReportStatus[],    color: '#0EA5E9' },
+    { id: 'examen',     label: t('status_under_review'),  statuses: ['under_review'] as ReportStatus[], color: '#F59E0B' },
+    { id: 'en_cours',   label: t('status_in_progress'),   statuses: ['in_progress'] as ReportStatus[],  color: '#0038AF' },
+    { id: 'termines',   label: t('int_terminated'),        statuses: ['resolved'] as ReportStatus[],     color: '#22C55E' },
+  ]
+
+  const priorityLabel = (p: string) => t(
+    p === 'low' ? 'priority_low' :
+    p === 'medium' ? 'priority_medium' :
+    p === 'high' ? 'priority_high' :
+    p === 'critical' ? 'priority_critical' : 'priority_medium'
+  )
+
+  const statusLabel = (s: ReportStatus) => t(
+    s === 'received' ? 'status_received' :
+    s === 'under_review' ? 'status_under_review' :
+    s === 'in_progress' ? 'status_in_progress' :
+    s === 'resolved' ? 'status_resolved' :
+    s === 'rejected' ? 'status_rejected' : 'status_received'
+  )
 
   const load = useCallback(() => {
     setLoading(true)
@@ -79,25 +85,25 @@ export default function Interventions() {
     }
   }
 
-  const groupedByColumn = COLUMNS.map(col => ({
+  const groupedByColumn = columns.map(col => ({
     ...col,
     cards: reports.filter(r => (col.statuses as string[]).includes(r.status)),
   }))
 
-  const nextStatuses = selected ? (NEXT_STATUSES[selected.status] ?? []) : []
+  const nextStatuses = selected ? (NEXT_STATUSES[selected.status as ReportStatus] ?? []) : []
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
         <div>
-          <h2 className="text-[#0F172A] text-2xl font-bold">Interventions</h2>
+          <h2 className="text-[#0F172A] text-2xl font-bold">{t('nav_interventions')}</h2>
           <p className="text-[#64748B] text-sm mt-1">
-            {loading ? 'Chargement...' : `${reports.length} signalements au total`}
+            {loading ? t('loading') : `${reports.length} ${t('reports_title').toLowerCase()}`}
           </p>
         </div>
         <button onClick={load} className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E2E8F0] rounded-xl text-sm font-medium text-[#64748B] hover:bg-[#f7f9fe] transition-colors">
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>refresh</span>
-          Actualiser
+          {t('refresh')}
         </button>
       </div>
 
@@ -128,7 +134,7 @@ export default function Interventions() {
               {loading
                 ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
                 : col.cards.map(r => {
-                    const pm = PRIORITY_META[r.priority] ?? PRIORITY_META.medium
+                    const pm = { label: priorityLabel(r.priority), color: PRIORITY_COLORS[r.priority] ?? '#F59E0B' }
                     const isSelected = selected?.id === r.id
                     return (
                       <div key={r.id} onClick={() => setSelected(isSelected ? null : r)}
@@ -158,7 +164,7 @@ export default function Interventions() {
           onClick={e => { if (e.target === e.currentTarget) setSelected(null) }}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#181c20]">Détail intervention</h3>
+              <h3 className="text-base font-bold text-[#181c20]">{t('int_detail')}</h3>
               <button onClick={() => setSelected(null)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f1f4f9]">
                 <span className="material-symbols-outlined text-[#64748B]" style={{ fontSize: 20 }}>close</span>
               </button>
@@ -179,13 +185,13 @@ export default function Interventions() {
 
               {nextStatuses.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-3">Changer le statut</p>
+                  <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-3">{t('change_status')}</p>
                   <div className="space-y-2 mb-4">
                     {nextStatuses.map(ns => (
                       <button key={ns} onClick={() => transition(selected.id, ns)}
                         disabled={transitioning}
                         className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-[#E2E8F0] hover:border-[#0038AF] hover:bg-[#0038AF08] transition-all text-sm font-medium text-[#181c20] disabled:opacity-50">
-                        <span>{STATUS_LABELS[ns]}</span>
+                        <span>{statusLabel(ns)}</span>
                         {transitioning
                           ? <span className="material-symbols-outlined text-[#94A3B8] animate-spin" style={{ fontSize: 16 }}>progress_activity</span>
                           : <span className="material-symbols-outlined text-[#0038AF]" style={{ fontSize: 16 }}>arrow_forward</span>
@@ -196,7 +202,7 @@ export default function Interventions() {
                   <textarea
                     value={note}
                     onChange={e => setNote(e.target.value)}
-                    placeholder="Note optionnelle (commentaire interne)..."
+                    placeholder={t('note_optional_int')}
                     className="w-full text-sm border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#181c20] placeholder-[#94A3B8] resize-none focus:outline-none focus:border-[#0038AF]"
                     rows={2}
                   />
@@ -205,7 +211,7 @@ export default function Interventions() {
 
               {nextStatuses.length === 0 && (
                 <p className="text-sm text-[#94A3B8] text-center py-4">
-                  Ce signalement est dans un état final.
+                  {t('int_final_state')}
                 </p>
               )}
             </div>

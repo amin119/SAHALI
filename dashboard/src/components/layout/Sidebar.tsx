@@ -39,7 +39,7 @@ export default function Sidebar() {
                 lang === l ? 'bg-[#0038AF] text-white shadow' : 'text-[#3f465c] hover:text-white'
               }`}
             >
-              {l === 'fr' ? 'Français' : 'العربية'}
+              {l === 'fr' ? t('lang_fr') : t('lang_ar')}
             </button>
           ))}
         </div>
@@ -87,8 +87,8 @@ export default function Sidebar() {
             <span className="material-symbols-outlined text-white" style={{ fontSize: 18 }}>location_city</span>
           </div>
           <div>
-            <p className="text-white text-xs font-semibold">La Marsa</p>
-            <p className="text-[#3f465c] text-[10px]">Administration</p>
+            <p className="text-white text-xs font-semibold">{t('sidebar_city')}</p>
+            <p className="text-[#3f465c] text-[10px]">{t('sidebar_admin')}</p>
           </div>
         </div>
       </div>

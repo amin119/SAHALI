@@ -26,6 +26,12 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str = "minioadmin"
     AWS_S3_BUCKET: str = "citizen-alert"
     AWS_S3_ENDPOINT_URL: str | None = "http://localhost:9000"
+    # Public URL used in pre-signed upload URLs returned to mobile clients.
+    # Must be reachable from the device:
+    #   emulator  → http://10.0.2.2:9000
+    #   same WiFi → http://192.168.X.X:9000
+    #   ngrok     → run `ngrok http 9000` and paste the https URL
+    AWS_S3_PUBLIC_URL: str | None = None
     AWS_REGION: str = "us-east-1"
 
     # Firebase

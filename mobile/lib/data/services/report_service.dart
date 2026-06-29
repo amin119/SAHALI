@@ -32,6 +32,7 @@ class ReportService {
     String? city,
     String? photoUrl,
     String? thumbnailUrl,
+    List<String> photoUrls = const [],
   }) async {
     final res = await _dio.post('/reports', data: {
       'category_id': categoryId,
@@ -43,6 +44,7 @@ class ReportService {
       if (city != null) 'city': city,
       if (photoUrl != null) 'photo_url': photoUrl,
       if (thumbnailUrl != null) 'thumbnail_url': thumbnailUrl,
+      'photo_urls': photoUrls,
     });
     return ReportModel.fromJson(res.data as Map<String, dynamic>);
   }

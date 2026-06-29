@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 
 class ReportFormProvider extends ChangeNotifier {
   static const _tunisCenter = LatLng(36.8065, 10.1815);
+  static const maxPhotos = 5;
 
   int? categoryIndex;
   int? categoryId;
@@ -11,10 +12,9 @@ class ReportFormProvider extends ChangeNotifier {
   IconData? categoryIcon;
   Color? categoryColor;
 
-  File? photo;
+  List<File> photos = [];
 
   LatLng location = _tunisCenter;
-
   String description = '';
 
   void setCategory(int index, String label, IconData icon, Color color, {int? id}) {
@@ -26,10 +26,31 @@ class ReportFormProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setPhoto(File? file) {
-    photo = file;
+  void addPhoto(File file) {
+    if (photos.length < maxPhotos) {
+      photos = [...photos, file];
+      notifyListeners();
+    }
+  }
+
+  void removePhoto(int index) {
+    photos = [...photos]..removeAt(index);
     notifyListeners();
   }
+
+  // Legacy single-photo setter used by old code paths
+  void setPhoto(File? file) {
+    if (file == null) {
+      photos = [];
+    } else if (photos.isEmpty) {
+      photos = [file];
+    } else {
+      photos = [file, ...photos.skip(1)];
+    }
+    notifyListeners();
+  }
+
+  File? get photo => photos.isEmpty ? null : photos.first;
 
   void setLocation(LatLng loc) {
     location = loc;
@@ -47,7 +68,7 @@ class ReportFormProvider extends ChangeNotifier {
     categoryLabel = null;
     categoryIcon = null;
     categoryColor = null;
-    photo = null;
+    photos = [];
     location = _tunisCenter;
     description = '';
     notifyListeners();

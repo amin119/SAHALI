@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Query
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Query, UploadFile, File, Response
+from fastapi.responses import StreamingResponse
+import io
 from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 from geoalchemy2.functions import ST_DWithin, ST_MakePoint, ST_SetSRID
@@ -10,14 +12,14 @@ from app.models.report import Report, ReportStatus, ReportStatusHistory, Assignm
 from app.models.user import User, UserRole
 from app.schemas.report import (
     ReportCreate, ReportOut, ReportListOut, StatusUpdate,
-    CommentCreate, PresignedUrlRequest, PresignedUrlResponse,
+    CommentCreate, PresignedUrlRequest, PresignedUrlResponse, PhotoUploadResponse,
     AssignCreate, AssignmentOut, ResolutionReportCreate, ResolutionReportOut,
     UserBrief,
 )
 from app.utils.deps import get_current_user, require_staff, require_supervisor
 from app.utils.pagination import PaginationParams
 from app.utils.security import generate_tracking_code
-from app.services.storage import generate_presigned_upload
+from app.services.storage import generate_presigned_upload, upload_photo as storage_upload_photo, get_photo as storage_get_photo
 from app.services.notification import notify_citizen, notify_staff
 from app.services.ai_client import analyze_report
 from app.services.event_bus import publish_report_event
@@ -78,6 +80,30 @@ def get_presigned_url(
     return PresignedUrlResponse(**result)
 
 
+@router.get("/photo/{file_path:path}")
+def proxy_photo(file_path: str):
+    """Public proxy that streams a photo from MinIO. Used by mobile clients
+    that cannot reach localhost:9000 directly."""
+    try:
+        data, content_type = storage_get_photo(file_path)
+        return StreamingResponse(io.BytesIO(data), media_type=content_type,
+                                 headers={"Cache-Control": "public, max-age=86400"})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Photo not found")
+
+
+@router.post("/photo", response_model=PhotoUploadResponse)
+async def upload_report_photo(
+    file: UploadFile = File(...),
+    _: User = Depends(get_current_user),
+):
+    data = await file.read()
+    filename = file.filename or "photo.jpg"
+    content_type = file.content_type or "image/jpeg"
+    result = storage_upload_photo(data, filename, content_type)
+    return PhotoUploadResponse(**result)
+
+
 @router.post("", response_model=ReportOut, status_code=status.HTTP_201_CREATED)
 def submit_report(
     body: ReportCreate,
@@ -89,6 +115,12 @@ def submit_report(
     while db.query(Report).filter(Report.tracking_code == tracking_code).first():
         tracking_code = generate_tracking_code()
 
+    # Merge photo_urls: if photo_url was set directly (old clients), include it
+    all_photo_urls = list(body.photo_urls)
+    if body.photo_url and body.photo_url not in all_photo_urls:
+        all_photo_urls.insert(0, body.photo_url)
+    primary_photo = all_photo_urls[0] if all_photo_urls else body.photo_url
+
     point = f"SRID=4326;POINT({body.lng} {body.lat})"
     report = Report(
         tracking_code=tracking_code,
@@ -96,8 +128,9 @@ def submit_report(
         category_id=body.category_id,
         title=body.title,
         description=body.description,
-        photo_url=body.photo_url,
-        thumbnail_url=body.thumbnail_url,
+        photo_url=primary_photo,
+        thumbnail_url=body.thumbnail_url or primary_photo,
+        photo_urls=all_photo_urls,
         location=point,
         address=body.address,
         city=body.city,

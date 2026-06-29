@@ -33,15 +33,50 @@ def generate_presigned_upload(filename: str, content_type: str) -> dict:
         ExpiresIn=600,
     )
 
-    base_url = settings.AWS_S3_ENDPOINT_URL or f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com"
-    photo_url = f"{base_url}/{settings.AWS_S3_BUCKET}/{key}"
-    thumbnail_url = f"{base_url}/{settings.AWS_S3_BUCKET}/{thumb_key}"
+    # internal_base: reachable by the dashboard browser (localhost:9000)
+    # public_base: reachable by mobile devices (ngrok / LAN IP)
+    internal_base = settings.AWS_S3_ENDPOINT_URL or f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com"
+    public_base = settings.AWS_S3_PUBLIC_URL or internal_base
+
+    # Rewrite the presigned upload URL so mobile devices can reach MinIO
+    if settings.AWS_S3_PUBLIC_URL and settings.AWS_S3_ENDPOINT_URL:
+        upload_url = upload_url.replace(settings.AWS_S3_ENDPOINT_URL, settings.AWS_S3_PUBLIC_URL, 1)
+
+    # photo_url uses internal_base so the dashboard browser can load images directly
+    # from localhost:9000 — no ngrok interstitial, no CORS issue for <img> tags
+    photo_url = f"{internal_base}/{settings.AWS_S3_BUCKET}/{key}"
+    thumbnail_url = f"{internal_base}/{settings.AWS_S3_BUCKET}/{thumb_key}"
 
     return {
         "upload_url": upload_url,
         "photo_url": photo_url,
         "thumbnail_url": thumbnail_url,
     }
+
+
+def upload_photo(data: bytes, filename: str, content_type: str) -> dict:
+    """Upload photo bytes directly to MinIO. Returns a relative path URL
+    that clients resolve against their own API base URL via GET /reports/photo/{key}."""
+    key = f"reports/{uuid.uuid4()}/{filename}"
+    client = _s3_client()
+    client.put_object(
+        Bucket=settings.AWS_S3_BUCKET,
+        Key=key,
+        Body=data,
+        ContentType=content_type,
+    )
+    # Relative URL: /reports/photo/{key}
+    # - Dashboard prepends http://localhost:8000/v1
+    # - Mobile prepends its configured backend base URL
+    photo_url = f"/reports/photo/{key}"
+    return {"photo_url": photo_url, "thumbnail_url": photo_url}
+
+
+def get_photo(key: str) -> tuple[bytes, str]:
+    """Fetch photo bytes and content-type from MinIO for proxy streaming."""
+    client = _s3_client()
+    obj = client.get_object(Bucket=settings.AWS_S3_BUCKET, Key=key)
+    return obj["Body"].read(), obj.get("ContentType", "image/jpeg")
 
 
 def delete_object(key: str) -> None:

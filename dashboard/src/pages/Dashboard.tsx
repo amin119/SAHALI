@@ -3,6 +3,7 @@ import { api } from '../lib/api'
 import type { AdminStats, Report } from '../types/api'
 import StatusBadge from '../components/ui/StatusBadge'
 import { useReportEvents } from '../hooks/useReportEvents'
+import { useLang } from '../context/LangContext'
 
 const RANGE_TABS = ['7j', '30j', '3m', '1an']
 
@@ -26,6 +27,7 @@ function KpiSkeleton() {
 }
 
 export default function Dashboard() {
+  const { t, locale } = useLang()
   const [rangeTab, setRangeTab] = useState('7j')
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [recentReports, setRecentReports] = useState<Report[]>([])
@@ -47,26 +49,26 @@ export default function Dashboard() {
   const kpiCards = stats
     ? [
         {
-          label: 'Total signalements',
-          value: stats.total_reports.toLocaleString('fr-FR'),
-          delta: `+${stats.today_reports} aujourd'hui`,
+          label: t('kpi_total'),
+          value: stats.total_reports.toLocaleString(locale),
+          delta: `+${stats.today_reports} ${t('kpi_today')}`,
           deltaUp: true,
           icon: 'report_problem',
           color: '#0038AF',
           sub: null,
         },
         {
-          label: 'En attente',
-          value: pending(stats).toLocaleString('fr-FR'),
-          delta: `${stats.by_status.submitted ?? 0} nouveaux`,
+          label: t('kpi_pending'),
+          value: pending(stats).toLocaleString(locale),
+          delta: `${stats.by_status.submitted ?? 0} ${t('kpi_new')}`,
           deltaUp: false,
           icon: 'pending_actions',
           color: '#F59E0B',
-          sub: `Résolution moy.: ${stats.avg_resolution_hours}h`,
+          sub: `${t('kpi_avg_res')} ${stats.avg_resolution_hours}h`,
         },
         {
-          label: 'Résolus',
-          value: resolved(stats).toLocaleString('fr-FR'),
+          label: t('kpi_resolved'),
+          value: resolved(stats).toLocaleString(locale),
           delta: stats.total_reports > 0
             ? `${Math.round((resolved(stats) / stats.total_reports) * 100)}%`
             : '—',
@@ -76,8 +78,8 @@ export default function Dashboard() {
           sub: null,
         },
         {
-          label: 'Rejetés',
-          value: (stats.by_status.rejected ?? 0).toLocaleString('fr-FR'),
+          label: t('kpi_rejected_lbl'),
+          value: (stats.by_status.rejected ?? 0).toLocaleString(locale),
           delta: stats.total_reports > 0
             ? `${Math.round(((stats.by_status.rejected ?? 0) / stats.total_reports) * 100)}%`
             : '—',
@@ -91,27 +93,29 @@ export default function Dashboard() {
 
   const statusDistribution = stats
     ? [
-        { label: 'Soumis', count: stats.by_status.submitted ?? 0, color: '#0038AF' },
-        { label: 'En cours', count: stats.by_status.in_progress ?? 0, color: '#F59E0B' },
-        { label: 'Résolus', count: resolved(stats), color: '#22C55E' },
-        { label: 'Rejetés', count: stats.by_status.rejected ?? 0, color: '#EF4444' },
+        { label: t('dist_submitted'), count: stats.by_status.submitted ?? 0, color: '#0038AF' },
+        { label: t('dist_in_progress'), count: stats.by_status.in_progress ?? 0, color: '#F59E0B' },
+        { label: t('dist_resolved'), count: resolved(stats), color: '#22C55E' },
+        { label: t('dist_rejected'), count: stats.by_status.rejected ?? 0, color: '#EF4444' },
       ]
     : []
 
   const totalDistrib = statusDistribution.reduce((s, c) => s + c.count, 0)
+
+  const tableHeaders = [t('col_code'), t('col_title'), t('col_city'), t('col_status'), t('col_priority'), t('col_date')]
 
   return (
     <div>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
         <div>
-          <h2 className="text-[#0F172A] text-2xl font-bold">Tableau de bord</h2>
+          <h2 className="text-[#0F172A] text-2xl font-bold">{t('nav_dashboard')}</h2>
         </div>
         <div className="flex items-center gap-3">
           <div className="bg-white border border-[#E2E8F0] px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm">
             <span className="material-symbols-outlined text-[#64748B]" style={{ fontSize: 16 }}>calendar_today</span>
             <span className="text-sm font-medium text-[#181c20]">
-              {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              {new Date().toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })}
             </span>
           </div>
           <button
@@ -131,7 +135,7 @@ export default function Dashboard() {
             className="bg-[#0038AF] text-white px-5 py-2 rounded-xl flex items-center gap-2 shadow-md hover:opacity-90 transition-opacity text-sm font-medium"
           >
             <span className="material-symbols-outlined" style={{ fontSize: 16 }}>download</span>
-            Exporter
+            {t('dash_export')}
           </button>
         </div>
       </div>
@@ -177,18 +181,18 @@ export default function Dashboard() {
         <div className="col-span-12 xl:col-span-8 bg-white rounded-xl p-6 shadow-sm border border-[#E2E8F0]">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h4 className="text-[#181c20] font-semibold text-base">Répartition des statuts</h4>
-              <p className="text-[#94A3B8] text-xs mt-0.5">Distribution actuelle de tous les signalements</p>
+              <h4 className="text-[#181c20] font-semibold text-base">{t('dist_title')}</h4>
+              <p className="text-[#94A3B8] text-xs mt-0.5">{t('dist_subtitle')}</p>
             </div>
             <div className="flex bg-[#f1f4f9] p-1 rounded-lg gap-1">
-              {RANGE_TABS.map(t => (
+              {RANGE_TABS.map(tab => (
                 <button
-                  key={t}
-                  onClick={() => setRangeTab(t)}
+                  key={tab}
+                  onClick={() => setRangeTab(tab)}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all
-                    ${rangeTab === t ? 'bg-white shadow-sm text-[#0038AF]' : 'text-[#64748B] hover:text-[#181c20]'}`}
+                    ${rangeTab === tab ? 'bg-white shadow-sm text-[#0038AF]' : 'text-[#64748B] hover:text-[#181c20]'}`}
                 >
-                  {t}
+                  {tab}
                 </button>
               ))}
             </div>
@@ -200,7 +204,7 @@ export default function Dashboard() {
                   <div className="flex justify-between items-center mb-1.5">
                     <span className="text-sm text-[#181c20]">{s.label}</span>
                     <span className="text-xs font-bold" style={{ color: s.color }}>
-                      {s.count.toLocaleString('fr-FR')}
+                      {s.count.toLocaleString(locale)}
                     </span>
                   </div>
                   <div className="w-full h-3 bg-[#f1f4f9] rounded-full overflow-hidden">
@@ -226,7 +230,7 @@ export default function Dashboard() {
 
         {/* Donut Chart */}
         <div className="col-span-12 xl:col-span-4 bg-white rounded-xl p-6 shadow-sm border border-[#E2E8F0] flex flex-col">
-          <h4 className="text-[#181c20] font-semibold text-base mb-4">Répartition</h4>
+          <h4 className="text-[#181c20] font-semibold text-base mb-4">{t('dist_donut')}</h4>
           {stats && totalDistrib > 0 ? (
             <>
               <div className="flex items-center justify-center mb-6">
@@ -254,8 +258,8 @@ export default function Dashboard() {
                     })()}
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-2xl font-bold text-[#181c20]">{totalDistrib.toLocaleString('fr-FR')}</span>
-                    <span className="text-xs text-[#94A3B8]">Total</span>
+                    <span className="text-2xl font-bold text-[#181c20]">{totalDistrib.toLocaleString(locale)}</span>
+                    <span className="text-xs text-[#94A3B8]">{t('dist_total')}</span>
                   </div>
                 </div>
               </div>
@@ -283,7 +287,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* SLA / Resolution rate */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-[#E2E8F0] flex flex-col items-center justify-center">
-          <h4 className="text-[#181c20] font-semibold text-base mb-4 self-start">Taux de résolution</h4>
+          <h4 className="text-[#181c20] font-semibold text-base mb-4 self-start">{t('rate_title')}</h4>
           {stats ? (() => {
             const rate = stats.total_reports > 0
               ? Math.round((resolved(stats) / stats.total_reports) * 100)
@@ -309,7 +313,7 @@ export default function Dashboard() {
                     <span className="text-3xl font-bold" style={{ color: rate >= 85 ? '#22C55E' : rate >= 70 ? '#F59E0B' : '#EF4444' }}>
                       {rate}%
                     </span>
-                    <span className="text-xs text-[#94A3B8]">Objectif: 85%</span>
+                    <span className="text-xs text-[#94A3B8]">{t('rate_target')}</span>
                   </div>
                 </div>
                 <div
@@ -323,7 +327,7 @@ export default function Dashboard() {
                     {rate >= 85 ? 'verified' : 'warning'}
                   </span>
                   <span className="text-xs font-medium" style={{ color: rate >= 85 ? '#22C55E' : '#F59E0B' }}>
-                    {rate >= 85 ? 'Performance excellente' : 'En dessous de l\'objectif'}
+                    {rate >= 85 ? t('rate_excellent') : t('rate_below')}
                   </span>
                 </div>
               </>
@@ -335,11 +339,11 @@ export default function Dashboard() {
 
         {/* Avg resolution time */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-[#E2E8F0]">
-          <h4 className="text-[#181c20] font-semibold text-base mb-5">Temps de résolution moyen</h4>
+          <h4 className="text-[#181c20] font-semibold text-base mb-5">{t('avg_time_title')}</h4>
           {stats ? (
             <div className="flex flex-col items-center justify-center h-28 gap-2">
               <span className="text-5xl font-bold text-[#0038AF]">{stats.avg_resolution_hours}h</span>
-              <span className="text-sm text-[#64748B]">par signalement résolu</span>
+              <span className="text-sm text-[#64748B]">{t('avg_time_per')}</span>
             </div>
           ) : (
             <div className="h-28 bg-[#f1f4f9] rounded animate-pulse" />
@@ -350,14 +354,14 @@ export default function Dashboard() {
       {/* Recent Reports Table */}
       <div className="bg-white rounded-xl shadow-sm border border-[#E2E8F0] overflow-hidden">
         <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
-          <h4 className="text-[#181c20] font-semibold text-base">Signalements récents</h4>
-          <a href="/reports" className="text-[#0038AF] text-sm font-medium hover:underline">Voir tout</a>
+          <h4 className="text-[#181c20] font-semibold text-base">{t('recent_title')}</h4>
+          <a href="/reports" className="text-[#0038AF] text-sm font-medium hover:underline">{t('see_all')}</a>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-[#f7f9fe]">
-                {['Code', 'Titre', 'Ville', 'Statut', 'Priorité', 'Date'].map(h => (
+                {tableHeaders.map(h => (
                   <th key={h} className="px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wider border-b border-[#E2E8F0]">
                     {h}
                   </th>
@@ -374,7 +378,7 @@ export default function Dashboard() {
                       <td className="px-5 py-3.5"><StatusBadge status={r.status} /></td>
                       <td className="px-5 py-3.5 text-xs text-[#64748B] capitalize">{r.priority ?? '—'}</td>
                       <td className="px-5 py-3.5 text-xs text-[#94A3B8]">
-                        {new Date(r.created_at).toLocaleDateString('fr-FR')}
+                        {new Date(r.created_at).toLocaleDateString(locale)}
                       </td>
                     </tr>
                   ))

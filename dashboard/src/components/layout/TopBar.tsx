@@ -4,14 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { api } from '../../lib/api'
 import type { Notification } from '../../types/api'
 import { useReportEvents } from '../../hooks/useReportEvents'
-
-const ROLE_LABELS: Record<string, string> = {
-  admin: 'Administrateur',
-  supervisor: 'Superviseur',
-  analyst: 'Analyste',
-  field_agent: 'Agent terrain',
-  citizen: 'Citoyen',
-}
+import { useLang } from '../../context/LangContext'
 
 interface TopBarProps {
   title: string
@@ -21,6 +14,7 @@ interface TopBarProps {
 export default function TopBar({ title, subtitle }: TopBarProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { t } = useLang()
   const [search, setSearch] = useState('')
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [showNotifs, setShowNotifs] = useState(false)
@@ -44,6 +38,14 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
     .join('')
     .toUpperCase() ?? '??'
 
+  const roleLabel = user ? t(
+    user.role === 'admin' ? 'role_admin' :
+    user.role === 'supervisor' ? 'role_supervisor' :
+    user.role === 'analyst' ? 'role_analyst' :
+    user.role === 'field_agent' ? 'role_field_agent' :
+    user.role === 'citizen' ? 'role_citizen' : 'role_field_agent'
+  ) : ''
+
   async function handleNotifClick(n: Notification) {
     await api.patch(`/notifications/${n.id}/read`).catch(() => {})
     setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x))
@@ -66,7 +68,7 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             type="text"
-            placeholder="Rechercher un signalement, agent..."
+            placeholder={t('topbar_search')}
             className="w-full bg-[#f1f4f9] border-0 rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#0038AF]/20"
           />
         </div>
@@ -101,14 +103,14 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
               <div className="fixed inset-0 z-40" onClick={() => setShowNotifs(false)} />
               <div className="absolute right-0 top-11 w-80 bg-white rounded-xl shadow-lg border border-[#E2E8F0] z-50 overflow-hidden">
                 <div className="px-4 py-3 border-b border-[#E2E8F0] flex items-center justify-between">
-                  <span className="font-semibold text-sm text-[#0F172A]">Notifications</span>
+                  <span className="font-semibold text-sm text-[#0F172A]">{t('notif_title')}</span>
                   {unreadCount > 0 && (
                     <span className="text-xs bg-[#0038AF] text-white px-2 py-0.5 rounded-full">{unreadCount}</span>
                   )}
                 </div>
                 <div className="max-h-72 overflow-y-auto divide-y divide-[#E2E8F0]">
                   {notifications.length === 0 ? (
-                    <p className="text-sm text-[#94A3B8] text-center py-6">Aucune notification</p>
+                    <p className="text-sm text-[#94A3B8] text-center py-6">{t('notif_empty')}</p>
                   ) : (
                     notifications.slice(0, 10).map(n => (
                       <button
@@ -124,7 +126,7 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
                             <p className="text-sm font-medium text-[#0F172A] truncate">{n.title}</p>
                             <p className="text-xs text-[#64748B] mt-0.5 line-clamp-2">{n.body}</p>
                             {n.report_id && (
-                              <p className="text-[10px] text-[#0038AF] mt-1 font-medium">Voir le signalement →</p>
+                              <p className="text-[10px] text-[#0038AF] mt-1 font-medium">{t('notif_view')}</p>
                             )}
                           </div>
                         </div>
@@ -145,16 +147,14 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
         <div className="flex items-center gap-3 pl-4 border-l border-[#E2E8F0]">
           <div className="text-right">
             <p className="text-[#181c20] text-sm font-bold leading-none">{user?.full_name ?? '—'}</p>
-            <p className="text-[#64748B] text-[10px] uppercase tracking-wider mt-0.5">
-              {user ? ROLE_LABELS[user.role] ?? user.role : ''}
-            </p>
+            <p className="text-[#64748B] text-[10px] uppercase tracking-wider mt-0.5">{roleLabel}</p>
           </div>
           <div className="w-9 h-9 rounded-full bg-[#0038AF] flex items-center justify-center text-white text-sm font-bold border-2 border-[#b6c4ff]">
             {initials}
           </div>
           <button
             onClick={logout}
-            title="Se déconnecter"
+            title={t('btn_logout')}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 transition-colors"
           >
             <span className="material-symbols-outlined text-[#94A3B8] hover:text-red-400" style={{ fontSize: 18 }}>logout</span>

@@ -4,7 +4,7 @@ from sqlalchemy import (
     Column, String, Boolean, Enum, ForeignKey,
     DateTime, Float, Text, Integer, func
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 from app.database import Base
@@ -38,6 +38,7 @@ class Report(Base):
     description    = Column(Text, nullable=True)
     photo_url      = Column(Text, nullable=True)
     thumbnail_url  = Column(Text, nullable=True)
+    photo_urls     = Column(JSONB, nullable=True, default=list)
     location       = Column(Geometry("POINT", srid=4326), nullable=False)
     address        = Column(Text, nullable=True)
     city           = Column(String(100), nullable=True)

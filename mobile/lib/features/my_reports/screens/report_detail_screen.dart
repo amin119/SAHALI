@@ -87,8 +87,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               onPressed: () => context.go(AppRoutes.myReports),
             ),
             flexibleSpace: FlexibleSpaceBar(
-              background: report.photoUrl != null
-                  ? Image.network(report.photoUrl!, fit: BoxFit.cover)
+              background: report.displayPhotoUrls.isNotEmpty
+                  ? _PhotoHero(urls: report.displayPhotoUrls)
                   : Container(
                       color: catColor.withValues(alpha: 0.15),
                       child: Column(
@@ -278,6 +278,62 @@ class _TimelineRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Photo hero: swipeable when multiple photos ────────────────────────────────
+
+class _PhotoHero extends StatefulWidget {
+  const _PhotoHero({required this.urls});
+  final List<String> urls;
+  @override
+  State<_PhotoHero> createState() => _PhotoHeroState();
+}
+
+class _PhotoHeroState extends State<_PhotoHero> {
+  int _current = 0;
+  late final PageController _ctrl = PageController();
+
+  @override
+  void dispose() { _ctrl.dispose(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PageView.builder(
+          controller: _ctrl,
+          itemCount: widget.urls.length,
+          onPageChanged: (i) => setState(() => _current = i),
+          itemBuilder: (_, i) => Image.network(
+            widget.urls[i],
+            fit: BoxFit.cover,
+            headers: const {'ngrok-skip-browser-warning': '1'},
+            errorBuilder: (_, __, ___) => const ColoredBox(
+              color: Color(0xFFe8edf2),
+              child: Icon(Icons.broken_image_outlined, size: 40, color: Color(0xFF94A3B8)),
+            ),
+          ),
+        ),
+        if (widget.urls.length > 1)
+          Positioned(
+            bottom: 10, left: 0, right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(widget.urls.length, (i) => Container(
+                width: _current == i ? 16 : 6,
+                height: 6,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  color: _current == i ? Colors.white : Colors.white54,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              )),
+            ),
+          ),
+      ],
     );
   }
 }
