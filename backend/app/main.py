@@ -61,11 +61,32 @@ def health():
 
 @app.get("/health/db")
 def health_db():
-    from app.database import engine
+    from app.database import engine, SessionLocal
     from sqlalchemy import text
+    from app.models.user import User
+    from app.utils.security import _get_private_key, _get_public_key, create_access_token
+    result: dict = {}
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        return {"db": "ok"}
+        result["db"] = "ok"
     except Exception as e:
-        return {"db": "error", "detail": str(e)}
+        result["db"] = f"error: {e}"
+    try:
+        db = SessionLocal()
+        user = db.query(User).filter(User.email == "admin@sahali.tn").first()
+        result["user"] = "found" if user else "not_found"
+        db.close()
+    except Exception as e:
+        result["user"] = f"error: {e}"
+    try:
+        _get_private_key()
+        result["jwt_private"] = "ok"
+    except Exception as e:
+        result["jwt_private"] = f"error: {e}"
+    try:
+        _get_public_key()
+        result["jwt_public"] = "ok"
+    except Exception as e:
+        result["jwt_public"] = f"error: {e}"
+    return result
