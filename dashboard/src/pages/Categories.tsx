@@ -193,7 +193,7 @@ export default function Categories() {
                       {t('priority_label')} {slaLabel(cat.sla_hours)}
                     </span>
                     <span className="text-xs text-[#94A3B8]">
-                      {cat.parent_id ? t('sub_categories') : t('root_category')}
+                      {cat.parent_id ? t('cat_sub_label') : t('root_category')}
                     </span>
                   </div>
                 </div>

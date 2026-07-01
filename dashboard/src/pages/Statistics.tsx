@@ -40,7 +40,7 @@ function SkeletonCard() {
 }
 
 export default function Statistics() {
-  const { t, locale } = useLang()
+  const { t } = useLang()
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

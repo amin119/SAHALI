@@ -5,6 +5,7 @@ import StatusBadge from '../components/ui/StatusBadge'
 import { useLang } from '../context/LangContext'
 
 const NEXT_STATUSES: Record<ReportStatus, ReportStatus[]> = {
+  submitted:    ['received'],
   received:     ['under_review', 'rejected'],
   under_review: ['in_progress', 'rejected'],
   in_progress:  ['resolved', 'rejected'],
@@ -30,7 +31,7 @@ function CardSkeleton() {
 }
 
 export default function Interventions() {
-  const { t, locale } = useLang()
+  const { t } = useLang()
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

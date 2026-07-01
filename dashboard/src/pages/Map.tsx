@@ -15,6 +15,7 @@ L.Icon.Default.mergeOptions({
 })
 
 const STATUS_COLOR: Record<ReportStatus, string> = {
+  submitted:    '#94A3B8',
   received:     '#0EA5E9',
   under_review: '#F59E0B',
   in_progress:  '#0038AF',
@@ -52,6 +53,7 @@ export default function Map() {
   const [filterStatus, setFilterStatus] = useState<ReportStatus | 'all'>('all')
 
   const STATUS_LABELS: Record<ReportStatus, string> = {
+    submitted:    t('status_submitted'),
     received:     t('status_received'),
     under_review: t('status_under_review'),
     in_progress:  t('status_in_progress'),

@@ -598,7 +598,7 @@ export default function Reports() {
                   <div className="relative">
                     <div className="absolute left-3.5 top-0 bottom-0 w-px bg-[#E2E8F0]" />
                     <div className="space-y-4">
-                      {history.map((h, i) => {
+                      {history.map((h) => {
                         const statusLabel = STATUS_LABELS[h.to_status as ReportStatus] ?? h.to_status
                         return (
                           <div key={h.id} className="flex gap-3 relative">
