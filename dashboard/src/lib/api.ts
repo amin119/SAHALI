@@ -34,10 +34,13 @@ async function request<T>(
   })
 
   if (res.status === 401) {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    window.location.href = '/login'
-    throw new Error('Session expirée')
+    if (auth) {
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      window.location.href = '/login'
+    }
+    const err = await res.json().catch(() => ({}))
+    throw new Error((err as { detail?: string }).detail ?? 'Session expirée')
   }
 
   if (!res.ok) {
