@@ -311,6 +311,11 @@ class AppLocalizations {
   String get selectCategoryFirst => _t('selectCategoryFirst');
   String addPhotoMax(int n) => _t('addPhotoMax').replaceAll('{n}', '$n');
   String subCategoriesCount(int n) => _t('subCategoriesCount').replaceAll('{n}', '$n');
+
+  // ── Offline queue ─────────────────────────────────────────────────────────────
+  String get reportQueued => _t('reportQueued');
+  String pendingReportsBanner(int n) => _t('pendingReportsBanner').replaceAll('{n}', '$n');
+  String get syncNow => _t('syncNow');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -568,6 +573,10 @@ const _en = <String, String>{
   'selectCategoryFirst': 'Please select a category first.',
   'addPhotoMax': 'Add up to {n} photos to document the issue.',
   'subCategoriesCount': '{n} sub-categories',
+
+  'reportQueued': 'No connection — report saved, will send automatically.',
+  'pendingReportsBanner': '{n} report(s) waiting to sync — tap to send now',
+  'syncNow': 'Send now',
 };
 
 const _fr = <String, String>{
@@ -821,6 +830,10 @@ const _fr = <String, String>{
   'selectCategoryFirst': 'Veuillez d\'abord sélectionner une catégorie.',
   'addPhotoMax': 'Ajoutez jusqu\'à {n} photos pour documenter le problème.',
   'subCategoriesCount': '{n} sous-catégories',
+
+  'reportQueued': 'Pas de connexion — signalement sauvegardé, envoi automatique dès reconnexion.',
+  'pendingReportsBanner': '{n} signalement(s) en attente — appuyez pour envoyer',
+  'syncNow': 'Envoyer',
 };
 
 const _ar = <String, String>{
@@ -1074,6 +1087,10 @@ const _ar = <String, String>{
   'selectCategoryFirst': 'يرجى اختيار فئة أولاً.',
   'addPhotoMax': 'أضف حتى {n} صور لتوثيق المشكلة.',
   'subCategoriesCount': '{n} فئات فرعية',
+
+  'reportQueued': 'لا يوجد اتصال — تم حفظ التقرير، سيُرسل تلقائياً عند الاتصال.',
+  'pendingReportsBanner': '{n} تقرير(ات) في انتظار الإرسال — اضغط للإرسال الآن',
+  'syncNow': 'إرسال الآن',
 };
 
 class _AppLocalizationsDelegate

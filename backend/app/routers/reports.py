@@ -95,7 +95,6 @@ def proxy_photo(file_path: str):
 @router.post("/photo", response_model=PhotoUploadResponse)
 async def upload_report_photo(
     file: UploadFile = File(...),
-    _: User = Depends(get_current_user),
 ):
     data = await file.read()
     filename = file.filename or "photo.jpg"
@@ -157,6 +156,83 @@ def submit_report(
 
     background.add_task(_run_ai_analysis, report.id, body, current_user.preferred_language)
     background.add_task(_notify, db, report, "SUBMITTED")
+    background.add_task(_notify_staff, report.id)
+
+    publish_report_event("report_created", {
+        "id": str(report.id),
+        "tracking_code": report.tracking_code,
+        "city": report.city,
+        "category_id": report.category_id,
+        "status": report.status.value,
+        "priority": report.priority.value if report.priority else None,
+    })
+
+    return _report_to_out(report)
+
+
+def _get_or_create_anon_user(db: Session) -> User:
+    anon = db.query(User).filter(User.email == "anonymous@sahali.tn").first()
+    if not anon:
+        anon = User(
+            full_name="Anonymous Citizen",
+            email="anonymous@sahali.tn",
+            role=UserRole.citizen,
+            is_active=True,
+            preferred_language="fr",
+            password_hash=None,
+        )
+        db.add(anon)
+        db.commit()
+        db.refresh(anon)
+    return anon
+
+
+@router.post("/anonymous", response_model=ReportOut, status_code=status.HTTP_201_CREATED)
+def submit_anonymous_report(
+    body: ReportCreate,
+    background: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    anon = _get_or_create_anon_user(db)
+
+    tracking_code = generate_tracking_code()
+    while db.query(Report).filter(Report.tracking_code == tracking_code).first():
+        tracking_code = generate_tracking_code()
+
+    all_photo_urls = list(body.photo_urls)
+    if body.photo_url and body.photo_url not in all_photo_urls:
+        all_photo_urls.insert(0, body.photo_url)
+    primary_photo = all_photo_urls[0] if all_photo_urls else body.photo_url
+
+    point = f"SRID=4326;POINT({body.lng} {body.lat})"
+    report = Report(
+        tracking_code=tracking_code,
+        citizen_id=anon.id,
+        category_id=body.category_id,
+        title=body.title,
+        description=body.description,
+        photo_url=primary_photo,
+        thumbnail_url=body.thumbnail_url or primary_photo,
+        photo_urls=all_photo_urls,
+        location=point,
+        address=body.address,
+        city=body.city,
+        ward=body.ward,
+    )
+    db.add(report)
+    db.flush()
+
+    history = ReportStatusHistory(
+        report_id=report.id,
+        from_status=None,
+        to_status=ReportStatus.SUBMITTED,
+        changed_by=anon.id,
+    )
+    db.add(history)
+    db.commit()
+    db.refresh(report)
+
+    background.add_task(_run_ai_analysis, report.id, body, "fr")
     background.add_task(_notify_staff, report.id)
 
     publish_report_event("report_created", {

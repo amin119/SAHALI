@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/notifications/providers/notifications_provider.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/services/sync_service.dart';
 import '../../../shared/widgets/sahali_logo.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -73,6 +74,8 @@ class _HomeScreenState extends State<HomeScreen>
             const SizedBox(height: 20),
             // ── Community / Tunisia stats ───────────────────────────────
             _CommunityCard(l10n: l10n),
+            // ── Offline queue banner ────────────────────────────────────
+            _QueueBanner(l10n: l10n),
             const Spacer(),
             // ── Centered pulsing FAB ────────────────────────────────────
             _CenteredFab(
@@ -315,6 +318,59 @@ class _CommunityCardState extends State<_CommunityCard> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Offline queue banner — shows when reports are waiting to sync
+// ═══════════════════════════════════════════════════════════════════════════════
+
+class _QueueBanner extends StatelessWidget {
+  const _QueueBanner({required this.l10n});
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final sync = context.watch<SyncService>();
+    if (!sync.hasPending) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: () => sync.flush(),
+      child: Container(
+        margin: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF3CD),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFFFD700), width: 1),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.cloud_upload_outlined, size: 18, color: Color(0xFF856404)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                l10n.pendingReportsBanner(sync.pendingCount),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF856404),
+                ),
+              ),
+            ),
+            Text(
+              l10n.syncNow,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF856404),
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

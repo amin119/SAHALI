@@ -7,7 +7,7 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/network/api_client.dart';
-import '../../../data/services/report_service.dart';
+import '../../../core/services/sync_service.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../shared/widgets/step_bar.dart';
 import '../../../shared/widgets/sa_button.dart';
@@ -26,27 +26,21 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   Future<void> _submit() async {
     final form = context.read<ReportFormProvider>();
+    final l10n = AppLocalizations.of(context);
     if (form.categoryId == null) {
-      setState(() => _error = AppLocalizations.of(context).selectCategoryFirst);
+      setState(() => _error = l10n.selectCategoryFirst);
       return;
     }
 
-    final auth = context.read<AuthProvider>();
-    if (!auth.isLoggedIn) {
-      final signedIn = await _showSignInSheet();
-      if (!signedIn) return;
-    }
+    final isLoggedIn = context.read<AuthProvider>().isLoggedIn;
 
-    setState(() {
-      _submitting = true;
-      _error = null;
-    });
+    setState(() { _submitting = true; _error = null; });
 
     try {
       String? photoUrl;
       String? thumbnailUrl;
-
       final List<String> uploadedUrls = [];
+
       if (form.photos.isNotEmpty) {
         setState(() => _uploadingPhoto = true);
         for (final file in form.photos) {
@@ -68,7 +62,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             );
             uploadedUrls.add(res.data['photo_url'] as String);
           } catch (_) {
-            // Storage not configured — submit without photo
+            // Storage not configured on Render — skip photo
           }
         }
         if (uploadedUrls.isNotEmpty) {
@@ -78,19 +72,36 @@ class _ReviewScreenState extends State<ReviewScreen> {
         setState(() => _uploadingPhoto = false);
       }
 
-      final title = form.categoryLabel ?? 'Report';
-      final report = await ReportService().submitReport(
-        categoryId: form.categoryId!,
-        title: title,
-        description: form.description.isNotEmpty ? form.description : null,
-        lat: form.location.latitude,
-        lng: form.location.longitude,
-        photoUrl: photoUrl,
-        thumbnailUrl: thumbnailUrl,
-        photoUrls: uploadedUrls,
-      );
-      if (mounted) {
-        context.go(AppRoutes.reportConfirmation, extra: report.trackingCode);
+      final payload = <String, dynamic>{
+        'category_id': form.categoryId!,
+        'title': form.categoryLabel ?? 'Report',
+        if (form.description.isNotEmpty) 'description': form.description,
+        'lat': form.location.latitude,
+        'lng': form.location.longitude,
+        if (photoUrl != null) 'photo_url': photoUrl,
+        if (thumbnailUrl != null) 'thumbnail_url': thumbnailUrl,
+        'photo_urls': uploadedUrls,
+      };
+
+      try {
+        final endpoint = isLoggedIn ? '/reports' : '/reports/anonymous';
+        final res = await ApiClient.instance.dio.post(endpoint, data: payload);
+        final trackingCode = res.data['tracking_code'] as String;
+        if (mounted) context.go(AppRoutes.reportConfirmation, extra: trackingCode);
+      } on DioException catch (e) {
+        if (_isOffline(e)) {
+          await SyncService.instance.enqueue(payload);
+          if (mounted) {
+            setState(() => _submitting = false);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(l10n.reportQueued),
+              duration: const Duration(seconds: 4),
+            ));
+            context.go(AppRoutes.home);
+          }
+          return;
+        }
+        rethrow;
       }
     } catch (e) {
       setState(() {
@@ -100,6 +111,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
       });
     }
   }
+
+  static bool _isOffline(DioException e) =>
+      e.type == DioExceptionType.connectionError ||
+      e.type == DioExceptionType.connectionTimeout ||
+      e.type == DioExceptionType.receiveTimeout ||
+      e.type == DioExceptionType.sendTimeout;
 
   Future<bool> _showSignInSheet() async {
     final result = await showModalBottomSheet<bool>(

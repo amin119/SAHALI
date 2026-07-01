@@ -8,10 +8,12 @@ import 'features/auth/providers/auth_provider.dart';
 import 'features/report/viewmodels/report_form_provider.dart';
 import 'features/report/providers/reports_provider.dart';
 import 'features/notifications/providers/notifications_provider.dart';
+import 'core/services/sync_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await BackendConfig.load(); // restore saved server URL before any API call
+  await BackendConfig.load();
+  SyncService.instance.init(); // start offline queue flush timer
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
@@ -25,6 +27,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ReportFormProvider()),
         ChangeNotifierProvider(create: (_) => ReportsProvider()),
         ChangeNotifierProvider(create: (_) => NotificationsProvider()),
+        ChangeNotifierProvider.value(value: SyncService.instance),
       ],
       child: const SahaliApp(),
     ),
