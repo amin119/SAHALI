@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from app.config import get_settings
 
@@ -9,12 +9,7 @@ engine = create_engine(
     pool_pre_ping=True,
     pool_size=3,
     max_overflow=7,
-    connect_args={"sslmode": "require"},
 )
-
-@event.listens_for(engine, "connect")
-def _disable_prepared_statements(dbapi_conn, _):
-    dbapi_conn.prepare_threshold = 0
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
