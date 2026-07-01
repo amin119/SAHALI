@@ -100,8 +100,14 @@ async def upload_report_photo(
     data = await file.read()
     filename = file.filename or "photo.jpg"
     content_type = file.content_type or "image/jpeg"
-    result = storage_upload_photo(data, filename, content_type)
-    return PhotoUploadResponse(**result)
+    try:
+        result = storage_upload_photo(data, filename, content_type)
+        return PhotoUploadResponse(**result)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Photo storage unavailable. Submit without photo.",
+        )
 
 
 @router.post("", response_model=ReportOut, status_code=status.HTTP_201_CREATED)

@@ -65,8 +65,8 @@ class ApiClient {
   Dio _buildDio() {
     final d = Dio(BaseOptions(
       baseUrl: _baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 15),
+      connectTimeout: const Duration(seconds: 45),
+      receiveTimeout: const Duration(seconds: 45),
       headers: {
         'Content-Type': 'application/json',
         'ngrok-skip-browser-warning': '1', // skip ngrok interstitial page

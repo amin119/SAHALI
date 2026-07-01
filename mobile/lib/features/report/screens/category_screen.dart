@@ -109,9 +109,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                             children: [
                               const Icon(Icons.wifi_off_rounded, color: AppColors.textHint, size: 40),
                               const SizedBox(height: 12),
-                              const Text('Could not load categories', style: TextStyle(color: AppColors.textHint)),
+                              Text(l10n.couldNotLoadCategories, style: const TextStyle(color: AppColors.textHint)),
                               const SizedBox(height: 12),
-                              TextButton(onPressed: _loadCategories, child: const Text('Retry')),
+                              TextButton(onPressed: _loadCategories, child: Text(l10n.retry)),
                             ],
                           ),
                         )
@@ -168,7 +168,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       cat.children.isNotEmpty
-                                          ? '${cat.children.length} sub-categories'
+                                          ? l10n.subCategoriesCount(cat.children.length)
                                           : cat.slug,
                                       style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
                                       maxLines: 1,

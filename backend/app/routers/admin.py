@@ -18,6 +18,18 @@ from app.utils.security import hash_password
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
+@router.get("/stats/public")
+def public_stats(db: Session = Depends(get_db)):
+    total = db.query(func.count(Report.id)).scalar() or 0
+    by_status = dict(
+        db.query(Report.status, func.count(Report.id)).group_by(Report.status).all()
+    )
+    resolved = by_status.get(ReportStatus.RESOLVED, 0)
+    rejected = by_status.get(ReportStatus.REJECTED, 0)
+    active = max(total - resolved - rejected, 0)
+    return {"total": total, "resolved": resolved, "active": active}
+
+
 @router.get("/stats")
 def dashboard_stats(
     db: Session = Depends(get_db),

@@ -6,6 +6,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/notifications/providers/notifications_provider.dart';
+import '../../../core/network/api_client.dart';
 import '../../../shared/widgets/sahali_logo.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -142,18 +143,65 @@ class _HomeScreenState extends State<HomeScreen>
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Tunisia Community Card
+// Tunisia Community Card — fetches real stats from /admin/stats/public
 // ═══════════════════════════════════════════════════════════════════════════════
 
-class _CommunityCard extends StatelessWidget {
+class _CommunityCard extends StatefulWidget {
   const _CommunityCard({required this.l10n});
   final AppLocalizations l10n;
 
-  static const _total = 3847;
-  static const _resolved = 2156;
+  @override
+  State<_CommunityCard> createState() => _CommunityCardState();
+}
+
+class _CommunityCardState extends State<_CommunityCard> {
+  int _total = 0;
+  int _resolved = 0;
+  int _active = 0;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStats();
+  }
+
+  Future<void> _fetchStats() async {
+    try {
+      final res = await ApiClient.instance.dio.get('/admin/stats/public');
+      final d = res.data as Map<String, dynamic>;
+      if (mounted) {
+        setState(() {
+          _total    = (d['total']    as num?)?.toInt() ?? 0;
+          _resolved = (d['resolved'] as num?)?.toInt() ?? 0;
+          _active   = (d['active']   as num?)?.toInt() ?? 0;
+          _loaded   = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  String _fmt(int n) {
+    if (n >= 1000) {
+      final s = n.toString();
+      final buf = StringBuffer();
+      for (var i = 0; i < s.length; i++) {
+        if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+        buf.write(s[i]);
+      }
+      return buf.toString();
+    }
+    return n.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    final resolvedPct = _total > 0 ? _resolved / _total : 0.0;
+    final resolvedPctStr = _total > 0 ? ' (${(_resolved * 100 ~/ _total)}%)' : '';
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -190,8 +238,7 @@ class _CommunityCard extends StatelessWidget {
                     ),
                     Text(
                       l10n.communitySub,
-                      style: const TextStyle(
-                          fontSize: 11, color: AppColors.textHint),
+                      style: const TextStyle(fontSize: 11, color: AppColors.textHint),
                     ),
                   ],
                 ),
@@ -206,15 +253,24 @@ class _CommunityCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text(
-                '3,847',
-                style: TextStyle(
-                  fontSize: 44,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.primary,
-                  height: 1.0,
-                ),
-              ),
+              _loaded
+                  ? Text(
+                      _fmt(_total),
+                      style: const TextStyle(
+                        fontSize: 44,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                        height: 1.0,
+                      ),
+                    )
+                  : const SizedBox(
+                      width: 80, height: 44,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: SizedBox(width: 20, height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2)),
+                      ),
+                    ),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 5),
@@ -236,10 +292,9 @@ class _CommunityCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(100),
             child: LinearProgressIndicator(
-              value: _resolved / _total,
+              value: resolvedPct,
               backgroundColor: AppColors.divider,
-              valueColor:
-                  const AlwaysStoppedAnimation(AppColors.success),
+              valueColor: const AlwaysStoppedAnimation(AppColors.success),
               minHeight: 8,
             ),
           ),
@@ -250,16 +305,15 @@ class _CommunityCard extends StatelessWidget {
             children: [
               _DotLabel(
                 color: AppColors.success,
-                text: '2,156 ${l10n.resolvedLabel2} (56%)',
+                text: '${_fmt(_resolved)} ${l10n.resolvedLabel2}$resolvedPctStr',
               ),
               const Spacer(),
               _DotLabel(
                 color: AppColors.statusInProgress,
-                text: '1,691 ${l10n.activeLabel2}',
+                text: '${_fmt(_active)} ${l10n.activeLabel2}',
               ),
             ],
           ),
-
         ],
       ),
     );

@@ -249,6 +249,10 @@ class AppLocalizations {
   // ── Dev hint ──────────────────────────────────────────────────────────────────
   String get devCodeHint => _t('devCodeHint');
 
+  // ── Upload states ─────────────────────────────────────────────────────────────
+  String get uploadingPhoto => _t('uploadingPhoto');
+  String get photoUploadSkipped => _t('photoUploadSkipped');
+
   // ── Photo screen ──────────────────────────────────────────────────────────────
   String get tapToTakePhoto => _t('tapToTakePhoto');
   String get orChooseGallery => _t('orChooseGallery');
@@ -299,6 +303,14 @@ class AppLocalizations {
   String get retry => _t('retry');
   String get statusTimeline => _t('statusTimeline');
   String get reportFallback => _t('reportFallback');
+
+  // ── Misc UI ───────────────────────────────────────────────────────────────────
+  String get markAllRead => _t('markAllRead');
+  String get couldNotLoadCategories => _t('couldNotLoadCategories');
+  String get addLabel => _t('addLabel');
+  String get selectCategoryFirst => _t('selectCategoryFirst');
+  String addPhotoMax(int n) => _t('addPhotoMax').replaceAll('{n}', '$n');
+  String subCategoriesCount(int n) => _t('subCategoriesCount').replaceAll('{n}', '$n');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -502,6 +514,9 @@ const _en = <String, String>{
   'skipVerification': 'Skip for now',
   'devCodeHint': 'Dev mode — code:',
 
+  'uploadingPhoto': 'Uploading photo…',
+  'photoUploadSkipped': 'Photo could not be uploaded — submitting without it.',
+
   'tapToTakePhoto': 'Tap to take a photo',
   'orChooseGallery': 'or choose from gallery below',
   'gallery': 'Gallery',
@@ -546,6 +561,13 @@ const _en = <String, String>{
   'retry': 'Retry',
   'statusTimeline': 'Status timeline',
   'reportFallback': 'Report',
+
+  'markAllRead': 'Mark all read',
+  'couldNotLoadCategories': 'Could not load categories',
+  'addLabel': 'Add',
+  'selectCategoryFirst': 'Please select a category first.',
+  'addPhotoMax': 'Add up to {n} photos to document the issue.',
+  'subCategoriesCount': '{n} sub-categories',
 };
 
 const _fr = <String, String>{
@@ -745,6 +767,9 @@ const _fr = <String, String>{
   'skipVerification': 'Passer pour l\'instant',
   'devCodeHint': 'Mode dev — code :',
 
+  'uploadingPhoto': 'Envoi de la photo…',
+  'photoUploadSkipped': 'Photo non disponible — signalement soumis sans photo.',
+
   'tapToTakePhoto': 'Appuyez pour prendre une photo',
   'orChooseGallery': 'ou choisissez dans la galerie ci-dessous',
   'gallery': 'Galerie',
@@ -789,6 +814,13 @@ const _fr = <String, String>{
   'retry': 'Réessayer',
   'statusTimeline': 'Historique du statut',
   'reportFallback': 'Signalement',
+
+  'markAllRead': 'Tout marquer comme lu',
+  'couldNotLoadCategories': 'Impossible de charger les catégories',
+  'addLabel': 'Ajouter',
+  'selectCategoryFirst': 'Veuillez d\'abord sélectionner une catégorie.',
+  'addPhotoMax': 'Ajoutez jusqu\'à {n} photos pour documenter le problème.',
+  'subCategoriesCount': '{n} sous-catégories',
 };
 
 const _ar = <String, String>{
@@ -988,6 +1020,9 @@ const _ar = <String, String>{
   'skipVerification': 'تخطي الآن',
   'devCodeHint': 'وضع المطور — الرمز:',
 
+  'uploadingPhoto': 'جارٍ رفع الصورة…',
+  'photoUploadSkipped': 'تعذّر رفع الصورة — تم إرسال التقرير بدونها.',
+
   'tapToTakePhoto': 'اضغط للتقاط صورة',
   'orChooseGallery': 'أو اختر من المعرض أدناه',
   'gallery': 'المعرض',
@@ -1032,6 +1067,13 @@ const _ar = <String, String>{
   'retry': 'إعادة المحاولة',
   'statusTimeline': 'سجل الحالة',
   'reportFallback': 'تقرير',
+
+  'markAllRead': 'تحديد الكل كمقروء',
+  'couldNotLoadCategories': 'تعذّر تحميل الفئات',
+  'addLabel': 'إضافة',
+  'selectCategoryFirst': 'يرجى اختيار فئة أولاً.',
+  'addPhotoMax': 'أضف حتى {n} صور لتوثيق المشكلة.',
+  'subCategoriesCount': '{n} فئات فرعية',
 };
 
 class _AppLocalizationsDelegate

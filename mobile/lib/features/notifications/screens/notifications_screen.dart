@@ -39,7 +39,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           if (provider.unreadCount > 0)
             TextButton(
               onPressed: provider.markAllRead,
-              child: const Text('Mark all read', style: TextStyle(fontSize: 13)),
+              child: Text(l10n.markAllRead, style: const TextStyle(fontSize: 13)),
             ),
         ],
       ),

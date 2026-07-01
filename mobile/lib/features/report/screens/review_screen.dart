@@ -27,7 +27,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Future<void> _submit() async {
     final form = context.read<ReportFormProvider>();
     if (form.categoryId == null) {
-      setState(() => _error = 'Please select a category first.');
+      setState(() => _error = AppLocalizations.of(context).selectCategoryFirst);
       return;
     }
 
@@ -50,25 +50,31 @@ class _ReviewScreenState extends State<ReviewScreen> {
       if (form.photos.isNotEmpty) {
         setState(() => _uploadingPhoto = true);
         for (final file in form.photos) {
-          final filename = file.path.split(Platform.pathSeparator).last;
-          final ext = filename.split('.').last.toLowerCase();
-          final contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
-          final formData = FormData.fromMap({
-            'file': await MultipartFile.fromFile(
-              file.path,
-              filename: filename,
-              contentType: DioMediaType.parse(contentType),
-            ),
-          });
-          final res = await ApiClient.instance.dio.post(
-            '/reports/photo',
-            data: formData,
-            options: Options(sendTimeout: const Duration(seconds: 60)),
-          );
-          uploadedUrls.add(res.data['photo_url'] as String);
+          try {
+            final filename = file.path.split(Platform.pathSeparator).last;
+            final ext = filename.split('.').last.toLowerCase();
+            final contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
+            final formData = FormData.fromMap({
+              'file': await MultipartFile.fromFile(
+                file.path,
+                filename: filename,
+                contentType: DioMediaType.parse(contentType),
+              ),
+            });
+            final res = await ApiClient.instance.dio.post(
+              '/reports/photo',
+              data: formData,
+              options: Options(sendTimeout: const Duration(seconds: 60)),
+            );
+            uploadedUrls.add(res.data['photo_url'] as String);
+          } catch (_) {
+            // Storage not configured — submit without photo
+          }
         }
-        photoUrl = uploadedUrls.first;
-        thumbnailUrl = uploadedUrls.first;
+        if (uploadedUrls.isNotEmpty) {
+          photoUrl = uploadedUrls.first;
+          thumbnailUrl = uploadedUrls.first;
+        }
         setState(() => _uploadingPhoto = false);
       }
 
@@ -258,7 +264,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
             const SizedBox(height: 20),
             SaButton(
-              label: _uploadingPhoto ? 'Envoi des photos...' : l10n.submitReport,
+              label: _uploadingPhoto ? l10n.uploadingPhoto : l10n.submitReport,
               isLoading: _submitting,
               onPressed: _submitting ? null : _submit,
             ),

@@ -71,7 +71,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Ajoutez jusqu\'à ${ReportFormProvider.maxPhotos} photos pour documenter le problème.',
+              l10n.addPhotoMax(ReportFormProvider.maxPhotos),
               style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 20),
@@ -236,6 +236,7 @@ class _AddTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: () => showModalBottomSheet(
         context: context,
@@ -245,12 +246,12 @@ class _AddTile extends StatelessWidget {
             children: [
               ListTile(
                 leading: const Icon(Icons.camera_alt_outlined),
-                title: const Text('Prendre une photo'),
+                title: Text(l10n.takePhoto),
                 onTap: () { Navigator.pop(context); onCamera(); },
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
-                title: const Text('Choisir depuis la galerie'),
+                title: Text(l10n.fromGallery),
                 onTap: () { Navigator.pop(context); onGallery(); },
               ),
             ],
@@ -263,12 +264,12 @@ class _AddTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.border, style: BorderStyle.solid),
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_photo_alternate_outlined, color: AppColors.primary, size: 28),
-            SizedBox(height: 4),
-            Text('Ajouter', style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600)),
+            const Icon(Icons.add_photo_alternate_outlined, color: AppColors.primary, size: 28),
+            const SizedBox(height: 4),
+            Text(l10n.addLabel, style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
