@@ -9,7 +9,10 @@ engine = create_engine(
     pool_pre_ping=True,
     pool_size=3,
     max_overflow=7,
-    connect_args={"sslmode": "require"},
+    connect_args={
+        "sslmode": "require",
+        "prepare_threshold": 0,  # required for Supabase transaction pooler (PgBouncer)
+    },
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
