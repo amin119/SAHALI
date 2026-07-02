@@ -1,6 +1,7 @@
 import uuid
 import httpx
 import boto3
+from urllib.parse import quote
 from botocore.client import Config
 from app.config import get_settings
 
@@ -11,7 +12,8 @@ settings = get_settings()
 
 def _supabase_upload(data: bytes, key: str, content_type: str) -> str:
     """Upload bytes to Supabase Storage via REST API; returns public CDN URL."""
-    url = f"{settings.SUPABASE_URL}/storage/v1/object/{settings.AWS_S3_BUCKET}/{key}"
+    bucket = quote(settings.AWS_S3_BUCKET, safe="")
+    url = f"{settings.SUPABASE_URL}/storage/v1/object/{bucket}/{key}"
     headers = {
         "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
         "Content-Type": content_type,
@@ -19,7 +21,7 @@ def _supabase_upload(data: bytes, key: str, content_type: str) -> str:
     }
     resp = httpx.post(url, content=data, headers=headers, timeout=30)
     resp.raise_for_status()
-    return f"{settings.SUPABASE_URL}/storage/v1/object/public/{settings.AWS_S3_BUCKET}/{key}"
+    return f"{settings.SUPABASE_URL}/storage/v1/object/public/{bucket}/{key}"
 
 
 # ── S3 / MinIO (local dev fallback) ──────────────────────────────────────────

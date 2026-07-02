@@ -27,7 +27,9 @@ def test_storage():
 
     if s.SUPABASE_URL and s.SUPABASE_SERVICE_KEY:
         try:
-            url = f"{s.SUPABASE_URL}/storage/v1/bucket/{s.AWS_S3_BUCKET}"
+            from urllib.parse import quote
+            bucket = quote(s.AWS_S3_BUCKET, safe="")
+            url = f"{s.SUPABASE_URL}/storage/v1/bucket/{bucket}"
             resp = httpx.get(url, headers={"Authorization": f"Bearer {s.SUPABASE_SERVICE_KEY}"}, timeout=10)
             if resp.status_code == 200:
                 return {"status": "ok", "method": "supabase-rest", "bucket": s.AWS_S3_BUCKET}
