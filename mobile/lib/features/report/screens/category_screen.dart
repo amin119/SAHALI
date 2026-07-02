@@ -63,6 +63,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final langCode = Localizations.localeOf(context).languageCode;
+    final isRtl = langCode == 'ar';
+    final textDir = isRtl ? TextDirection.rtl : TextDirection.ltr;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -87,6 +90,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           children: [
             Text(
               l10n.whatReporting,
+              textDirection: textDir,
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
@@ -96,6 +100,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
             const SizedBox(height: 4),
             Text(
               l10n.chooseCategoryHint,
+              textDirection: textDir,
               style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 24),
@@ -115,67 +120,78 @@ class _CategoryScreenState extends State<CategoryScreen> {
                             ],
                           ),
                         )
-                      : GridView.builder(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 12,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: 1.1,
-                          ),
-                          itemCount: _categories.length,
-                          itemBuilder: (_, i) {
-                            final cat = _categories[i];
-                            final isSelected = _selected == i;
-                            final color = categoryColorBySlug(cat.slug);
-                            final icon = categoryIconData(cat.icon);
-                            final langCode = Localizations.localeOf(context).languageCode;
-                            return GestureDetector(
-                              onTap: () => setState(() => _selected = i),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? color.withValues(alpha: 0.10)
-                                      : AppColors.surface,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: isSelected ? color : AppColors.divider,
-                                    width: isSelected ? 2 : 1,
-                                  ),
+                      : Builder(
+                          builder: (ctx) {
+                            final langCode = Localizations.localeOf(ctx).languageCode;
+                            final isRtl = langCode == 'ar';
+                            final textDir = isRtl ? TextDirection.rtl : TextDirection.ltr;
+                            return Directionality(
+                              textDirection: textDir,
+                              child: GridView.builder(
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
+                                  childAspectRatio: 1.1,
                                 ),
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: 44,
-                                      height: 44,
+                                itemCount: _categories.length,
+                                itemBuilder: (_, i) {
+                                  final cat = _categories[i];
+                                  final isSelected = _selected == i;
+                                  final color = categoryColorBySlug(cat.slug);
+                                  final icon = categoryIconData(cat.icon);
+                                  return GestureDetector(
+                                    onTap: () => setState(() => _selected = i),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
                                       decoration: BoxDecoration(
-                                        color: color.withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(12),
+                                        color: isSelected
+                                            ? color.withValues(alpha: 0.10)
+                                            : AppColors.surface,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: isSelected ? color : AppColors.divider,
+                                          width: isSelected ? 2 : 1,
+                                        ),
                                       ),
-                                      child: Icon(icon, color: color, size: 22),
-                                    ),
-                                    const Spacer(),
-                                    Text(
-                                      cat.labelFor(langCode),
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.textPrimary,
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            width: 44,
+                                            height: 44,
+                                            decoration: BoxDecoration(
+                                              color: color.withValues(alpha: 0.12),
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Icon(icon, color: color, size: 22),
+                                          ),
+                                          const Spacer(),
+                                          Text(
+                                            cat.labelFor(langCode),
+                                            textDirection: textDir,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            cat.children.isNotEmpty
+                                                ? l10n.subCategoriesCount(cat.children.length)
+                                                : cat.slug,
+                                            textDirection: textDir,
+                                            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      cat.children.isNotEmpty
-                                          ? l10n.subCategoriesCount(cat.children.length)
-                                          : cat.slug,
-                                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
+                                  );
+                                },
                               ),
                             );
                           },
