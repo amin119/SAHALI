@@ -18,6 +18,30 @@ from app.utils.security import hash_password
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
+@router.get("/storage/test")
+def test_storage():
+    """Public endpoint — checks S3/Supabase connectivity without uploading anything."""
+    from app.services.storage import _s3_client
+    from app.config import get_settings
+    s = get_settings()
+    try:
+        client = _s3_client()
+        client.list_objects_v2(Bucket=s.AWS_S3_BUCKET, MaxKeys=1)
+        return {
+            "status": "ok",
+            "bucket": s.AWS_S3_BUCKET,
+            "endpoint": s.AWS_S3_ENDPOINT_URL,
+            "public_base": s.AWS_S3_PUBLIC_BASE_URL,
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "bucket": s.AWS_S3_BUCKET,
+            "endpoint": s.AWS_S3_ENDPOINT_URL,
+            "detail": str(e),
+        }
+
+
 @router.get("/stats/public")
 def public_stats(db: Session = Depends(get_db)):
     total = db.query(func.count(Report.id)).scalar() or 0
