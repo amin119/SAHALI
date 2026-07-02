@@ -14,7 +14,11 @@ def _s3_client():
     )
     if settings.AWS_S3_ENDPOINT_URL:
         kwargs["endpoint_url"] = settings.AWS_S3_ENDPOINT_URL
-        kwargs["config"] = Config(signature_version="s3v4")
+        # Supabase and MinIO both require path-style addressing
+        kwargs["config"] = Config(
+            signature_version="s3v4",
+            s3={"addressing_style": "path"},
+        )
     return boto3.client("s3", **kwargs)
 
 
@@ -55,8 +59,6 @@ def generate_presigned_upload(filename: str, content_type: str) -> dict:
 
 
 def upload_photo(data: bytes, filename: str, content_type: str) -> dict:
-    """Upload photo bytes directly to MinIO. Returns a relative path URL
-    that clients resolve against their own API base URL via GET /reports/photo/{key}."""
     key = f"reports/{uuid.uuid4()}/{filename}"
     client = _s3_client()
     client.put_object(
@@ -65,10 +67,12 @@ def upload_photo(data: bytes, filename: str, content_type: str) -> dict:
         Body=data,
         ContentType=content_type,
     )
-    # Relative URL: /reports/photo/{key}
-    # - Dashboard prepends http://localhost:8000/v1
-    # - Mobile prepends its configured backend base URL
-    photo_url = f"/reports/photo/{key}"
+    if settings.AWS_S3_PUBLIC_BASE_URL:
+        # Public CDN URL — accessible directly by browser and mobile
+        photo_url = f"{settings.AWS_S3_PUBLIC_BASE_URL}/{key}"
+    else:
+        # Proxy through backend (local MinIO fallback)
+        photo_url = f"/reports/photo/{key}"
     return {"photo_url": photo_url, "thumbnail_url": photo_url}
 
 

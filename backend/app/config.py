@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     #   same WiFi → http://192.168.X.X:9000
     #   ngrok     → run `ngrok http 9000` and paste the https URL
     AWS_S3_PUBLIC_URL: str | None = None
+    # Public CDN base URL for uploaded photos (no trailing slash).
+    # Supabase: https://<ref>.supabase.co/storage/v1/object/public/<bucket>
+    AWS_S3_PUBLIC_BASE_URL: str | None = None
     AWS_REGION: str = "us-east-1"
 
     # Firebase
