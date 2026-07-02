@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -12,6 +12,7 @@ class Category(Base):
     label_ar = Column(String(200), nullable=False)
     label_fr = Column(String(200), nullable=False)
     label_en = Column(String(200), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True, server_default="true")
     default_department_id = Column(ForeignKey("departments.id"), nullable=True)
     icon = Column(String(50), nullable=True)
     sla_hours = Column(Integer, nullable=True)

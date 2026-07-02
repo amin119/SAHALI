@@ -11,6 +11,7 @@ class CategoryOut(BaseModel):
     default_department_id: int | None
     icon: str | None
     sla_hours: int | None
+    is_active: bool = True
     children: list["CategoryOut"] = []
 
     model_config = {"from_attributes": True}

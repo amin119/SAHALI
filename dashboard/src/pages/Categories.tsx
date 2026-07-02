@@ -50,10 +50,12 @@ export default function Categories() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    api.get<Category[]>('/categories')
+    // Fetch all categories including inactive ones for management view
+    api.get<Category[]>('/categories/all')
+      .catch(() => api.get<Category[]>('/categories'))
       .then(data => {
         setCategories(data)
-        setEnabled(new Set(data.map(c => c.id)))
+        setEnabled(new Set(data.filter((c: Category & { is_active?: boolean }) => c.is_active !== false).map(c => c.id)))
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
@@ -66,13 +68,25 @@ export default function Categories() {
     parent.children?.forEach(child => displayCats.push(child))
   })
 
-  function toggleEnabled(id: number) {
+  async function toggleEnabled(id: number) {
+    // Optimistic update
     setEnabled(prev => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
       return next
     })
+    try {
+      await api.patch(`/categories/${id}/toggle`)
+    } catch {
+      // Revert on failure
+      setEnabled(prev => {
+        const next = new Set(prev)
+        if (next.has(id)) next.delete(id)
+        else next.add(id)
+        return next
+      })
+    }
   }
 
   function slaLabel(hours: number | null) {
