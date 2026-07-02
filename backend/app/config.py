@@ -22,20 +22,17 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    # Storage
+    # Storage — Supabase REST (preferred, set these two on Render)
+    SUPABASE_URL: str = ""          # https://<ref>.supabase.co
+    SUPABASE_SERVICE_KEY: str = ""  # service_role key from Supabase Settings → API
+
+    # Storage — S3/MinIO fallback (local dev)
     STORAGE_BACKEND: Literal["s3", "minio"] = "minio"
     AWS_ACCESS_KEY_ID: str = "minioadmin"
     AWS_SECRET_ACCESS_KEY: str = "minioadmin"
     AWS_S3_BUCKET: str = "citizen-alert"
     AWS_S3_ENDPOINT_URL: str | None = "http://localhost:9000"
-    # Public URL used in pre-signed upload URLs returned to mobile clients.
-    # Must be reachable from the device:
-    #   emulator  → http://10.0.2.2:9000
-    #   same WiFi → http://192.168.X.X:9000
-    #   ngrok     → run `ngrok http 9000` and paste the https URL
     AWS_S3_PUBLIC_URL: str | None = None
-    # Public CDN base URL for uploaded photos (no trailing slash).
-    # Supabase: https://<ref>.supabase.co/storage/v1/object/public/<bucket>
     AWS_S3_PUBLIC_BASE_URL: str | None = None
     AWS_REGION: str = "us-east-1"
 

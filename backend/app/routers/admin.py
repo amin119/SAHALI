@@ -20,26 +20,27 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.get("/storage/test")
 def test_storage():
-    """Public endpoint — checks S3/Supabase connectivity without uploading anything."""
-    from app.services.storage import _s3_client
+    """Public endpoint — checks storage connectivity without uploading anything."""
+    import httpx
     from app.config import get_settings
     s = get_settings()
+
+    if s.SUPABASE_URL and s.SUPABASE_SERVICE_KEY:
+        try:
+            url = f"{s.SUPABASE_URL}/storage/v1/bucket/{s.AWS_S3_BUCKET}"
+            resp = httpx.get(url, headers={"Authorization": f"Bearer {s.SUPABASE_SERVICE_KEY}"}, timeout=10)
+            if resp.status_code == 200:
+                return {"status": "ok", "method": "supabase-rest", "bucket": s.AWS_S3_BUCKET}
+            return {"status": "error", "method": "supabase-rest", "http": resp.status_code, "detail": resp.text}
+        except Exception as e:
+            return {"status": "error", "method": "supabase-rest", "detail": str(e)}
+
+    from app.services.storage import _s3_client
     try:
-        client = _s3_client()
-        client.list_objects_v2(Bucket=s.AWS_S3_BUCKET, MaxKeys=1)
-        return {
-            "status": "ok",
-            "bucket": s.AWS_S3_BUCKET,
-            "endpoint": s.AWS_S3_ENDPOINT_URL,
-            "public_base": s.AWS_S3_PUBLIC_BASE_URL,
-        }
+        _s3_client().list_objects_v2(Bucket=s.AWS_S3_BUCKET, MaxKeys=1)
+        return {"status": "ok", "method": "s3", "bucket": s.AWS_S3_BUCKET}
     except Exception as e:
-        return {
-            "status": "error",
-            "bucket": s.AWS_S3_BUCKET,
-            "endpoint": s.AWS_S3_ENDPOINT_URL,
-            "detail": str(e),
-        }
+        return {"status": "error", "method": "s3", "detail": str(e)}
 
 
 @router.get("/stats/public")
