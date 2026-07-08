@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { api, API_BASE } from '../lib/api'
-import type { Report, ReportStatus, Category, User, Assignment, ResolutionReport, StatusHistoryEntry } from '../types/api'
+import type { Report, ReportStatus, Category, User, Assignment, ResolutionReport, StatusHistoryEntry, UserListOut } from '../types/api'
 import { useReportEvents } from '../hooks/useReportEvents'
 import StatusBadge from '../components/ui/StatusBadge'
 import { PRIORITY_COLORS, PRIORITY_LABELS } from '../data/mockData'
@@ -79,8 +79,8 @@ export default function Reports() {
         setCategories(map)
       })
       .catch(() => {})
-    api.get<User[]>('/admin/users', { page_size: 200 })
-      .then(data => setStaffUsers((Array.isArray(data) ? data : []).filter(u => ['field_agent', 'analyst', 'supervisor'].includes(u.role))))
+    api.get<UserListOut>('/admin/users', { page_size: 200 })
+      .then(data => setStaffUsers((data.items ?? []).filter(u => ['field_agent', 'analyst', 'supervisor'].includes(u.role))))
       .catch(() => {})
   }, [])
 

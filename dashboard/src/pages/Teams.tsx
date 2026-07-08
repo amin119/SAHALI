@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/api'
-import type { User, Report } from '../types/api'
+import type { User, Report, UserListOut, Municipality, MunicipalityListOut } from '../types/api'
 import { useLang } from '../context/LangContext'
 
+const PAGE_SIZE = 20
+
 interface AgentStats { assigned: number; resolved: number; inProgress: number; performance: number }
-interface Municipality { id: number; name: string }
 
 function initials(name: string) {
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
@@ -45,6 +46,11 @@ export default function Teams() {
   const { t, locale } = useLang()
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [staff, setStaff] = useState<User[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [roleFilter, setRoleFilter] = useState('')
   const [statsMap, setStatsMap] = useState<Record<string, AgentStats>>({})
   const [municipalities, setMunicipalities] = useState<Municipality[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -59,7 +65,22 @@ export default function Teams() {
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
+  const [editingAgent, setEditingAgent] = useState<User | null>(null)
+  const [editForm, setEditForm] = useState({ full_name: '', role: 'field_agent', municipality_id: '' })
+  const [editError, setEditError] = useState<string | null>(null)
+  const [savingEdit, setSavingEdit] = useState(false)
+
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
   const [togglingId, setTogglingId] = useState<string | null>(null)
+
+  // Debounce the search box before it hits the server
+  useEffect(() => {
+    const id = setTimeout(() => { setDebouncedSearch(search); setPage(1) }, 350)
+    return () => clearTimeout(id)
+  }, [search])
 
   const roleLabel = (role: string) => t(
     role === 'admin' ? 'role_admin' :
@@ -79,35 +100,57 @@ export default function Teams() {
     received: '#0EA5E9', under_review: '#F59E0B', in_progress: '#F97316',
   }
 
-  function loadData() {
+  const [allReports, setAllReports] = useState<Report[]>([])
+
+  // Municipality list for the add/edit dropdowns — fetched once, large page
+  // so it covers the full list regardless of the staff table's own paging.
+  useEffect(() => {
+    api.get<MunicipalityListOut>('/admin/municipalities', { page_size: 500 })
+      .then(data => setMunicipalities(data.items ?? []))
+      .catch(() => setMunicipalities([]))
+  }, [])
+
+  // Reports (for the per-agent stats) — fetched once, independent of the
+  // staff table's own pagination/search/role filter.
+  useEffect(() => {
+    api.get<{ items: Report[]; total: number }>('/reports', { page_size: 500 })
+      .then(data => setAllReports(data.items ?? []))
+      .catch(() => setAllReports([]))
+  }, [])
+
+  const fetchStaff = useCallback(() => {
     setLoading(true)
-    Promise.all([
-      api.get<User[]>('/admin/users'),
-      api.get<{ items: Report[]; total: number }>('/reports', { page_size: '500' }).catch(() => ({ items: [] as Report[], total: 0 })),
-      api.get<Municipality[]>('/admin/municipalities').catch(() => [] as Municipality[]),
-    ])
-      .then(([users, rData, munis]) => {
-        setStaff(users)
-        setMunicipalities(munis)
-        const map: Record<string, AgentStats> = {}
-        users.forEach(u => {
-          const mine = rData.items.filter(r => r.assigned_to === u.id)
-          const res = mine.filter(r => r.status === 'resolved').length
-          const inp = mine.filter(r => r.status === 'in_progress').length
-          map[u.id] = {
-            assigned: mine.length,
-            resolved: res,
-            inProgress: inp,
-            performance: mine.length > 0 ? Math.round((res / mine.length) * 100) : 0
-          }
-        })
-        setStatsMap(map)
-      })
+    setError(null)
+    const params: Record<string, string | number | undefined> = { page, page_size: PAGE_SIZE }
+    if (debouncedSearch) params.search = debouncedSearch
+    if (roleFilter) params.role = roleFilter
+    api.get<UserListOut>('/admin/users', params)
+      .then(data => { setStaff(data.items ?? []); setTotal(data.total ?? 0) })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
-  }
+  }, [page, debouncedSearch, roleFilter])
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { fetchStaff() }, [fetchStaff])
+
+  // Recompute per-agent stats whenever the current staff page or the report
+  // set changes.
+  useEffect(() => {
+    const map: Record<string, AgentStats> = {}
+    staff.forEach(u => {
+      const mine = allReports.filter(r => r.assigned_to === u.id)
+      const res = mine.filter(r => r.status === 'resolved').length
+      const inp = mine.filter(r => r.status === 'in_progress').length
+      map[u.id] = {
+        assigned: mine.length,
+        resolved: res,
+        inProgress: inp,
+        performance: mine.length > 0 ? Math.round((res / mine.length) * 100) : 0
+      }
+    })
+    setStatsMap(map)
+  }, [staff, allReports])
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   useEffect(() => {
     if (!selectedId) { setMissions([]); return }
@@ -137,11 +180,57 @@ export default function Teams() {
       })
       setShowAdd(false)
       setForm(EMPTY_FORM)
-      loadData()
+      fetchStaff()
     } catch (e: unknown) {
       setFormError(e instanceof Error ? e.message : t('err_creation'))
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  function openEditAgent(user: User) {
+    setEditingAgent(user)
+    setEditForm({
+      full_name: user.full_name,
+      role: user.role,
+      municipality_id: user.municipality_id != null ? String(user.municipality_id) : '',
+    })
+    setEditError(null)
+  }
+
+  async function submitEdit() {
+    if (!editingAgent) return
+    if (!editForm.full_name.trim()) { setEditError(t('required_fields_err')); return }
+    setSavingEdit(true)
+    setEditError(null)
+    try {
+      await api.patch(`/admin/users/${editingAgent.id}`, {
+        full_name: editForm.full_name.trim(),
+        role: editForm.role,
+        municipality_id: editForm.municipality_id ? parseInt(editForm.municipality_id) : undefined,
+      })
+      setEditingAgent(null)
+      fetchStaff()
+    } catch (e: unknown) {
+      setEditError(e instanceof Error ? e.message : t('err_creation'))
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  async function confirmDeleteAgent() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      await api.delete(`/admin/users/${deleteTarget.id}`)
+      setDeleteTarget(null)
+      if (selectedId === deleteTarget.id) setSelectedId(null)
+      fetchStaff()
+    } catch (e: unknown) {
+      setDeleteError(e instanceof Error ? e.message : t('err_creation'))
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -174,7 +263,7 @@ export default function Teams() {
         <div>
           <h2 className="text-[#0F172A] text-2xl font-bold">{t('teams_title')}</h2>
           <p className="text-[#64748B] text-sm mt-1">
-            {loading ? t('loading') : `${staff.length} ${t('staff_members')}`}
+            {loading ? t('loading') : `${total} ${t('staff_members')}`}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -195,6 +284,28 @@ export default function Teams() {
             {t('btn_add_agent')}
           </button>
         </div>
+      </div>
+
+      {/* Search + role filter */}
+      <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 mb-4 flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-48">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#747686]" style={{ fontSize: 16 }}>search</span>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            type="text"
+            placeholder={t('agent_search_placeholder')}
+            className="w-full bg-[#f1f4f9] rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#0038AF]/20 border-0"
+          />
+        </div>
+        <select
+          value={roleFilter}
+          onChange={e => { setRoleFilter(e.target.value); setPage(1) }}
+          className="bg-[#f1f4f9] rounded-lg px-3 py-2 text-sm outline-none border-0 text-[#181c20]"
+        >
+          <option value="">{t('all_roles')}</option>
+          {roleOptions.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+        </select>
       </div>
 
       {error && (
@@ -260,9 +371,21 @@ export default function Teams() {
                             <div className="h-full rounded-full" style={{ width: `${s.performance}%`, backgroundColor: pc }} />
                           </div>
                         </div>
-                        <div className="flex items-center gap-1.5 mt-4 pt-3 border-t border-[#E2E8F0]">
-                          <span className="material-symbols-outlined text-[#94A3B8]" style={{ fontSize: 14 }}>email</span>
-                          <span className="text-xs text-[#64748B] truncate">{agent.email ?? '—'}</span>
+                        <div className="flex items-center justify-between gap-1.5 mt-4 pt-3 border-t border-[#E2E8F0]">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="material-symbols-outlined text-[#94A3B8]" style={{ fontSize: 14 }}>email</span>
+                            <span className="text-xs text-[#64748B] truncate">{agent.email ?? '—'}</span>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                            <button onClick={() => openEditAgent(agent)} title={t('btn_edit')}
+                              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#eceef3]">
+                              <span className="material-symbols-outlined text-[#64748B]" style={{ fontSize: 16 }}>edit</span>
+                            </button>
+                            <button onClick={() => { setDeleteTarget(agent); setDeleteError(null) }} title={t('btn_delete')}
+                              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-50">
+                              <span className="material-symbols-outlined text-red-400" style={{ fontSize: 16 }}>delete</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )
@@ -310,19 +433,60 @@ export default function Teams() {
                             </td>
                             <td className="px-5 py-3.5 text-sm text-[#64748B] truncate max-w-40">{agent.email ?? '—'}</td>
                             <td className="px-5 py-3.5">
-                              <button
-                                onClick={() => toggleActive(agent)}
-                                disabled={togglingId === agent.id}
-                                className={`text-xs px-2 py-1 rounded-lg font-medium transition-colors disabled:opacity-50
-                                  ${agent.is_active ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-green-50 text-green-600 hover:bg-green-100'}`}>
-                                {togglingId === agent.id ? '…' : agent.is_active ? t('btn_deactivate') : t('btn_activate')}
-                              </button>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => toggleActive(agent)}
+                                  disabled={togglingId === agent.id}
+                                  className={`text-xs px-2 py-1 rounded-lg font-medium transition-colors disabled:opacity-50
+                                    ${agent.is_active ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-green-50 text-green-600 hover:bg-green-100'}`}>
+                                  {togglingId === agent.id ? '…' : agent.is_active ? t('btn_deactivate') : t('btn_activate')}
+                                </button>
+                                <button onClick={() => openEditAgent(agent)} title={t('btn_edit')}
+                                  className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#eceef3]">
+                                  <span className="material-symbols-outlined text-[#64748B]" style={{ fontSize: 16 }}>edit</span>
+                                </button>
+                                <button onClick={() => { setDeleteTarget(agent); setDeleteError(null) }} title={t('btn_delete')}
+                                  className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-50">
+                                  <span className="material-symbols-outlined text-red-400" style={{ fontSize: 16 }}>delete</span>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         )
                       })}
                 </tbody>
               </table>
+              {!loading && staff.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-16 text-[#94A3B8]">
+                  <span className="material-symbols-outlined mb-3" style={{ fontSize: 40 }}>search_off</span>
+                  <p className="text-sm">{t('no_agents_found')}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!loading && view === 'grid' && staff.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 text-[#94A3B8] bg-white rounded-xl border border-[#E2E8F0]">
+              <span className="material-symbols-outlined mb-3" style={{ fontSize: 40 }}>search_off</span>
+              <p className="text-sm">{t('no_agents_found')}</p>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <span className="text-sm text-[#64748B]">
+                {t('page_word')} {page} {t('of_word')} {totalPages} · {total.toLocaleString()} {t('results')}
+              </span>
+              <div className="flex items-center gap-2">
+                <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
+                  className="px-3 py-1.5 rounded-lg bg-white border border-[#E2E8F0] text-sm disabled:opacity-40 hover:bg-[#f7f9fe]">
+                  {t('prev')}
+                </button>
+                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}
+                  className="px-3 py-1.5 rounded-lg bg-white border border-[#E2E8F0] text-sm disabled:opacity-40 hover:bg-[#f7f9fe]">
+                  {t('next')}
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -385,6 +549,16 @@ export default function Teams() {
                       ${detail.is_active ? 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-100' : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-100'}`}>
                     {togglingId === detail.id ? t('updating') : detail.is_active ? t('btn_deactivate_account') : t('btn_activate_account')}
                   </button>
+                  <div className="flex gap-2 mt-2">
+                    <button onClick={() => openEditAgent(detail)}
+                      className="flex-1 py-2 rounded-xl text-sm font-medium bg-[#f1f4f9] text-[#181c20] hover:bg-[#e2e8f0] transition-colors">
+                      {t('btn_edit')}
+                    </button>
+                    <button onClick={() => { setDeleteTarget(detail); setDeleteError(null) }}
+                      className="flex-1 py-2 rounded-xl text-sm font-medium bg-red-50 text-red-500 hover:bg-red-100 transition-colors">
+                      {t('btn_delete')}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="border-t border-[#E2E8F0] px-5 py-4">
@@ -503,6 +677,98 @@ export default function Teams() {
               <button onClick={submitAdd} disabled={submitting}
                 className="flex-1 py-2.5 bg-[#0038AF] text-white rounded-xl text-sm font-semibold shadow-md hover:opacity-90 transition-opacity disabled:opacity-50">
                 {submitting ? t('creating') : t('btn_create_account')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Agent Modal */}
+      {editingAgent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+          onClick={e => { if (e.target === e.currentTarget) setEditingAgent(null) }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-5 border-b border-[#E2E8F0] flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-[#181c20]">{t('btn_edit')}</h3>
+                <p className="text-xs text-[#64748B] mt-0.5">{editingAgent.full_name}</p>
+              </div>
+              <button onClick={() => setEditingAgent(null)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f1f4f9]">
+                <span className="material-symbols-outlined text-[#64748B]" style={{ fontSize: 20 }}>close</span>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              {editError && (
+                <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                  <span className="material-symbols-outlined text-red-400" style={{ fontSize: 16 }}>error</span>
+                  <span className="text-sm text-red-600">{editError}</span>
+                </div>
+              )}
+              <div>
+                <label className="block text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-1.5">{t('lbl_full_name')}</label>
+                <input value={editForm.full_name} onChange={e => setEditForm(f => ({ ...f, full_name: e.target.value }))}
+                  className="w-full bg-[#f7f9fe] border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0038AF]/20 focus:border-[#0038AF]" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-1.5">{t('lbl_role_f')}</label>
+                  <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}
+                    className="w-full bg-[#f7f9fe] border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0038AF]/20 focus:border-[#0038AF]">
+                    {roleOptions.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-1.5">{t('lbl_municipality_f')}</label>
+                  <select value={editForm.municipality_id} onChange={e => setEditForm(f => ({ ...f, municipality_id: e.target.value }))}
+                    className="w-full bg-[#f7f9fe] border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0038AF]/20 focus:border-[#0038AF]">
+                    <option value="">{t('select_option')}</option>
+                    {municipalities.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 pb-6 flex gap-3">
+              <button onClick={() => setEditingAgent(null)}
+                className="flex-1 py-2.5 border border-[#E2E8F0] text-[#64748B] rounded-xl text-sm font-medium hover:bg-[#f7f9fe] transition-colors">
+                {t('btn_cancel')}
+              </button>
+              <button onClick={submitEdit} disabled={savingEdit}
+                className="flex-1 py-2.5 bg-[#0038AF] text-white rounded-xl text-sm font-semibold shadow-md hover:opacity-90 transition-opacity disabled:opacity-50">
+                {savingEdit ? t('saving') : t('btn_save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirm */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+          onClick={e => { if (e.target === e.currentTarget) setDeleteTarget(null) }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                <span className="material-symbols-outlined text-red-500" style={{ fontSize: 20 }}>warning</span>
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#181c20]">{t('confirm_delete_agent_title')}</h3>
+                <p className="text-xs text-[#64748B]">{deleteTarget.full_name}</p>
+              </div>
+            </div>
+            <p className="text-sm text-[#64748B] mb-4">{t('confirm_delete_agent_body')}</p>
+            {deleteError && (
+              <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-4">
+                <span className="text-sm text-red-600">{deleteError}</span>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2.5 border border-[#E2E8F0] text-[#64748B] rounded-xl text-sm font-medium hover:bg-[#f7f9fe] transition-colors">
+                {t('btn_cancel')}
+              </button>
+              <button onClick={confirmDeleteAgent} disabled={deleting}
+                className="flex-1 py-2.5 bg-red-500 text-white rounded-xl text-sm font-semibold shadow-md hover:opacity-90 transition-opacity disabled:opacity-50">
+                {deleting ? t('deleting') : t('btn_delete')}
               </button>
             </div>
           </div>

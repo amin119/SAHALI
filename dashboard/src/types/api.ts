@@ -6,6 +6,7 @@ export interface User {
   email?: string
   phone?: string
   role: UserRole
+  municipality_id?: number | null
   preferred_language: string
   is_active: boolean
   created_at: string
@@ -123,3 +124,17 @@ export interface PaginatedResponse<T> {
   page: number
   page_size: number
 }
+
+export interface Municipality {
+  id: number
+  name: string
+  subscription_tier: string | null
+  total_reports: number
+  resolved_reports: number
+  open_reports: number
+  agent_count: number
+  resolution_rate: number
+}
+
+export type UserListOut = PaginatedResponse<User>
+export type MunicipalityListOut = PaginatedResponse<Municipality>

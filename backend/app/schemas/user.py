@@ -39,3 +39,10 @@ class StaffUserUpdate(BaseModel):
     role: UserRole | None = None
     is_active: bool | None = None
     municipality_id: int | None = None
+
+
+class UserListOut(BaseModel):
+    items: list[UserOut]
+    total: int
+    page: int
+    page_size: int
