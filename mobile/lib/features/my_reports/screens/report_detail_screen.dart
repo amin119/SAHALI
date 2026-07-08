@@ -72,7 +72,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     final slug = cat?.slug ?? 'infrastructure';
     final catColor = categoryColorBySlug(slug);
     final catIcon = categoryIconData(cat?.icon);
-    final catLabel = cat?.labelFor(Localizations.localeOf(context).languageCode) ?? l10n.reportFallback;
+    final langCode = Localizations.localeOf(context).languageCode;
+    final catLabel = categoryLabelBySlug(slug, langCode, apiLabel: cat?.labelFor(langCode) ?? l10n.reportFallback);
     final status = ReportStatusX.fromApi(report.status);
 
     return Scaffold(

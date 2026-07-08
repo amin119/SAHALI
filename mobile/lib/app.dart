@@ -41,6 +41,16 @@ class _SahaliAppState extends State<SahaliApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
+      // Force the ambient text direction app-wide from the selected
+      // language. Relying solely on `locale:` above to auto-flip
+      // Directionality proved unreliable — AppBars stayed LTR-arranged
+      // while manually-overridden widgets correctly mirrored — so every
+      // screen ends up RTL-correct for free instead of needing per-screen
+      // Directionality/textDirection workarounds.
+      builder: (context, child) => Directionality(
+        textDirection: lang.isArabic ? TextDirection.rtl : TextDirection.ltr,
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }

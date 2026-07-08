@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/network/api_client.dart';
 import '../../../core/providers/language_provider.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/router/app_router.dart';
@@ -14,6 +13,7 @@ import '../../../core/utils/category_utils.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/report/providers/reports_provider.dart';
 import '../../../shared/widgets/sa_bottom_sheet.dart';
+import '../../../shared/widgets/sahali_header_logo.dart';
 import '../../../shared/widgets/status_badge.dart';
 import 'package:intl/intl.dart';
 
@@ -38,65 +38,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ReportsProvider>().loadMyReports(refresh: true);
-    });
-  }
-
-  void _showServerUrlDialog(BuildContext context) {
-    final p = AppPalette.of(context);
-    final ctrl = TextEditingController(text: BackendConfig.current);
-    showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Server URL', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Enter your backend URL.\n'
-              '• Emulator: http://10.0.2.2:8000/v1\n'
-              '• ngrok: https://xxx.ngrok-free.app/v1\n'
-              '• WiFi: http://192.168.X.X:8000/v1',
-              style: TextStyle(fontSize: 12, color: p.textSecondary),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: ctrl,
-              keyboardType: TextInputType.url,
-              autocorrect: false,
-              decoration: const InputDecoration(
-                hintText: 'http://10.0.2.2:8000/v1',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              ),
-              style: const TextStyle(fontSize: 13),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              await BackendConfig.reset();
-              ctrl.text = BackendConfig.current;
-              if (ctx.mounted) Navigator.pop(ctx, true);
-            },
-            child: Text('Reset', style: TextStyle(color: p.textHint)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await BackendConfig.setUrl(ctrl.text);
-              if (ctx.mounted) Navigator.pop(ctx, true);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    ).then((changed) {
-      if ((changed ?? false) && mounted) setState(() {});
     });
   }
 
@@ -337,12 +278,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: () => _showThemePicker(context, l10n),
                       ),
                       _SettingsTile(
-                        icon: PhosphorIconsRegular.hardDrives,
-                        label: 'Server URL',
-                        trailing: BackendConfig.current.replaceFirst(RegExp(r'^https?://'), '').replaceFirst(RegExp(r'/v1$'), ''),
-                        onTap: () => _showServerUrlDialog(context),
-                      ),
-                      _SettingsTile(
                         icon: PhosphorIconsRegular.shieldCheck,
                         label: l10n.privacyPolicy,
                         onTap: () => context.push(AppRoutes.privacyPolicy),
@@ -364,7 +299,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   const SizedBox(height: 32),
-                  Text('سهلي v1.0.0', style: TextStyle(fontSize: 12, color: p.textHint)),
+                  const SahaliHeaderLogo(height: 24),
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
                 ],
               ),

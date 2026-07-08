@@ -55,7 +55,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     final langCode = Localizations.localeOf(context).languageCode;
     context.read<ReportFormProvider>().setCategory(
           _selected!,
-          cat.labelFor(langCode),
+          categoryLabelBySlug(cat.slug, langCode, apiLabel: cat.labelFor(langCode)),
           icon,
           color,
           id: cat.id,
@@ -67,8 +67,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final langCode = Localizations.localeOf(context).languageCode;
-    final isRtl = langCode == 'ar';
-    final textDir = isRtl ? TextDirection.rtl : TextDirection.ltr;
     final p = AppPalette.of(context);
 
     return Scaffold(
@@ -94,13 +92,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
           children: [
             Text(
               l10n.whatReporting,
-              textDirection: textDir,
               style: Theme.of(context).textTheme.headlineLarge,
             ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.15, end: 0, curve: Curves.easeOutCubic),
             const SizedBox(height: 4),
             Text(
               l10n.chooseCategoryHint,
-              textDirection: textDir,
               style: TextStyle(fontSize: 14, color: p.textSecondary),
             ).animate().fadeIn(duration: 300.ms, delay: 60.ms),
             const SizedBox(height: 24),
@@ -120,88 +116,76 @@ class _CategoryScreenState extends State<CategoryScreen> {
                             ],
                           ),
                         )
-                      : Builder(
-                          builder: (ctx) {
-                            final langCode = Localizations.localeOf(ctx).languageCode;
-                            final isRtl = langCode == 'ar';
-                            final textDir = isRtl ? TextDirection.rtl : TextDirection.ltr;
-                            return Directionality(
-                              textDirection: textDir,
-                              child: GridView.builder(
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: 12,
-                                  crossAxisSpacing: 12,
-                                  childAspectRatio: 1.1,
+                      : GridView.builder(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 1.1,
+                          ),
+                          itemCount: _categories.length,
+                          itemBuilder: (_, i) {
+                            final cat = _categories[i];
+                            final isSelected = _selected == i;
+                            final color = categoryColorBySlug(cat.slug);
+                            final icon = categoryIconData(cat.icon);
+                            return GestureDetector(
+                              onTap: () => setState(() => _selected = i),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                decoration: AppShapes.card(
+                                  gradient: isSelected
+                                      ? LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [color.withValues(alpha: 0.16), color.withValues(alpha: 0.06)],
+                                        )
+                                      : null,
+                                  color: isSelected ? null : p.surface,
+                                  radius: AppShapes.radiusLg,
+                                  borderColor: isSelected ? color : p.divider,
+                                  borderWidth: isSelected ? 2 : 1,
                                 ),
-                                itemCount: _categories.length,
-                                itemBuilder: (_, i) {
-                                  final cat = _categories[i];
-                                  final isSelected = _selected == i;
-                                  final color = categoryColorBySlug(cat.slug);
-                                  final icon = categoryIconData(cat.icon);
-                                  return GestureDetector(
-                                    onTap: () => setState(() => _selected = i),
-                                    child: AnimatedContainer(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AnimatedScale(
+                                      scale: isSelected ? 1.08 : 1.0,
                                       duration: const Duration(milliseconds: 200),
-                                      decoration: AppShapes.card(
-                                        gradient: isSelected
-                                            ? LinearGradient(
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                                colors: [color.withValues(alpha: 0.16), color.withValues(alpha: 0.06)],
-                                              )
-                                            : null,
-                                        color: isSelected ? null : p.surface,
-                                        radius: AppShapes.radiusLg,
-                                        borderColor: isSelected ? color : p.divider,
-                                        borderWidth: isSelected ? 2 : 1,
-                                      ),
-                                      padding: const EdgeInsets.all(16),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          AnimatedScale(
-                                            scale: isSelected ? 1.08 : 1.0,
-                                            duration: const Duration(milliseconds: 200),
-                                            curve: Curves.easeOutBack,
-                                            child: Container(
-                                              width: 44,
-                                              height: 44,
-                                              decoration: AppShapes.card(color: color.withValues(alpha: 0.14), radius: AppShapes.radiusSm),
-                                              child: Icon(icon, color: color, size: 22),
-                                            ),
-                                          ),
-                                          const Spacer(),
-                                          Text(
-                                            cat.labelFor(langCode),
-                                            textDirection: textDir,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w700,
-                                              color: p.textPrimary,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            cat.children.isNotEmpty
-                                                ? l10n.subCategoriesCount(cat.children.length)
-                                                : cat.slug,
-                                            textDirection: textDir,
-                                            style: TextStyle(fontSize: 11, color: p.textSecondary),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
+                                      curve: Curves.easeOutBack,
+                                      child: Container(
+                                        width: 44,
+                                        height: 44,
+                                        decoration: AppShapes.card(color: color.withValues(alpha: 0.14), radius: AppShapes.radiusSm),
+                                        child: Icon(icon, color: color, size: 22),
                                       ),
                                     ),
-                                  ).animate().fadeIn(
-                                        duration: 280.ms,
-                                        delay: (30 * i).ms,
-                                      ).slideY(begin: 0.12, end: 0, curve: Curves.easeOutCubic);
-                                },
+                                    const Spacer(),
+                                    Text(
+                                      categoryLabelBySlug(cat.slug, langCode, apiLabel: cat.labelFor(langCode)),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: p.textPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      cat.children.isNotEmpty
+                                          ? l10n.subCategoriesCount(cat.children.length)
+                                          : cat.slug,
+                                      style: TextStyle(fontSize: 11, color: p.textSecondary),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            );
+                            ).animate().fadeIn(
+                                  duration: 280.ms,
+                                  delay: (30 * i).ms,
+                                ).slideY(begin: 0.12, end: 0, curve: Curves.easeOutCubic);
                           },
                         ),
             ),

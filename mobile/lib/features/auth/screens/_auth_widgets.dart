@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_shapes.dart';
-import '../../../shared/widgets/sahali_logo.dart';
+import '../../../shared/widgets/sahali_header_logo.dart';
 import '../../../core/l10n/app_localizations.dart';
 
 /// Logo + title + subtitle header used on every auth screen
@@ -18,17 +18,7 @@ class AuthHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const SahaliLogo(size: 36),
-            const SizedBox(width: 10),
-            Text(
-              AppLocalizations.of(context).appNameAr,
-              style: TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.w800, color: p.textPrimary),
-            ),
-          ],
-        ),
+        const SahaliHeaderLogo(height: 32),
         const SizedBox(height: 28),
         Text(title, style: Theme.of(context).textTheme.displaySmall),
         const SizedBox(height: 6),

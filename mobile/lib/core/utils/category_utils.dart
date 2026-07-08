@@ -63,6 +63,60 @@ Color categoryColorBySlug(String slug) {
   }
 }
 
+// Category display labels, hardcoded per language. The backend/dashboard
+// both show these correctly, but Arabic labels fetched over the API and
+// rendered on-device came through with scrambled letter order on some
+// devices — this sidesteps whatever is happening in that data path for
+// this small, stable set of 7 root categories.
+const Map<String, Map<String, String>> _categoryLabels = {
+  'infrastructure': {
+    'fr': 'Infrastructure',
+    'ar': 'البنية التحتية',
+    'en': 'Infrastructure',
+  },
+  'lighting': {
+    'fr': 'Éclairage',
+    'ar': 'الإنارة العامة',
+    'en': 'Lighting',
+  },
+  'waste': {
+    'fr': 'Déchets',
+    'ar': 'النظافة والنفايات',
+    'en': 'Waste',
+  },
+  'environment': {
+    'fr': 'Environnement',
+    'ar': 'البيئة',
+    'en': 'Environment',
+  },
+  'water_sanitation': {
+    'fr': 'Eau et assainissement',
+    'ar': 'المياه والصرف الصحي',
+    'en': 'Water & Sanitation',
+  },
+  'transport': {
+    'fr': 'Transport',
+    'ar': 'النقل',
+    'en': 'Transport',
+  },
+  'safety': {
+    'fr': 'Sécurité',
+    'ar': 'السلامة والأمن',
+    'en': 'Safety',
+  },
+};
+
+/// Looks up the display label for a category by its root slug, falling
+/// back to [apiLabel] (the backend-provided value) if the slug isn't one
+/// of the 7 known root categories.
+String categoryLabelBySlug(String slug, String langCode, {String? apiLabel}) {
+  var root = slug.split('.').first;
+  if (root == 'water') root = 'water_sanitation';
+  final entry = _categoryLabels[root];
+  if (entry == null) return apiLabel ?? slug;
+  return entry[langCode] ?? entry['fr']!;
+}
+
 // Fallback color by category index (for lists without slug info)
 Color categoryColorByIndex(int index) {
   const colors = [

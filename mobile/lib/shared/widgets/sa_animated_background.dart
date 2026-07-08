@@ -1,51 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_moving_background/flutter_moving_background.dart';
 import '../../core/theme/app_palette.dart';
 
-/// The app's living background — a slow, breathing pastel gradient behind
-/// every screen. Mounted once at the [MaterialApp] root (see app.dart) so
-/// the animation keeps flowing continuously across navigation instead of
-/// restarting per screen. Individual screens just need a transparent
-/// [Scaffold] background for it to show through.
-class SaAnimatedBackground extends StatefulWidget {
+/// The onboarding/splash "living" background — slow-drifting, softly
+/// blurred glows in the app's own palette. Uses `flutter_moving_background`'s
+/// circle technique (the same one behind its "cyberpunk" preset) but with
+/// Sahali's warm pastel colors instead of neon magenta/cyan, so it still
+/// reads as calm rather than electric. Mounted locally by [SplashScreen] and
+/// [OnboardingScreen] only — the rest of the app uses a plain background.
+class SaAnimatedBackground extends StatelessWidget {
   const SaAnimatedBackground({super.key, required this.child});
   final Widget child;
 
   @override
-  State<SaAnimatedBackground> createState() => _SaAnimatedBackgroundState();
-}
-
-class _SaAnimatedBackgroundState extends State<SaAnimatedBackground> with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-  late final Animation<Alignment> _begin;
-  late final Animation<Alignment> _end;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 22))..repeat(reverse: true);
-    final curve = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOutSine);
-    _begin = AlignmentTween(begin: Alignment.topLeft, end: Alignment.bottomLeft).animate(curve);
-    _end = AlignmentTween(begin: Alignment.bottomRight, end: Alignment.topRight).animate(curve);
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final colors = AppPalette.of(context).livingGradientColors;
-    return AnimatedBuilder(
-      animation: _ctrl,
-      child: widget.child,
-      builder: (context, child) => DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(begin: _begin.value, end: _end.value, colors: colors),
-        ),
-        child: child,
-      ),
+    final p = AppPalette.of(context);
+    return MovingBackground(
+      backgroundColor: p.background,
+      animationType: AnimationType.moveAndFade,
+      duration: const Duration(seconds: 16),
+      circles: [
+        MovingCircle(color: p.gradientOrange.withValues(alpha: 0.6), radius: 320, blurSigma: 80),
+        MovingCircle(color: p.gradientYellow.withValues(alpha: 0.55), radius: 280, blurSigma: 75),
+        MovingCircle(color: p.gradientGreen.withValues(alpha: 0.55), radius: 300, blurSigma: 80),
+        MovingCircle(color: p.gradientBlue.withValues(alpha: 0.55), radius: 280, blurSigma: 75),
+      ],
+      child: child,
     );
   }
 }

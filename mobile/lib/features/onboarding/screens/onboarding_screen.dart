@@ -251,28 +251,23 @@ class _PageContent extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Hero icon in a frosted squircle
+              // Bare hero icon — no frame, just a soft shadow for lift
               ScaleTransition(
                 scale: isActive
                     ? heroScale
                     : const AlwaysStoppedAnimation(1.0),
-                child: Container(
-                  width: 150,
-                  height: 150,
-                  decoration: AppShapes.card(
-                    color: Colors.white.withValues(alpha: 0.55),
-                    radius: AppShapes.radiusXl,
-                    borderColor: Colors.white.withValues(alpha: 0.6),
-                    borderWidth: 1.5,
-                    shadows: [
-                      BoxShadow(
-                        color: p.ink.withValues(alpha: 0.10),
-                        blurRadius: 40,
-                        offset: const Offset(0, 16),
-                      ),
-                    ],
-                  ),
-                  child: PhosphorIcon(slide.icon, color: p.ink, duotoneSecondaryColor: Colors.white, size: 68),
+                child: PhosphorIcon(
+                  slide.icon,
+                  color: p.ink,
+                  duotoneSecondaryColor: p.ink.withValues(alpha: 0.35),
+                  size: 112,
+                  shadows: [
+                    Shadow(
+                      color: p.ink.withValues(alpha: 0.18),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
               ),
 

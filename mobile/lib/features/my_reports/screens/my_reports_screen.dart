@@ -168,7 +168,8 @@ class _ReportCard extends StatelessWidget {
     final slug = cat?.slug ?? 'infrastructure';
     final color = categoryColorBySlug(slug);
     final icon = categoryIconData(cat?.icon);
-    final catLabel = cat?.labelFor(Localizations.localeOf(context).languageCode) ?? 'Report';
+    final langCode = Localizations.localeOf(context).languageCode;
+    final catLabel = categoryLabelBySlug(slug, langCode, apiLabel: cat?.labelFor(langCode) ?? 'Report');
     final status = ReportStatusX.fromApi(report.status);
     final dateStr = DateFormat('d MMM y').format(report.createdAt.toLocal());
 

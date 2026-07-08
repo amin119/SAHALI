@@ -59,6 +59,9 @@ dependencies:
   # Local device notifications (status-change alerts)
   flutter_local_notifications: ^18.0.1
 
+  # Animated moving background (onboarding / splash)
+  flutter_moving_background: ^0.3.0
+
   # Image caching
   cached_network_image: ^3.4.1
 
@@ -73,6 +76,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   uses-material-design: true
@@ -82,3 +86,10 @@ flutter:
     - assets/icons/
 
   # generate: false  (localizations are hand-written in lib/core/l10n/)
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/final_logo.png"
+  min_sdk_android: 21

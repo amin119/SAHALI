@@ -11,7 +11,7 @@ import '../../../features/notifications/providers/notifications_provider.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/local_notification_service.dart';
 import '../../../core/services/sync_service.dart';
-import '../../../shared/widgets/sahali_logo.dart';
+import '../../../shared/widgets/sahali_header_logo.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen>
             _CommunityCard(l10n: l10n),
             // ── Offline queue banner ────────────────────────────────────
             _QueueBanner(l10n: l10n),
-            const Spacer(),
+            const SizedBox(height: 36),
             // ── Centered pulsing FAB ────────────────────────────────────
             _CenteredFab(
               l10n: l10n,
@@ -105,20 +105,7 @@ class _HomeScreenState extends State<HomeScreen>
       elevation: 0,
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
-      title: Row(
-        children: [
-          const SahaliLogo(size: 36),
-          const SizedBox(width: 10),
-          Text(
-            'سهلي',
-            style: TextStyle(
-              fontSize: 21,
-              fontWeight: FontWeight.w900,
-              color: p.ink,
-            ),
-          ),
-        ],
-      ),
+      title: const SahaliHeaderLogo(height: 32),
       actions: [
         Stack(
           alignment: Alignment.center,

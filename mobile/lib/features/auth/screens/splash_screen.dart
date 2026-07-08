@@ -3,9 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_palette.dart';
-import '../../../core/theme/app_shapes.dart';
 import '../../../features/auth/providers/auth_provider.dart';
-import '../../../shared/widgets/sahali_logo.dart';
+import '../../../shared/widgets/sahali_header_logo.dart';
 import '../../../shared/widgets/sa_animated_background.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -20,8 +19,6 @@ class _SplashScreenState extends State<SplashScreen>
   late final AnimationController _ctrl;
   late final Animation<double> _logoScale;
   late final Animation<double> _logoFade;
-  late final Animation<double> _titleFade;
-  late final Animation<Offset> _titleSlide;
   late final Animation<double> _subtitleFade;
 
   @override
@@ -41,19 +38,6 @@ class _SplashScreenState extends State<SplashScreen>
     _logoFade = CurvedAnimation(
       parent: _ctrl,
       curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
-    );
-    _titleFade = CurvedAnimation(
-      parent: _ctrl,
-      curve: const Interval(0.35, 0.75, curve: Curves.easeOut),
-    );
-    _titleSlide = Tween<Offset>(
-      begin: const Offset(0, 0.4),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _ctrl,
-        curve: const Interval(0.35, 0.80, curve: Curves.easeOutCubic),
-      ),
     );
     _subtitleFade = CurvedAnimation(
       parent: _ctrl,
@@ -93,33 +77,10 @@ class _SplashScreenState extends State<SplashScreen>
               opacity: _logoFade,
               child: ScaleTransition(
                 scale: _logoScale,
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: AppShapes.card(
-                    color: Colors.white.withValues(alpha: 0.55),
-                    radius: AppShapes.radiusXl,
-                  ),
-                  child: const SahaliLogo(size: 88),
-                ),
+                child: const SahaliHeaderLogo(height: 110),
               ),
             ),
-            const SizedBox(height: 32),
-            FadeTransition(
-              opacity: _titleFade,
-              child: SlideTransition(
-                position: _titleSlide,
-                child: Text(
-                  'سهلي',
-                  style: TextStyle(
-                    fontSize: 42,
-                    fontWeight: FontWeight.w900,
-                    color: p.ink,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             FadeTransition(
               opacity: _subtitleFade,
               child: Text(
