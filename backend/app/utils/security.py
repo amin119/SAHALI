@@ -1,5 +1,6 @@
 import random
 import string
+from functools import lru_cache
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
@@ -22,6 +23,7 @@ def _load_key(path: str) -> str:
         return f.read()
 
 
+@lru_cache
 def _get_private_key() -> str:
     if settings.JWT_PRIVATE_KEY_B64:
         import base64
@@ -29,6 +31,7 @@ def _get_private_key() -> str:
     return _load_key(settings.JWT_PRIVATE_KEY_PATH)
 
 
+@lru_cache
 def _get_public_key() -> str:
     if settings.JWT_PUBLIC_KEY_B64:
         import base64

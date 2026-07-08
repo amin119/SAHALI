@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/step_bar.dart';
 import '../../../shared/widgets/sa_button.dart';
@@ -17,7 +20,6 @@ class DescriptionScreen extends StatefulWidget {
 class _DescriptionScreenState extends State<DescriptionScreen> {
   late final TextEditingController _ctrl;
   static const _max = 500;
-  static const _min = 20;
 
   @override
   void initState() {
@@ -32,7 +34,7 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
     super.dispose();
   }
 
-  bool get _valid => _ctrl.text.trim().length >= _min;
+  bool get _valid => _ctrl.text.trim().isNotEmpty;
 
   void _appendTip(String tip) {
     final current = _ctrl.text;
@@ -56,12 +58,13 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
       l10n.tipTrashOverflow,
       l10n.tipNoise,
     ];
+    final p = AppPalette.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         title: Text(l10n.newReport),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => context.go(AppRoutes.reportLocation),
         ),
         bottom: PreferredSize(
@@ -79,22 +82,18 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
           children: [
             Text(
               l10n.describeIssue,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
-            ),
+              style: Theme.of(context).textTheme.headlineLarge,
+            ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.15, end: 0, curve: Curves.easeOutCubic),
             const SizedBox(height: 4),
             Text(
               l10n.describeIssueSub,
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            ),
+              style: TextStyle(fontSize: 14, color: p.textSecondary),
+            ).animate().fadeIn(duration: 300.ms, delay: 60.ms),
             const SizedBox(height: 24),
 
             Expanded(
               child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.border),
-                ),
+                decoration: AppShapes.card(color: p.surface, radius: AppShapes.radiusLg, borderColor: p.border),
                 child: TextField(
                   controller: _ctrl,
                   maxLength: _max,
@@ -104,7 +103,7 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     hintText: l10n.descriptionPlaceholder,
-                    hintStyle: const TextStyle(fontSize: 14, color: AppColors.textHint, height: 1.6),
+                    hintStyle: TextStyle(fontSize: 14, color: p.textHint, height: 1.6),
                     counterText: '',
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.all(16),
@@ -116,17 +115,12 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
 
             Row(
               children: [
-                if (count > 0 && count < _min)
-                  Text(
-                    l10n.atLeastNChars(_min),
-                    style: const TextStyle(fontSize: 12, color: AppColors.error),
-                  ),
                 const Spacer(),
                 Text(
                   '$count / $_max',
                   style: TextStyle(
                     fontSize: 12,
-                    color: count >= _max ? AppColors.error : AppColors.textHint,
+                    color: count >= _max ? p.error : p.textHint,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -142,16 +136,12 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
                         onTap: () => _appendTip(tip),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(color: AppColors.divider),
-                          ),
-                          child: Text(tip, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          decoration: AppShapes.card(color: p.surface, radius: AppShapes.radiusPill, borderColor: p.divider),
+                          child: Text(tip, style: TextStyle(fontSize: 12, color: p.textSecondary)),
                         ),
                       ))
                   .toList(),
-            ),
+            ).animate().fadeIn(duration: 300.ms, delay: 120.ms),
             const SizedBox(height: 20),
             SaButton(
               label: l10n.nextReviewReport,

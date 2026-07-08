@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/router/app_router.dart';
+import '../../../shared/widgets/sa_success_badge.dart';
 import '../providers/auth_provider.dart';
 import '_auth_widgets.dart';
 
@@ -48,20 +50,24 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     final auth = context.watch<AuthProvider>();
     final l10n = AppLocalizations.of(context);
 
+    final p = AppPalette.of(context);
+
     if (_success) {
       return Scaffold(
-        backgroundColor: AppColors.background,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.check_circle_outline, size: 72, color: AppColors.success),
+                SaSuccessBadge(
+                  size: 88,
+                  icon: PhosphorIconsBold.check,
+                ),
                 const SizedBox(height: 24),
                 Text(l10n.passwordResetSuccess,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: p.textPrimary)),
                 const SizedBox(height: 32),
                 AuthPrimaryButton(
                   label: l10n.backToLogin,
@@ -76,7 +82,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -91,24 +96,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               const SizedBox(height: 8),
               // Show identifier
               Text(_identifier,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: p.ink)),
               const SizedBox(height: 24),
 
               // Dev code hint
               if (_debugCode != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.warningContainer,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(children: [
-                    const Icon(Icons.bug_report_outlined, size: 16, color: AppColors.warning),
-                    const SizedBox(width: 8),
-                    Text('${l10n.devCodeHint} $_debugCode',
-                        style: const TextStyle(fontSize: 13, color: AppColors.warning, fontWeight: FontWeight.w600)),
-                  ]),
-                ),
+                AuthDebugCodeHint(code: _debugCode!),
                 const SizedBox(height: 16),
               ],
 
@@ -137,9 +130,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
                   labelText: l10n.newPassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  prefixIcon: Icon(PhosphorIconsRegular.lockSimple),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    icon: Icon(_obscure ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeClosed),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
                 ),
@@ -154,9 +147,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 onSubmitted: (_) => _submit(context),
                 decoration: InputDecoration(
                   labelText: l10n.confirmPassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  prefixIcon: Icon(PhosphorIconsRegular.lockSimple),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirm ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    icon: Icon(_obscureConfirm ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeClosed),
                     onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
                 ),

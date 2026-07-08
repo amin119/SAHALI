@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/language_provider.dart';
+import '../../../core/providers/theme_provider.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../core/utils/category_utils.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/report/providers/reports_provider.dart';
+import '../../../shared/widgets/sa_bottom_sheet.dart';
 import '../../../shared/widgets/status_badge.dart';
 import 'package:intl/intl.dart';
 
@@ -19,6 +24,15 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final _settingsKey = GlobalKey();
+
+  void _scrollToSettings() {
+    final ctx = _settingsKey.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(ctx, duration: const Duration(milliseconds: 400), curve: Curves.easeOutCubic);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showServerUrlDialog(BuildContext context) {
+    final p = AppPalette.of(context);
     final ctrl = TextEditingController(text: BackendConfig.current);
     showDialog<bool>(
       context: context,
@@ -37,12 +52,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Enter your backend URL.\n'
               '• Emulator: http://10.0.2.2:8000/v1\n'
               '• ngrok: https://xxx.ngrok-free.app/v1\n'
               '• WiFi: http://192.168.X.X:8000/v1',
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 12, color: p.textSecondary),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -65,7 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ctrl.text = BackendConfig.current;
               if (ctx.mounted) Navigator.pop(ctx, true);
             },
-            child: const Text('Reset', style: TextStyle(color: AppColors.textHint)),
+            child: Text('Reset', style: TextStyle(color: p.textHint)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -87,42 +102,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showLanguagePicker(BuildContext context, AppLocalizations l10n) {
     final lang = context.read<LanguageProvider>();
+    final p = AppPalette.of(context);
     final langs = [
       ('fr', 'Français', '🇫🇷'),
       ('ar', 'العربية', '🇹🇳'),
       ('en', 'English', '🇬🇧'),
     ];
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+    showSaBottomSheet(
+      context,
+      isScrollControlled: false,
       builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 20),
-            Text(l10n.language, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+            Text(l10n.language, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: p.textPrimary)),
             const SizedBox(height: 16),
             ...langs.map((t) {
               final (code, label, flag) = t;
               final selected = lang.languageCode == code;
               return ListTile(
                 leading: Text(flag, style: const TextStyle(fontSize: 22)),
-                title: Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: selected ? AppColors.primary : AppColors.textPrimary)),
-                trailing: selected ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
+                title: Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: selected ? p.info : p.textPrimary)),
+                trailing: selected ? Icon(PhosphorIconsFill.checkCircle, color: p.info) : null,
                 onTap: () { lang.setLocale(code); Navigator.pop(context); },
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                tileColor: selected ? AppColors.primaryContainer : Colors.transparent,
+                shape: AppShapes.border(radius: AppShapes.radiusMd),
+                tileColor: selected ? p.infoSoft : Colors.transparent,
               );
             }),
           ],
         ),
       ),
     );
+  }
+
+  void _showThemePicker(BuildContext context, AppLocalizations l10n) {
+    final themeProvider = context.read<ThemeProvider>();
+    final p = AppPalette.of(context);
+    final options = [
+      (ThemeMode.system, l10n.themeSystem, PhosphorIconsRegular.circleHalf),
+      (ThemeMode.light, l10n.themeLight, PhosphorIconsRegular.sun),
+      (ThemeMode.dark, l10n.themeDark, PhosphorIconsRegular.moon),
+    ];
+    showSaBottomSheet(
+      context,
+      isScrollControlled: false,
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.theme, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: p.textPrimary)),
+            const SizedBox(height: 16),
+            ...options.map((t) {
+              final (mode, label, icon) = t;
+              final selected = themeProvider.themeMode == mode;
+              return ListTile(
+                leading: Icon(icon, color: selected ? p.info : p.textSecondary),
+                title: Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: selected ? p.info : p.textPrimary)),
+                trailing: selected ? Icon(PhosphorIconsFill.checkCircle, color: p.info) : null,
+                onTap: () { themeProvider.setThemeMode(mode); Navigator.pop(context); },
+                shape: AppShapes.border(radius: AppShapes.radiusMd),
+                tileColor: selected ? p.infoSoft : Colors.transparent,
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _themeModeLabel(ThemeMode mode, AppLocalizations l10n) {
+    switch (mode) {
+      case ThemeMode.light:
+        return l10n.themeLight;
+      case ThemeMode.dark:
+        return l10n.themeDark;
+      case ThemeMode.system:
+        return l10n.themeSystem;
+    }
   }
 
   @override
@@ -132,6 +190,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final langLabel = langCode == 'fr' ? 'Français' : langCode == 'ar' ? 'العربية' : 'English';
     final auth = context.watch<AuthProvider>();
     final reports = context.watch<ReportsProvider>();
+    final themeMode = context.watch<ThemeProvider>().themeMode;
+    final p = AppPalette.of(context);
 
     final user = auth.user;
     final totalReports = reports.total;
@@ -139,18 +199,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final activeCount = reports.reports.where((r) => r.isActive).length;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             pinned: true,
+            backgroundColor: Colors.transparent,
             title: Text(l10n.profile),
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded),
+              icon: Icon(PhosphorIconsRegular.arrowLeft),
               onPressed: () => context.go(AppRoutes.home),
             ),
             actions: [
-              IconButton(icon: const Icon(Icons.settings_outlined), onPressed: () {}),
+              IconButton(icon: Icon(PhosphorIconsRegular.gearSix), onPressed: _scrollToSettings),
             ],
           ),
           SliverToBoxAdapter(
@@ -161,11 +221,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Avatar + name
                   Container(
                     padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.divider),
-                    ),
+                    decoration: AppShapes.card(color: p.surface, radius: AppShapes.radiusLg, borderColor: p.divider),
                     child: Column(
                       children: [
                         Stack(
@@ -173,15 +229,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Container(
                               width: 80,
                               height: 80,
-                              decoration: const BoxDecoration(color: AppColors.primaryContainer, shape: BoxShape.circle),
-                              child: const Icon(Icons.person_rounded, color: AppColors.primary, size: 40),
+                              decoration: AppShapes.card(color: p.infoSoft, radius: AppShapes.radiusPill),
+                              child: Icon(PhosphorIconsDuotone.userCircle, color: p.info, size: 40),
                             ),
                             Positioned(
                               bottom: 0, right: 0,
                               child: Container(
                                 width: 26, height: 26,
-                                decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                                child: const Icon(Icons.edit_rounded, color: Colors.white, size: 14),
+                                decoration: AppShapes.card(color: p.ink, radius: AppShapes.radiusPill),
+                                child: const Icon(PhosphorIconsBold.pencilSimple, color: Colors.white, size: 14),
                               ),
                             ),
                           ],
@@ -189,21 +245,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(height: 14),
                         Text(
                           user?.fullName ?? 'Guest',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: p.textPrimary),
                         ),
                         const SizedBox(height: 4),
                         if (user?.phone != null)
-                          Text(user!.phone!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary))
+                          Text(user!.phone!, style: TextStyle(fontSize: 13, color: p.textSecondary))
                         else if (user?.email != null)
-                          Text(user!.email!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                          Text(user!.email!, style: TextStyle(fontSize: 13, color: p.textSecondary)),
                         if (user != null) ...[
                           const SizedBox(height: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(color: AppColors.primaryContainer, borderRadius: BorderRadius.circular(100)),
+                            decoration: AppShapes.card(color: p.infoSoft, radius: AppShapes.radiusPill),
                             child: Text(
                               user.role == 'citizen' ? 'Citizen' : user.role,
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: p.info),
                             ),
                           ),
                         ],
@@ -215,11 +271,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Stats
                   Row(
                     children: [
-                      _StatCard(value: '$totalReports', label: l10n.myReports, icon: Icons.flag_outlined, color: AppColors.primary),
+                      _StatCard(value: '$totalReports', label: l10n.myReports, icon: PhosphorIconsRegular.flag, color: p.ink),
                       const SizedBox(width: 12),
-                      _StatCard(value: '$resolvedCount', label: l10n.resolvedLabel, icon: Icons.check_circle_outline_rounded, color: AppColors.success),
+                      _StatCard(value: '$resolvedCount', label: l10n.resolvedLabel, icon: PhosphorIconsRegular.checkCircle, color: p.safe),
                       const SizedBox(width: 12),
-                      _StatCard(value: '$activeCount', label: l10n.activeLabel, icon: Icons.pending_outlined, color: AppColors.statusInProgress),
+                      _StatCard(value: '$activeCount', label: l10n.activeLabel, icon: PhosphorIconsRegular.clock, color: p.info),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -227,11 +283,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Recent activity
                   Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: Text(l10n.recentActivitySection, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                    child: Text(l10n.recentActivitySection, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: p.textPrimary)),
                   ),
                   const SizedBox(height: 12),
 
-                  ...reports.reports.take(3).map((r) {
+                  ...reports.reports.take(3).toList().asMap().entries.map((entry) {
+                    final r = entry.value;
                     final cat = reports.categoryById(r.categoryId);
                     final slug = cat?.slug ?? 'infrastructure';
                     return _ActivityRow(
@@ -240,13 +297,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       title: r.title,
                       status: ReportStatusX.fromApi(r.status),
                       date: DateFormat('d MMM y').format(r.createdAt.toLocal()),
+                      index: entry.key,
                     );
                   }),
 
                   if (reports.reports.isEmpty && !reports.loading)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Text('No reports yet.', style: TextStyle(color: AppColors.textHint, fontSize: 13)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text('No reports yet.', style: TextStyle(color: p.textHint, fontSize: 13)),
                     ),
 
                   TextButton(
@@ -258,32 +316,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Divider(),
                   const SizedBox(height: 8),
 
-                  _SettingsTile(icon: Icons.notifications_outlined, label: l10n.notifications, onTap: () {}),
-                  _SettingsTile(
-                    icon: Icons.language_rounded,
-                    label: l10n.language,
-                    trailing: langLabel,
-                    onTap: () => _showLanguagePicker(context, l10n),
-                  ),
-                  _SettingsTile(
-                    icon: Icons.dns_outlined,
-                    label: 'Server URL',
-                    trailing: BackendConfig.current.replaceFirst(RegExp(r'^https?://'), '').replaceFirst(RegExp(r'/v1$'), ''),
-                    onTap: () => _showServerUrlDialog(context),
-                  ),
-                  _SettingsTile(icon: Icons.privacy_tip_outlined, label: l10n.privacyPolicy, onTap: () {}),
-                  _SettingsTile(icon: Icons.help_outline_rounded, label: l10n.helpSupport, onTap: () {}),
-                  _SettingsTile(
-                    icon: Icons.logout_rounded,
-                    label: l10n.signOut,
-                    textColor: AppColors.error,
-                    onTap: () async {
-                      await context.read<AuthProvider>().logout();
-                      if (context.mounted) context.go(AppRoutes.login);
-                    },
+                  Column(
+                    key: _settingsKey,
+                    children: [
+                      _SettingsTile(
+                        icon: PhosphorIconsRegular.bell,
+                        label: l10n.notifications,
+                        onTap: () => context.push(AppRoutes.notificationSettings),
+                      ),
+                      _SettingsTile(
+                        icon: PhosphorIconsRegular.translate,
+                        label: l10n.language,
+                        trailing: langLabel,
+                        onTap: () => _showLanguagePicker(context, l10n),
+                      ),
+                      _SettingsTile(
+                        icon: PhosphorIconsRegular.circleHalf,
+                        label: l10n.theme,
+                        trailing: _themeModeLabel(themeMode, l10n),
+                        onTap: () => _showThemePicker(context, l10n),
+                      ),
+                      _SettingsTile(
+                        icon: PhosphorIconsRegular.hardDrives,
+                        label: 'Server URL',
+                        trailing: BackendConfig.current.replaceFirst(RegExp(r'^https?://'), '').replaceFirst(RegExp(r'/v1$'), ''),
+                        onTap: () => _showServerUrlDialog(context),
+                      ),
+                      _SettingsTile(
+                        icon: PhosphorIconsRegular.shieldCheck,
+                        label: l10n.privacyPolicy,
+                        onTap: () => context.push(AppRoutes.privacyPolicy),
+                      ),
+                      _SettingsTile(
+                        icon: PhosphorIconsRegular.question,
+                        label: l10n.helpSupport,
+                        onTap: () => context.push(AppRoutes.helpSupport),
+                      ),
+                      _SettingsTile(
+                        icon: PhosphorIconsRegular.signOut,
+                        label: l10n.signOut,
+                        textColor: p.urgent,
+                        onTap: () async {
+                          await context.read<AuthProvider>().logout();
+                          if (context.mounted) context.go(AppRoutes.login);
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 32),
-                  const Text('سهلي v1.0.0', style: TextStyle(fontSize: 12, color: AppColors.textHint)),
+                  Text('سهلي v1.0.0', style: TextStyle(fontSize: 12, color: p.textHint)),
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
                 ],
               ),
@@ -302,39 +383,45 @@ class _StatCard extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.divider)),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(height: 6),
-          Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
-          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
-        ],
+  Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: AppShapes.card(color: p.surface, radius: AppShapes.radiusMd, borderColor: p.divider),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 6),
+            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+            Text(label, style: TextStyle(fontSize: 11, color: p.textHint)),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _ActivityRow extends StatelessWidget {
-  const _ActivityRow({required this.icon, required this.color, required this.title, required this.status, required this.date});
+  const _ActivityRow({required this.icon, required this.color, required this.title, required this.status, required this.date, this.index = 0});
   final IconData icon;
   final Color color;
   final String title, date;
   final ReportStatus status;
+  final int index;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
+    return Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.divider)),
+    decoration: AppShapes.card(color: p.surface, radius: AppShapes.radiusMd, borderColor: p.divider),
     child: Row(
       children: [
         Container(
           width: 34, height: 34,
-          decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(9)),
+          decoration: AppShapes.card(color: color.withValues(alpha: 0.12), radius: AppShapes.radiusSm),
           child: Icon(icon, color: color, size: 17),
         ),
         const SizedBox(width: 10),
@@ -342,8 +429,8 @@ class _ActivityRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-              Text(date, style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
+              Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: p.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(date, style: TextStyle(fontSize: 11, color: p.textHint)),
             ],
           ),
         ),
@@ -351,7 +438,8 @@ class _ActivityRow extends StatelessWidget {
         StatusBadge(status: status),
       ],
     ),
-  );
+  ).animate().fadeIn(duration: 260.ms, delay: (40 * index).ms).slideY(begin: 0.06, end: 0, curve: Curves.easeOutCubic);
+  }
 }
 
 class _SettingsTile extends StatelessWidget {
@@ -364,14 +452,15 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = textColor ?? AppColors.textPrimary;
+    final p = AppPalette.of(context);
+    final color = textColor ?? p.textPrimary;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
       leading: Icon(icon, color: color, size: 22),
       title: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: color)),
       trailing: trailing != null
-          ? Text(trailing!, style: const TextStyle(fontSize: 13, color: AppColors.textHint))
-          : const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
+          ? Text(trailing!, style: TextStyle(fontSize: 13, color: p.textHint))
+          : Icon(PhosphorIconsRegular.caretRight, color: p.textHint),
       onTap: onTap,
     );
   }

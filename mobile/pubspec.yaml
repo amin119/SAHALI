@@ -34,6 +34,15 @@ dependencies:
   # Fonts
   google_fonts: ^6.2.1
 
+  # Animation
+  flutter_animate: ^4.5.2
+
+  # Squircle (continuous-corner) shapes
+  figma_squircle: ^0.6.3
+
+  # Duotone icon set
+  phosphor_flutter: ^2.1.0
+
   # Maps (OpenStreetMap, no API key needed)
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
@@ -46,6 +55,9 @@ dependencies:
 
   # Permissions
   permission_handler: ^11.4.0
+
+  # Local device notifications (status-change alerts)
+  flutter_local_notifications: ^18.0.1
 
   # Image caching
   cached_network_image: ^3.4.1

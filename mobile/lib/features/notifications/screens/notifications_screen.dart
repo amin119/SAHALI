@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
+import '../../../shared/widgets/status_badge.dart';
 import '../providers/notifications_provider.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -26,13 +30,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final provider = context.watch<NotificationsProvider>();
+    final p = AppPalette.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         title: Text(l10n.notificationsTitle),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => context.go(AppRoutes.home),
         ),
         actions: [
@@ -50,11 +55,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.notifications_none_rounded, size: 64, color: AppColors.textHint.withValues(alpha: 0.5)),
+                      Icon(PhosphorIconsDuotone.bellSlash, size: 64, color: p.textHint.withValues(alpha: 0.5)),
                       const SizedBox(height: 16),
-                      Text(l10n.noNotifications, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                      Text(l10n.noNotifications, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: p.textPrimary)),
                       const SizedBox(height: 8),
-                      Text(l10n.notificationsTitle, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                      Text(l10n.notificationsTitle, style: TextStyle(fontSize: 14, color: p.textSecondary)),
                     ],
                   ),
                 )
@@ -65,6 +70,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     itemCount: provider.notifications.length,
                     itemBuilder: (_, i) {
                       final n = provider.notifications[i];
+                      final status = ReportStatusX.inferFromText(n.title);
+                      final statusColor = status.color(p);
                       return GestureDetector(
                         onTap: () {
                           if (!n.isRead) provider.markRead(n.id);
@@ -73,45 +80,41 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: n.isRead ? AppColors.surface : AppColors.primaryContainer.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: n.isRead ? AppColors.divider : AppColors.primary.withValues(alpha: 0.3)),
+                          decoration: AppShapes.card(
+                            color: n.isRead ? p.surface : statusColor.withValues(alpha: 0.08),
+                            radius: AppShapes.radiusLg,
+                            borderColor: n.isRead ? p.divider : statusColor.withValues(alpha: 0.3),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
                                 width: 40, height: 40,
-                                decoration: BoxDecoration(
-                                  color: (n.isRead ? AppColors.textHint : AppColors.primary).withValues(alpha: 0.1),
-                                  shape: BoxShape.circle,
+                                decoration: AppShapes.card(
+                                  color: statusColor.withValues(alpha: 0.12),
+                                  radius: AppShapes.radiusMd,
                                 ),
-                                child: Icon(
-                                  n.isRead ? Icons.notifications_outlined : Icons.notifications_active_rounded,
-                                  color: n.isRead ? AppColors.textHint : AppColors.primary,
-                                  size: 20,
-                                ),
+                                child: Icon(status.icon, color: statusColor, size: 20),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(n.title, style: TextStyle(fontSize: 14, fontWeight: n.isRead ? FontWeight.w500 : FontWeight.w700, color: AppColors.textPrimary)),
+                                    Text(n.title, style: TextStyle(fontSize: 14, fontWeight: n.isRead ? FontWeight.w500 : FontWeight.w700, color: p.textPrimary)),
                                     const SizedBox(height: 3),
-                                    Text(n.body, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                    Text(n.body, style: TextStyle(fontSize: 13, color: p.textSecondary, height: 1.4), maxLines: 2, overflow: TextOverflow.ellipsis),
                                     const SizedBox(height: 4),
-                                    Text(DateFormat('d MMM · HH:mm').format(n.createdAt.toLocal()), style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
+                                    Text(DateFormat('d MMM · HH:mm').format(n.createdAt.toLocal()), style: TextStyle(fontSize: 11, color: p.textHint)),
                                   ],
                                 ),
                               ),
                               if (!n.isRead)
-                                Container(width: 8, height: 8, margin: const EdgeInsets.only(top: 4), decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
+                                Container(width: 8, height: 8, margin: const EdgeInsets.only(top: 4), decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle)),
                             ],
                           ),
                         ),
-                      );
+                      ).animate().fadeIn(duration: 260.ms, delay: (30 * i).ms).slideY(begin: 0.05, end: 0, curve: Curves.easeOutCubic);
                     },
                   ),
                 ),

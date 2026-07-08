@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../shared/widgets/sahali_logo.dart';
+import '../../../shared/widgets/sa_animated_background.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -78,93 +81,60 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1B4FD8), Color(0xFF0B2FA0)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Stack(
+    final p = AppPalette.of(context);
+    return SaAnimatedBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Positioned(
-              top: -100,
-              right: -80,
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.05),
+            FadeTransition(
+              opacity: _logoFade,
+              child: ScaleTransition(
+                scale: _logoScale,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: AppShapes.card(
+                    color: Colors.white.withValues(alpha: 0.55),
+                    radius: AppShapes.radiusXl,
+                  ),
+                  child: const SahaliLogo(size: 88),
                 ),
               ),
             ),
-            Positioned(
-              bottom: -120,
-              left: -100,
-              child: Container(
-                width: 360,
-                height: 360,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.05),
+            const SizedBox(height: 32),
+            FadeTransition(
+              opacity: _titleFade,
+              child: SlideTransition(
+                position: _titleSlide,
+                child: Text(
+                  'سهلي',
+                  style: TextStyle(
+                    fontSize: 42,
+                    fontWeight: FontWeight.w900,
+                    color: p.ink,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             ),
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FadeTransition(
-                    opacity: _logoFade,
-                    child: ScaleTransition(
-                      scale: _logoScale,
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.12),
-                        ),
-                        child: const SahaliLogo(size: 88),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  FadeTransition(
-                    opacity: _titleFade,
-                    child: SlideTransition(
-                      position: _titleSlide,
-                      child: const Text(
-                        'سهلي',
-                        style: TextStyle(
-                          fontSize: 42,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  FadeTransition(
-                    opacity: _subtitleFade,
-                    child: Text(
-                      'SAHALI',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white.withValues(alpha: 0.60),
-                        letterSpacing: 5,
-                      ),
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 8),
+            FadeTransition(
+              opacity: _subtitleFade,
+              child: Text(
+                'SAHALI',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: p.inkSoft,
+                  letterSpacing: 5,
+                ),
               ),
             ),
           ],
         ),
+      ),
       ),
     );
   }

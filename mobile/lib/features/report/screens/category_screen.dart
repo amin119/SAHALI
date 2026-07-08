@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../core/utils/category_utils.dart';
 import '../../../data/models/category_model.dart';
 import '../../../data/services/category_service.dart';
@@ -66,13 +69,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
     final langCode = Localizations.localeOf(context).languageCode;
     final isRtl = langCode == 'ar';
     final textDir = isRtl ? TextDirection.rtl : TextDirection.ltr;
+    final p = AppPalette.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         title: Text(l10n.newReport),
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
+          icon: Icon(PhosphorIconsRegular.x),
           onPressed: () => context.go(AppRoutes.home),
         ),
         bottom: PreferredSize(
@@ -91,18 +95,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
             Text(
               l10n.whatReporting,
               textDirection: textDir,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-              ),
-            ),
+              style: Theme.of(context).textTheme.headlineLarge,
+            ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.15, end: 0, curve: Curves.easeOutCubic),
             const SizedBox(height: 4),
             Text(
               l10n.chooseCategoryHint,
               textDirection: textDir,
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            ),
+              style: TextStyle(fontSize: 14, color: p.textSecondary),
+            ).animate().fadeIn(duration: 300.ms, delay: 60.ms),
             const SizedBox(height: 24),
             Expanded(
               child: _loadingCategories
@@ -112,9 +112,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.wifi_off_rounded, color: AppColors.textHint, size: 40),
+                              Icon(PhosphorIconsRegular.wifiSlash, color: p.textHint, size: 40),
                               const SizedBox(height: 12),
-                              Text(l10n.couldNotLoadCategories, style: const TextStyle(color: AppColors.textHint)),
+                              Text(l10n.couldNotLoadCategories, style: TextStyle(color: p.textHint)),
                               const SizedBox(height: 12),
                               TextButton(onPressed: _loadCategories, child: Text(l10n.retry)),
                             ],
@@ -144,37 +144,42 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                     onTap: () => setState(() => _selected = i),
                                     child: AnimatedContainer(
                                       duration: const Duration(milliseconds: 200),
-                                      decoration: BoxDecoration(
-                                        color: isSelected
-                                            ? color.withValues(alpha: 0.10)
-                                            : AppColors.surface,
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: isSelected ? color : AppColors.divider,
-                                          width: isSelected ? 2 : 1,
-                                        ),
+                                      decoration: AppShapes.card(
+                                        gradient: isSelected
+                                            ? LinearGradient(
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                                colors: [color.withValues(alpha: 0.16), color.withValues(alpha: 0.06)],
+                                              )
+                                            : null,
+                                        color: isSelected ? null : p.surface,
+                                        radius: AppShapes.radiusLg,
+                                        borderColor: isSelected ? color : p.divider,
+                                        borderWidth: isSelected ? 2 : 1,
                                       ),
                                       padding: const EdgeInsets.all(16),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Container(
-                                            width: 44,
-                                            height: 44,
-                                            decoration: BoxDecoration(
-                                              color: color.withValues(alpha: 0.12),
-                                              borderRadius: BorderRadius.circular(12),
+                                          AnimatedScale(
+                                            scale: isSelected ? 1.08 : 1.0,
+                                            duration: const Duration(milliseconds: 200),
+                                            curve: Curves.easeOutBack,
+                                            child: Container(
+                                              width: 44,
+                                              height: 44,
+                                              decoration: AppShapes.card(color: color.withValues(alpha: 0.14), radius: AppShapes.radiusSm),
+                                              child: Icon(icon, color: color, size: 22),
                                             ),
-                                            child: Icon(icon, color: color, size: 22),
                                           ),
                                           const Spacer(),
                                           Text(
                                             cat.labelFor(langCode),
                                             textDirection: textDir,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w700,
-                                              color: AppColors.textPrimary,
+                                              color: p.textPrimary,
                                             ),
                                           ),
                                           const SizedBox(height: 2),
@@ -183,14 +188,17 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                                 ? l10n.subCategoriesCount(cat.children.length)
                                                 : cat.slug,
                                             textDirection: textDir,
-                                            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                            style: TextStyle(fontSize: 11, color: p.textSecondary),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ],
                                       ),
                                     ),
-                                  );
+                                  ).animate().fadeIn(
+                                        duration: 280.ms,
+                                        delay: (30 * i).ms,
+                                      ).slideY(begin: 0.12, end: 0, curve: Curves.easeOutCubic);
                                 },
                               ),
                             );

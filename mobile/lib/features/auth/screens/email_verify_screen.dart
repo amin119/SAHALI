@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../core/router/app_router.dart';
 import '../providers/auth_provider.dart';
 import '_auth_widgets.dart';
@@ -59,8 +61,8 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final l10n = AppLocalizations.of(context);
+    final p = AppPalette.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -74,12 +76,9 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                 child: Container(
                   width: 72,
                   height: 72,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.mark_email_read_outlined,
-                      size: 36, color: AppColors.primary),
+                  decoration: AppShapes.card(color: p.infoSoft, radius: AppShapes.radiusLg),
+                  child: Icon(PhosphorIconsDuotone.envelopeSimpleOpen,
+                      size: 36, color: p.info),
                 ),
               ),
               const SizedBox(height: 24),
@@ -91,19 +90,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
 
               // Dev code hint
               if (_debugCode != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.warningContainer,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(children: [
-                    const Icon(Icons.bug_report_outlined, size: 16, color: AppColors.warning),
-                    const SizedBox(width: 8),
-                    Text('${l10n.devCodeHint} $_debugCode',
-                        style: const TextStyle(fontSize: 13, color: AppColors.warning, fontWeight: FontWeight.w600)),
-                  ]),
-                ),
+                AuthDebugCodeHint(code: _debugCode!),
                 const SizedBox(height: 16),
               ],
 
@@ -139,11 +126,11 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
               Center(
                 child: _resendCountdown > 0
                     ? Text(l10n.resendCodeIn(_resendCountdown),
-                        style: const TextStyle(fontSize: 13, color: AppColors.textHint))
+                        style: TextStyle(fontSize: 13, color: p.textHint))
                     : TextButton(
                         onPressed: _sendCode,
                         child: Text(l10n.resendCode,
-                            style: const TextStyle(color: AppColors.primary)),
+                            style: TextStyle(color: p.ink)),
                       ),
               ),
               const SizedBox(height: 8),
@@ -151,7 +138,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                 child: TextButton(
                   onPressed: () => context.go(AppRoutes.home),
                   child: Text(l10n.skipVerification,
-                      style: const TextStyle(fontSize: 13, color: AppColors.textHint)),
+                      style: TextStyle(fontSize: 13, color: p.textHint)),
                 ),
               ),
               const SizedBox(height: 24),

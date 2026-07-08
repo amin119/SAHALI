@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/router/app_router.dart';
 import '../providers/auth_provider.dart';
 import '_auth_widgets.dart';
@@ -27,7 +27,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final auth = context.watch<AuthProvider>();
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -48,7 +47,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 onSubmitted: (_) => _send(context),
                 decoration: InputDecoration(
                   labelText: l10n.emailOrPhone,
-                  prefixIcon: const Icon(Icons.alternate_email_outlined),
+                  prefixIcon: Icon(PhosphorIconsRegular.at),
                 ),
               ),
               const SizedBox(height: 24),

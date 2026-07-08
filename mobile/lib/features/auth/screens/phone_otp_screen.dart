@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/router/app_router.dart';
 import '../providers/auth_provider.dart';
 import '_auth_widgets.dart';
@@ -46,8 +47,8 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final l10n = AppLocalizations.of(context);
+    final p = AppPalette.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -72,7 +73,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                   decoration: InputDecoration(
                     labelText: l10n.phoneNumber,
                     hintText: l10n.phoneHint,
-                    prefixIcon: const Icon(Icons.phone_outlined),
+                    prefixIcon: Icon(PhosphorIconsRegular.phone),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -102,19 +103,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                 ),
                 if (_debugCode != null) ...[
                   const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.warningContainer,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(children: [
-                      const Icon(Icons.bug_report_outlined, size: 16, color: AppColors.warning),
-                      const SizedBox(width: 8),
-                      Text('${l10n.devCodeHint} $_debugCode',
-                          style: const TextStyle(fontSize: 13, color: AppColors.warning, fontWeight: FontWeight.w600)),
-                    ]),
-                  ),
+                  AuthDebugCodeHint(code: _debugCode!),
                 ],
                 const SizedBox(height: 24),
                 AuthErrorBanner(error: auth.error),
@@ -128,11 +117,11 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                 Center(
                   child: _resendCountdown > 0
                       ? Text(l10n.resendCodeIn(_resendCountdown),
-                          style: const TextStyle(fontSize: 13, color: AppColors.textHint))
+                          style: TextStyle(fontSize: 13, color: p.textHint))
                       : TextButton(
                           onPressed: () => _sendOtp(context),
                           child: Text(l10n.resendCode,
-                              style: const TextStyle(color: AppColors.primary)),
+                              style: TextStyle(color: p.ink)),
                         ),
                 ),
               ],

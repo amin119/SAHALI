@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/providers/language_provider.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 
 class LanguageScreen extends StatefulWidget {
   const LanguageScreen({super.key});
@@ -35,8 +38,8 @@ class _LanguageScreenState extends State<LanguageScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final p = AppPalette.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -47,33 +50,26 @@ class _LanguageScreenState extends State<LanguageScreen> {
               Container(
                 width: 56,
                 height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(Icons.language_rounded,
-                    color: AppColors.primary, size: 28),
+                decoration: AppShapes.card(color: Colors.white.withValues(alpha: 0.55), radius: AppShapes.radiusMd),
+                child: Icon(PhosphorIconsDuotone.translate,
+                    color: p.ink, size: 28),
               ),
               const SizedBox(height: 24),
               Text(
                 l10n.chooseLanguage,
-                style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                  height: 1.2,
-                ),
+                style: Theme.of(context).textTheme.displayMedium,
               ),
               const SizedBox(height: 8),
               Text(
                 l10n.languageHint,
-                style: const TextStyle(
-                    fontSize: 14, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 14, color: p.textSecondary),
               ),
               const SizedBox(height: 40),
               Expanded(
                 child: Column(
-                  children: _languages.map((lang) {
+                  children: _languages.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final lang = entry.value;
                     final isSelected = _selected == lang['code'];
                     return GestureDetector(
                       onTap: () => setState(() => _selected = lang['code']!),
@@ -81,17 +77,11 @@ class _LanguageScreenState extends State<LanguageScreen> {
                         duration: const Duration(milliseconds: 200),
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.primaryContainer
-                              : AppColors.surface,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.divider,
-                            width: isSelected ? 2 : 1,
-                          ),
+                        decoration: AppShapes.card(
+                          color: isSelected ? p.infoSoft : p.surface,
+                          radius: AppShapes.radiusLg,
+                          borderColor: isSelected ? p.info : p.divider,
+                          borderWidth: isSelected ? 2 : 1,
                         ),
                         child: Row(
                           children: [
@@ -107,28 +97,24 @@ class _LanguageScreenState extends State<LanguageScreen> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
-                                      color: isSelected
-                                          ? AppColors.primary
-                                          : AppColors.textPrimary,
+                                      color: isSelected ? p.info : p.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     lang['sub']!,
-                                    style: const TextStyle(
-                                        fontSize: 13,
-                                        color: AppColors.textSecondary),
+                                    style: TextStyle(fontSize: 13, color: p.textSecondary),
                                   ),
                                 ],
                               ),
                             ),
                             if (isSelected)
-                              const Icon(Icons.check_circle_rounded,
-                                  color: AppColors.primary, size: 22),
+                              Icon(PhosphorIconsFill.checkCircle,
+                                  color: p.info, size: 22),
                           ],
                         ),
                       ),
-                    );
+                    ).animate().fadeIn(duration: 280.ms, delay: (60 * i).ms).slideX(begin: 0.08, end: 0, curve: Curves.easeOutCubic);
                   }).toList(),
                 ),
               ),

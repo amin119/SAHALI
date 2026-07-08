@@ -18,8 +18,11 @@ import '../../features/report/screens/confirmation_screen.dart';
 import '../../features/my_reports/screens/my_reports_screen.dart';
 import '../../features/my_reports/screens/report_detail_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
+import '../../features/notifications/screens/notification_settings_screen.dart';
 import '../../features/emergency/screens/emergency_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
+import '../../features/profile/screens/help_support_screen.dart';
+import '../../features/profile/screens/privacy_policy_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../shared/widgets/main_shell.dart';
 
@@ -43,8 +46,11 @@ class AppRoutes {
   static const myReports = '/my-reports';
   static const reportDetail = '/report/:id';
   static const notifications = '/notifications';
+  static const notificationSettings = '/notifications/settings';
   static const emergency = '/emergency';
   static const profile = '/profile';
+  static const helpSupport = '/profile/help';
+  static const privacyPolicy = '/profile/privacy';
 }
 
 int _shellIndex(GoRouterState state) {
@@ -94,6 +100,9 @@ GoRouter buildRouter(AuthProvider auth) => GoRouter(
     GoRoute(path: AppRoutes.reportReview,      builder: (_, s) => const ReviewScreen()),
     GoRoute(path: AppRoutes.reportConfirmation, builder: (_, s) => const ConfirmationScreen()),
     GoRoute(path: AppRoutes.notifications, builder: (_, s) => const NotificationsScreen()),
+    GoRoute(path: AppRoutes.notificationSettings, builder: (_, s) => const NotificationSettingsScreen()),
+    GoRoute(path: AppRoutes.helpSupport, builder: (_, s) => const HelpSupportScreen()),
+    GoRoute(path: AppRoutes.privacyPolicy, builder: (_, s) => const PrivacyPolicyScreen()),
     GoRoute(
       path: AppRoutes.reportDetail,
       builder: (_, state) =>

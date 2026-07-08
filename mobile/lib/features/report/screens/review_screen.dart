@@ -2,15 +2,18 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/sync_service.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../shared/widgets/step_bar.dart';
 import '../../../shared/widgets/sa_button.dart';
+import '../../../shared/widgets/sa_bottom_sheet.dart';
 import '../viewmodels/report_form_provider.dart';
 
 class ReviewScreen extends StatefulWidget {
@@ -119,13 +122,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
       e.type == DioExceptionType.sendTimeout;
 
   Future<bool> _showSignInSheet() async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+    final result = await showSaBottomSheet<bool>(
+      context,
       builder: (_) => _SignInSheet(),
     );
     return result == true;
@@ -135,13 +133,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Widget build(BuildContext context) {
     final form = context.watch<ReportFormProvider>();
     final l10n = AppLocalizations.of(context);
+    final p = AppPalette.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         title: Text(l10n.newReport),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => context.go(AppRoutes.reportDescription),
         ),
         bottom: PreferredSize(
@@ -159,12 +158,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
           children: [
             Text(
               l10n.reviewReport,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+              style: Theme.of(context).textTheme.headlineLarge,
             ),
             const SizedBox(height: 4),
             Text(
               l10n.reviewReportHint,
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 14, color: p.textSecondary),
             ),
             const SizedBox(height: 24),
 
@@ -178,17 +177,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         Container(
                           width: 40,
                           height: 40,
-                          decoration: BoxDecoration(
-                            color: form.categoryColor!.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                          decoration: AppShapes.card(color: form.categoryColor!.withValues(alpha: 0.12), radius: AppShapes.radiusSm),
                           child: Icon(form.categoryIcon, color: form.categoryColor, size: 20),
                         ),
                         const SizedBox(width: 12),
-                        Text(form.categoryLabel!, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                        Text(form.categoryLabel!, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: p.textPrimary)),
                       ],
                     )
-                  : Text(l10n.noCategory, style: const TextStyle(fontSize: 14, color: AppColors.textHint)),
+                  : Text(l10n.noCategory, style: TextStyle(fontSize: 14, color: p.textHint)),
             ),
             const SizedBox(height: 12),
 
@@ -209,11 +205,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         const SizedBox(width: 6),
                         Text(
                           '${form.photos.length} photo${form.photos.length > 1 ? 's' : ''}',
-                          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                          style: TextStyle(fontSize: 14, color: p.textSecondary),
                         ),
                       ],
                     )
-                  : Text(l10n.noPhoto, style: const TextStyle(fontSize: 14, color: AppColors.textHint)),
+                  : Text(l10n.noPhoto, style: TextStyle(fontSize: 14, color: p.textHint)),
             ),
             const SizedBox(height: 12),
 
@@ -223,12 +219,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
               onEdit: () => context.go(AppRoutes.reportLocation),
               child: Row(
                 children: [
-                  const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 18),
+                  Icon(PhosphorIconsDuotone.mapPin, color: p.urgent, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '${form.location.latitude.toStringAsFixed(5)}, ${form.location.longitude.toStringAsFixed(5)}',
-                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontFamily: 'monospace'),
+                      style: TextStyle(fontSize: 13, color: p.textSecondary, fontFamily: 'monospace'),
                     ),
                   ),
                 ],
@@ -241,26 +237,23 @@ class _ReviewScreenState extends State<ReviewScreen> {
               editLabel: l10n.edit,
               onEdit: () => context.go(AppRoutes.reportDescription),
               child: form.description.isNotEmpty
-                  ? Text(form.description, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, height: 1.5))
-                  : Text(l10n.noDescription, style: const TextStyle(fontSize: 14, color: AppColors.textHint)),
+                  ? Text(form.description, style: TextStyle(fontSize: 14, color: p.textPrimary, height: 1.5))
+                  : Text(l10n.noDescription, style: TextStyle(fontSize: 14, color: p.textHint)),
             ),
             const SizedBox(height: 28),
 
             Container(
               padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(14),
-              ),
+              decoration: AppShapes.card(color: p.infoSoft, radius: AppShapes.radiusMd),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.info_outline_rounded, color: AppColors.textHint, size: 16),
+                  Icon(PhosphorIconsRegular.info, color: p.info, size: 16),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       l10n.submitDisclaimer,
-                      style: const TextStyle(fontSize: 12, color: AppColors.textHint, height: 1.5),
+                      style: TextStyle(fontSize: 12, color: p.info, height: 1.5),
                     ),
                   ),
                 ],
@@ -271,11 +264,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.errorContainer,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(_error!, style: const TextStyle(fontSize: 13, color: AppColors.error)),
+                decoration: AppShapes.card(color: p.urgentSoft, radius: AppShapes.radiusMd),
+                child: Text(_error!, style: TextStyle(fontSize: 13, color: p.urgent)),
               ),
             ],
 
@@ -329,6 +319,7 @@ class _SignInSheetState extends State<_SignInSheet> with SingleTickerProviderSta
     final auth = context.watch<AuthProvider>();
     final l10n = AppLocalizations.of(context);
     final bottomPad = MediaQuery.of(context).viewInsets.bottom;
+    final p = AppPalette.of(context);
 
     return Padding(
       padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomPad),
@@ -336,28 +327,21 @@ class _SignInSheetState extends State<_SignInSheet> with SingleTickerProviderSta
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Container(
-              width: 36, height: 4,
-              decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(l10n.signInToSubmit, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+          Text(l10n.signInToSubmit, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: p.textPrimary)),
           const SizedBox(height: 4),
-          Text(l10n.signInReadySub, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+          Text(l10n.signInReadySub, style: TextStyle(fontSize: 14, color: p.textSecondary)),
           const SizedBox(height: 20),
 
           Container(
-            decoration: BoxDecoration(color: AppColors.surfaceVariant, borderRadius: BorderRadius.circular(10)),
+            decoration: AppShapes.card(color: p.surfaceVariant, radius: AppShapes.radiusMd),
             padding: const EdgeInsets.all(4),
             child: TabBar(
               controller: _tabs,
-              indicator: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+              indicator: AppShapes.card(color: p.surface, radius: AppShapes.radiusSm),
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
-              labelColor: AppColors.primary,
-              unselectedLabelColor: AppColors.textHint,
+              labelColor: p.ink,
+              unselectedLabelColor: p.textHint,
               labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               tabs: [Tab(text: l10n.tabEmail), Tab(text: l10n.tabPhoneOtp)],
             ),
@@ -375,7 +359,7 @@ class _SignInSheetState extends State<_SignInSheet> with SingleTickerProviderSta
                     TextField(
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(labelText: l10n.tabEmail, prefixIcon: const Icon(Icons.email_outlined), isDense: true),
+                      decoration: InputDecoration(labelText: l10n.tabEmail, prefixIcon: Icon(PhosphorIconsRegular.envelopeSimple), isDense: true),
                     ),
                     const SizedBox(height: 12),
                     TextField(
@@ -384,9 +368,9 @@ class _SignInSheetState extends State<_SignInSheet> with SingleTickerProviderSta
                       decoration: InputDecoration(
                         labelText: l10n.password,
                         isDense: true,
-                        prefixIcon: const Icon(Icons.lock_outline),
+                        prefixIcon: Icon(PhosphorIconsRegular.lockSimple),
                         suffixIcon: IconButton(
-                          icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                          icon: Icon(_obscure ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeClosed),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
@@ -399,7 +383,7 @@ class _SignInSheetState extends State<_SignInSheet> with SingleTickerProviderSta
                     TextField(
                       controller: _phoneCtrl,
                       keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(labelText: l10n.phoneNumber, prefixIcon: const Icon(Icons.phone_outlined), hintText: l10n.phoneHint, isDense: true),
+                      decoration: InputDecoration(labelText: l10n.phoneNumber, prefixIcon: Icon(PhosphorIconsRegular.phone), hintText: l10n.phoneHint, isDense: true),
                     ),
                     if (_otpSent) ...[
                       const SizedBox(height: 12),
@@ -430,7 +414,7 @@ class _SignInSheetState extends State<_SignInSheet> with SingleTickerProviderSta
           if (auth.error != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Text(auth.error!, style: const TextStyle(fontSize: 12, color: AppColors.error)),
+              child: Text(auth.error!, style: TextStyle(fontSize: 12, color: p.urgent)),
             ),
 
           SizedBox(
@@ -484,24 +468,21 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
-      ),
+      decoration: AppShapes.card(color: p.surface, radius: AppShapes.radiusLg, borderColor: p.divider),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textHint, letterSpacing: 0.8)),
+              Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: p.textHint, letterSpacing: 0.8)),
               const Spacer(),
               GestureDetector(
                 onTap: onEdit,
-                child: Text(editLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                child: Text(editLabel, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: p.ink)),
               ),
             ],
           ),

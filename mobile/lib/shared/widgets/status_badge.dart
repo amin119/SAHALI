@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../core/l10n/app_localizations.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_shapes.dart';
 
 enum ReportStatus {
   submitted,
@@ -31,6 +33,38 @@ extension ReportStatusX on ReportStatus {
     }
   }
 
+  /// Best-effort classification of a notification's status from its title
+  /// text, matching the fixed fr/en/ar phrases the backend templates use
+  /// (see `backend/app/services/notification.py`). The notification API
+  /// doesn't expose the raw status/event, so this is inferred client-side.
+  static ReportStatus inferFromText(String text) {
+    final t = text.toLowerCase();
+    bool has(List<String> needles) => needles.any((n) => t.contains(n));
+    if (has(['résolu', 'resolved', 'حل'])) return ReportStatus.resolved;
+    if (has(['rejeté', 'rejected', 'رفض'])) return ReportStatus.rejected;
+    if (has(['examen', 'review', 'دراسة'])) return ReportStatus.underReview;
+    if (has(['intervention', 'progress', 'جار'])) return ReportStatus.inProgress;
+    if (has(['pris en charge', 'acknowledged', 'تولي'])) return ReportStatus.received;
+    return ReportStatus.submitted;
+  }
+
+  IconData get icon {
+    switch (this) {
+      case ReportStatus.submitted:
+        return PhosphorIconsDuotone.tray;
+      case ReportStatus.received:
+        return PhosphorIconsDuotone.envelopeSimpleOpen;
+      case ReportStatus.underReview:
+        return PhosphorIconsDuotone.magnifyingGlass;
+      case ReportStatus.inProgress:
+        return PhosphorIconsDuotone.wrench;
+      case ReportStatus.resolved:
+        return PhosphorIconsDuotone.checkCircle;
+      case ReportStatus.rejected:
+        return PhosphorIconsDuotone.xCircle;
+    }
+  }
+
   String label(AppLocalizations l) {
     switch (this) {
       case ReportStatus.submitted:
@@ -48,20 +82,17 @@ extension ReportStatusX on ReportStatus {
     }
   }
 
-  Color get color {
+  Color color(AppPalette p) {
     switch (this) {
-      case ReportStatus.submitted:
-        return AppColors.statusSubmitted;
-      case ReportStatus.received:
-        return AppColors.statusReceived;
-      case ReportStatus.underReview:
-        return AppColors.statusUnderReview;
-      case ReportStatus.inProgress:
-        return AppColors.statusInProgress;
       case ReportStatus.resolved:
-        return AppColors.statusResolved;
+        return p.safe;
       case ReportStatus.rejected:
-        return AppColors.statusRejected;
+        return p.urgent;
+      case ReportStatus.submitted:
+      case ReportStatus.received:
+      case ReportStatus.underReview:
+      case ReportStatus.inProgress:
+        return p.info;
     }
   }
 }
@@ -73,18 +104,17 @@ class StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final p = AppPalette.of(context);
+    final color = status.color(p);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: status.color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(100),
-      ),
+      decoration: AppShapes.card(color: color.withValues(alpha: 0.12), radius: AppShapes.radiusPill),
       child: Text(
         status.label(l10n),
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: status.color,
+          color: color,
         ),
       ),
     );

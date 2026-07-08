@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/services/local_notification_service.dart';
 import '../../../data/models/notification_model.dart';
 import '../../../data/services/notification_service.dart';
+import '../../../shared/widgets/status_badge.dart';
 
 class NotificationsProvider extends ChangeNotifier {
   final _service = NotificationService();
@@ -9,6 +11,8 @@ class NotificationsProvider extends ChangeNotifier {
   List<NotificationModel> _notifications = [];
   bool _loading = false;
   String? _error;
+  bool _hasLoadedOnce = false;
+  final Set<String> _seenIds = {};
 
   List<NotificationModel> get notifications => _notifications;
   bool get loading => _loading;
@@ -23,10 +27,31 @@ class NotificationsProvider extends ChangeNotifier {
       _notifications = await _service.listNotifications();
       _loading = false;
       notifyListeners();
+      _notifyLocallyIfNew();
     } catch (e) {
       _error = dioMessage(e);
       _loading = false;
       notifyListeners();
+    }
+  }
+
+  /// Fires a native local notification for any unread item that wasn't
+  /// present the last time this provider loaded — i.e. a genuinely new
+  /// status update since the app last checked in this session.
+  void _notifyLocallyIfNew() {
+    final isFirstLoad = !_hasLoadedOnce;
+    _hasLoadedOnce = true;
+    for (final n in _notifications) {
+      final isNew = !_seenIds.contains(n.id);
+      _seenIds.add(n.id);
+      if (isFirstLoad || !isNew || n.isRead) continue;
+      final status = ReportStatusX.inferFromText(n.title);
+      LocalNotificationService.instance.notifyStatusChange(
+        id: n.id.hashCode,
+        title: n.title,
+        body: n.body,
+        status: status,
+      );
     }
   }
 

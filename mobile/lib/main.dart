@@ -4,10 +4,12 @@ import 'package:provider/provider.dart';
 import 'app.dart';
 import 'core/network/api_client.dart';
 import 'core/providers/language_provider.dart';
+import 'core/providers/theme_provider.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/report/viewmodels/report_form_provider.dart';
 import 'features/report/providers/reports_provider.dart';
 import 'features/notifications/providers/notifications_provider.dart';
+import 'features/notifications/providers/notification_settings_provider.dart';
 import 'core/services/sync_service.dart';
 
 void main() async {
@@ -23,10 +25,12 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ReportFormProvider()),
         ChangeNotifierProvider(create: (_) => ReportsProvider()),
         ChangeNotifierProvider(create: (_) => NotificationsProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationSettingsProvider()),
         ChangeNotifierProvider.value(value: SyncService.instance),
       ],
       child: const SahaliApp(),

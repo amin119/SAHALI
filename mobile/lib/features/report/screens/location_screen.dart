@@ -3,9 +3,11 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/step_bar.dart';
 import '../../../shared/widgets/sa_button.dart';
@@ -84,12 +86,13 @@ class _LocationScreenState extends State<LocationScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final p = AppPalette.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         title: Text(l10n.newReport),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => context.go(AppRoutes.reportPhoto),
         ),
         bottom: PreferredSize(
@@ -104,16 +107,17 @@ class _LocationScreenState extends State<LocationScreen> {
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            color: AppColors.primaryContainer,
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: AppShapes.card(color: p.infoSoft, radius: AppShapes.radiusMd),
             child: Row(
               children: [
-                const Icon(Icons.touch_app_outlined, color: AppColors.primary, size: 18),
+                Icon(PhosphorIconsRegular.handTap, color: p.info, size: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     l10n.tapMapHint,
-                    style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 13, color: p.info, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -151,18 +155,30 @@ class _LocationScreenState extends State<LocationScreen> {
                 Positioned(
                   bottom: 16,
                   right: 16,
-                  child: FloatingActionButton.small(
-                    heroTag: 'loc',
-                    backgroundColor: AppColors.surface,
-                    foregroundColor: AppColors.primary,
-                    onPressed: _locating ? null : _goToMyLocation,
-                    child: _locating
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-                          )
-                        : const Icon(Icons.my_location_rounded),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: AppShapes.card(
+                      color: p.surface,
+                      radius: AppShapes.radiusMd,
+                      shadows: [BoxShadow(color: p.ink.withValues(alpha: 0.15), blurRadius: 12, offset: const Offset(0, 4))],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(AppShapes.radiusMd),
+                        onTap: _locating ? null : _goToMyLocation,
+                        child: Center(
+                          child: _locating
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: p.ink),
+                                )
+                              : Icon(PhosphorIconsRegular.navigationArrow, color: p.ink),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -170,19 +186,24 @@ class _LocationScreenState extends State<LocationScreen> {
           ),
 
           Container(
-            color: AppColors.surface,
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            margin: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+            decoration: AppShapes.card(
+              color: p.surface,
+              radius: AppShapes.radiusXl,
+              shadows: [BoxShadow(color: p.ink.withValues(alpha: 0.06), blurRadius: 20, offset: const Offset(0, -4))],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 18),
+                    Icon(PhosphorIconsDuotone.mapPin, color: p.urgent, size: 18),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         '${_pinned.latitude.toStringAsFixed(5)}, ${_pinned.longitude.toStringAsFixed(5)}',
-                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontFamily: 'monospace'),
+                        style: TextStyle(fontSize: 13, color: p.textSecondary, fontFamily: 'monospace'),
                       ),
                     ),
                   ],
@@ -202,12 +223,13 @@ class _PinIcon extends StatelessWidget {
   const _PinIcon();
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Icon(
       Icons.location_pin,
-      color: AppColors.primary,
+      color: p.urgent,
       size: 48,
       shadows: [
-        Shadow(color: AppColors.primary.withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4)),
+        Shadow(color: p.urgent.withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4)),
       ],
     );
   }

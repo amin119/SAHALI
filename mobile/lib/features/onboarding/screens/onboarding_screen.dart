@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
+import '../../../shared/widgets/sa_animated_background.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -78,216 +82,131 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final p = AppPalette.of(context);
 
     final slides = [
-      _Slide(
-        icon: Icons.campaign_rounded,
-        gradientColors: const [Color(0xFF2563EB), Color(0xFF1E3A8A)],
-        accentColor: const Color(0xFF93C5FD),
-        title: l.ob1Title,
-        sub: l.ob1Sub,
-      ),
-      _Slide(
-        icon: Icons.query_stats_rounded,
-        gradientColors: const [Color(0xFF7C3AED), Color(0xFF4C1D95)],
-        accentColor: const Color(0xFFC4B5FD),
-        title: l.ob2Title,
-        sub: l.ob2Sub,
-      ),
-      _Slide(
-        icon: Icons.handshake_rounded,
-        gradientColors: const [Color(0xFF0D9488), Color(0xFF064E3B)],
-        accentColor: const Color(0xFF6EE7B7),
-        title: l.ob3Title,
-        sub: l.ob3Sub,
-      ),
+      _Slide(icon: PhosphorIconsDuotone.megaphoneSimple, title: l.ob1Title, sub: l.ob1Sub),
+      _Slide(icon: PhosphorIconsDuotone.mapTrifold, title: l.ob2Title, sub: l.ob2Sub),
+      _Slide(icon: PhosphorIconsDuotone.handHeart, title: l.ob3Title, sub: l.ob3Sub),
     ];
 
-    final slide = slides[_page];
+    return SaAnimatedBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Skip button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              child: Align(
+                alignment: AlignmentDirectional.topEnd,
+                child: TextButton(
+                  onPressed: _skip,
+                  style: TextButton.styleFrom(
+                    foregroundColor: p.inkSoft,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  ),
+                  child: Text(
+                    l.onboardingSkip,
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
+                ),
+              ),
+            ),
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          // ── Animated gradient background ───────────────────────────────
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 450),
-            curve: Curves.easeInOut,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: slide.gradientColors,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+            // PageView with animated content
+            Expanded(
+              child: PageView.builder(
+                controller: _pageCtrl,
+                onPageChanged: _onPageChanged,
+                itemCount: slides.length,
+                itemBuilder: (_, i) => _PageContent(
+                  slide: slides[i],
+                  contentFade: _contentFade,
+                  contentSlide: _contentSlide,
+                  heroScale: _heroScale,
+                  isActive: i == _page,
+                ),
               ),
             ),
-            width: double.infinity,
-            height: double.infinity,
-          ),
 
-          // ── Decorative circles ─────────────────────────────────────────
-          Positioned(
-            top: -90,
-            right: -70,
-            child: Container(
-              width: 270,
-              height: 270,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.06),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -110,
-            left: -90,
-            child: Container(
-              width: 330,
-              height: 330,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.06),
-              ),
-            ),
-          ),
-          Positioned(
-            top: MediaQuery.of(context).size.height * 0.35,
-            right: -50,
-            child: Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.04),
-              ),
-            ),
-          ),
-
-          // ── Content ────────────────────────────────────────────────────
-          SafeArea(
-            child: Column(
-              children: [
-                // Skip button
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                  child: Align(
-                    alignment: AlignmentDirectional.topEnd,
-                    child: TextButton(
-                      onPressed: _skip,
-                      style: TextButton.styleFrom(
-                        foregroundColor:
-                            Colors.white.withValues(alpha: 0.75),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                      ),
-                      child: Text(
-                        l.onboardingSkip,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+            // ── Bottom controls ──────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(32, 0, 32, 44),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Animated page dots
+                  Row(
+                    children: List.generate(slides.length, (i) {
+                      final active = i == _page;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        margin: const EdgeInsets.only(right: 7),
+                        width: active ? 24.0 : 8.0,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: active ? p.ink : p.ink.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(100),
                         ),
+                      );
+                    }),
+                  ),
+
+                  // Next / Commencer pill button
+                  GestureDetector(
+                    onTap: _next,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: _page == 2 ? 28 : 22,
+                        vertical: 16,
                       ),
-                    ),
-                  ),
-                ),
-
-                // PageView with animated content
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageCtrl,
-                    onPageChanged: _onPageChanged,
-                    itemCount: slides.length,
-                    itemBuilder: (_, i) => _PageContent(
-                      slide: slides[i],
-                      contentFade: _contentFade,
-                      contentSlide: _contentSlide,
-                      heroScale: _heroScale,
-                      isActive: i == _page,
-                    ),
-                  ),
-                ),
-
-                // ── Bottom controls ──────────────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 0, 32, 44),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Animated page dots
-                      Row(
-                        children: List.generate(slides.length, (i) {
-                          final active = i == _page;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                            margin: const EdgeInsets.only(right: 7),
-                            width: active ? 24.0 : 8.0,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: active
-                                  ? Colors.white
-                                  : Colors.white.withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(100),
+                      decoration: AppShapes.card(
+                        color: p.ink,
+                        radius: AppShapes.radiusPill,
+                        shadows: [
+                          BoxShadow(
+                            color: p.ink.withValues(alpha: 0.28),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 220),
+                            child: Text(
+                              _page == 2 ? l.onboardingStart : l.onboardingNext,
+                              key: ValueKey(_page == 2),
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: p.background,
+                              ),
                             ),
-                          );
-                        }),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            _page == 2 ? Icons.rocket_launch_rounded : Icons.arrow_forward_rounded,
+                            color: p.background,
+                            size: 18,
+                          ),
+                        ],
                       ),
-
-                      // Next / Commencer button
-                      GestureDetector(
-                        onTap: _next,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: _page == 2 ? 28 : 22,
-                            vertical: 16,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(100),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.18),
-                                blurRadius: 24,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 220),
-                                child: Text(
-                                  _page == 2
-                                      ? l.onboardingStart
-                                      : l.onboardingNext,
-                                  key: ValueKey(_page == 2),
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
-                                    color: slide.gradientColors.first,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Icon(
-                                _page == 2
-                                    ? Icons.rocket_launch_rounded
-                                    : Icons.arrow_forward_rounded,
-                                color: slide.gradientColors.first,
-                                size: 18,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
       ),
     );
   }
@@ -296,16 +215,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 // ─── Slide data ───────────────────────────────────────────────────────────────
 
 class _Slide {
-  const _Slide({
-    required this.icon,
-    required this.gradientColors,
-    required this.accentColor,
-    required this.title,
-    required this.sub,
-  });
+  const _Slide({required this.icon, required this.title, required this.sub});
   final IconData icon;
-  final List<Color> gradientColors;
-  final Color accentColor;
   final String title, sub;
 }
 
@@ -328,6 +239,7 @@ class _PageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: FadeTransition(
@@ -339,48 +251,46 @@ class _PageContent extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Hero icon in a glowing circle
+              // Hero icon in a frosted squircle
               ScaleTransition(
                 scale: isActive
                     ? heroScale
                     : const AlwaysStoppedAnimation(1.0),
                 child: Container(
-                  width: 164,
-                  height: 164,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.14),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.22),
-                      width: 2,
-                    ),
-                    boxShadow: [
+                  width: 150,
+                  height: 150,
+                  decoration: AppShapes.card(
+                    color: Colors.white.withValues(alpha: 0.55),
+                    radius: AppShapes.radiusXl,
+                    borderColor: Colors.white.withValues(alpha: 0.6),
+                    borderWidth: 1.5,
+                    shadows: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.14),
-                        blurRadius: 48,
-                        offset: const Offset(0, 18),
+                        color: p.ink.withValues(alpha: 0.10),
+                        blurRadius: 40,
+                        offset: const Offset(0, 16),
                       ),
                     ],
                   ),
-                  child: Icon(slide.icon, color: Colors.white, size: 74),
+                  child: PhosphorIcon(slide.icon, color: p.ink, duotoneSecondaryColor: Colors.white, size: 68),
                 ),
               ),
 
-              const SizedBox(height: 52),
+              const SizedBox(height: 44),
 
               // Title
               Text(
                 slide.title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  height: 1.2,
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w800,
+                  color: p.ink,
+                  height: 1.25,
                 ),
               ),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
 
               // Subtitle
               Text(
@@ -388,7 +298,7 @@ class _PageContent extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
-                  color: Colors.white.withValues(alpha: 0.80),
+                  color: p.inkSoft,
                   height: 1.6,
                   fontWeight: FontWeight.w400,
                 ),

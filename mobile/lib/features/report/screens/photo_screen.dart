@@ -1,14 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/step_bar.dart';
 import '../../../shared/widgets/sa_button.dart';
+import '../../../shared/widgets/sa_bottom_sheet.dart';
 import '../viewmodels/report_form_provider.dart';
 
 class PhotoScreen extends StatefulWidget {
@@ -25,6 +29,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
       final status = await Permission.camera.request();
       if (!status.isGranted) return;
     }
+    if (!mounted) return;
     final form = context.read<ReportFormProvider>();
     if (form.photos.length >= ReportFormProvider.maxPhotos) return;
 
@@ -43,13 +48,14 @@ class _PhotoScreenState extends State<PhotoScreen> {
     final form = context.watch<ReportFormProvider>();
     final photos = form.photos;
     final canAdd = photos.length < ReportFormProvider.maxPhotos;
+    final p = AppPalette.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         title: Text(l10n.newReport),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => context.go(AppRoutes.reportCategory),
         ),
         bottom: PreferredSize(
@@ -67,13 +73,13 @@ class _PhotoScreenState extends State<PhotoScreen> {
           children: [
             Text(
               l10n.addPhoto,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
-            ),
+              style: Theme.of(context).textTheme.headlineLarge,
+            ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.15, end: 0, curve: Curves.easeOutCubic),
             const SizedBox(height: 4),
             Text(
               l10n.addPhotoMax(ReportFormProvider.maxPhotos),
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            ),
+              style: TextStyle(fontSize: 14, color: p.textSecondary),
+            ).animate().fadeIn(duration: 300.ms, delay: 60.ms),
             const SizedBox(height: 20),
 
             // Photo grid
@@ -96,7 +102,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: canAdd ? () => _pick(ImageSource.gallery) : null,
-                      icon: const Icon(Icons.photo_library_outlined, size: 18),
+                      icon: Icon(PhosphorIconsRegular.images, size: 18),
                       label: Text(l10n.gallery),
                       style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
                     ),
@@ -105,7 +111,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: canAdd ? () => _pick(ImageSource.camera) : null,
-                      icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                      icon: Icon(PhosphorIconsRegular.camera, size: 18),
                       label: Text(l10n.camera),
                       style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
                     ),
@@ -133,35 +139,37 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final p = AppPalette.of(context);
     return GestureDetector(
       onTap: onCamera,
       child: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border),
-        ),
+        decoration: AppShapes.card(color: p.surface, radius: AppShapes.radiusLg, borderColor: p.border),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               width: 72,
               height: 72,
-              decoration: const BoxDecoration(color: AppColors.primaryContainer, shape: BoxShape.circle),
-              child: const Icon(Icons.camera_alt_outlined, color: AppColors.primary, size: 32),
-            ),
+              decoration: AppShapes.card(color: p.infoSoft, radius: AppShapes.radiusLg),
+              child: Icon(PhosphorIconsRegular.camera, color: p.info, size: 32),
+            ).animate().scale(
+                  begin: const Offset(0.6, 0.6),
+                  end: const Offset(1, 1),
+                  duration: 360.ms,
+                  curve: Curves.elasticOut,
+                ),
             const SizedBox(height: 16),
             Text(
               l10n.tapToTakePhoto,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: p.textPrimary),
             ),
             const SizedBox(height: 4),
-            Text(l10n.orChooseGallery, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+            Text(l10n.orChooseGallery, style: TextStyle(fontSize: 13, color: p.textSecondary)),
           ],
         ),
       ),
-    );
+    ).animate().fadeIn(duration: 300.ms);
   }
 }
 
@@ -219,7 +227,7 @@ class _PhotoTile extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                child: const Icon(Icons.close_rounded, color: Colors.white, size: 14),
+                child: Icon(PhosphorIconsBold.x, color: Colors.white, size: 14),
               ),
             ),
           ),
@@ -237,20 +245,23 @@ class _AddTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final p = AppPalette.of(context);
     return GestureDetector(
-      onTap: () => showModalBottomSheet(
-        context: context,
+      onTap: () => showSaBottomSheet(
+        context,
+        isScrollControlled: false,
         builder: (_) => SafeArea(
+          top: false,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.camera_alt_outlined),
+                leading: Icon(PhosphorIconsRegular.camera),
                 title: Text(l10n.takePhoto),
                 onTap: () { Navigator.pop(context); onCamera(); },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library_outlined),
+                leading: Icon(PhosphorIconsRegular.images),
                 title: Text(l10n.fromGallery),
                 onTap: () { Navigator.pop(context); onGallery(); },
               ),
@@ -259,17 +270,13 @@ class _AddTile extends StatelessWidget {
         ),
       ),
       child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border, style: BorderStyle.solid),
-        ),
+        decoration: AppShapes.card(color: p.surface, radius: AppShapes.radiusMd, borderColor: p.border),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.add_photo_alternate_outlined, color: AppColors.primary, size: 28),
+            Icon(PhosphorIconsRegular.plus, color: p.ink, size: 28),
             const SizedBox(height: 4),
-            Text(l10n.addLabel, style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600)),
+            Text(l10n.addLabel, style: TextStyle(fontSize: 11, color: p.ink, fontWeight: FontWeight.w600)),
           ],
         ),
       ),

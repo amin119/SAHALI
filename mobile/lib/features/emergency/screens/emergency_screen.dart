@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 
 // ─── Data model ───────────────────────────────────────────────────────────────
 
@@ -32,39 +35,39 @@ class _Section {
 class EmergencyScreen extends StatelessWidget {
   const EmergencyScreen({super.key});
 
-  List<_Section> _sections(AppLocalizations l) => [
+  List<_Section> _sections(AppLocalizations l, AppPalette p) => [
         _Section(
           title: l.emergencyCatSOS,
-          color: AppColors.error,
+          color: p.urgent,
           entries: [
-            _Entry(name: l.svcPolice,         desc: l.svcPoliceDesc,         number: '197',         icon: Icons.local_police_rounded,       color: AppColors.error),
-            _Entry(name: l.svcGardeNationale,  desc: l.svcGardeDesc,          number: '193',         icon: Icons.security_rounded,            color: AppColors.error),
-            _Entry(name: l.svcSamu,            desc: l.svcSamuDesc,           number: '190',         icon: Icons.emergency_rounded,           color: const Color(0xFFE55300)),
-            _Entry(name: l.svcPompiers,        desc: l.svcPompiersDesc,       number: '198',         icon: Icons.local_fire_department_rounded, color: AppColors.warning),
+            _Entry(name: l.svcPolice,         desc: l.svcPoliceDesc,         number: '197',         icon: PhosphorIconsDuotone.policeCar,   color: p.urgent),
+            _Entry(name: l.svcGardeNationale,  desc: l.svcGardeDesc,          number: '193',         icon: PhosphorIconsDuotone.shieldCheck, color: p.urgent),
+            _Entry(name: l.svcSamu,            desc: l.svcSamuDesc,           number: '190',         icon: PhosphorIconsDuotone.ambulance,   color: const Color(0xFFE55300)),
+            _Entry(name: l.svcPompiers,        desc: l.svcPompiersDesc,       number: '198',         icon: PhosphorIconsDuotone.fireTruck,   color: p.warning),
           ],
         ),
         _Section(
           title: l.emergencyCatMedical,
-          color: AppColors.statusInProgress,
+          color: p.info,
           entries: [
-            _Entry(name: l.svcAntiPoison,  desc: l.svcAntiPoisonDesc,  number: '71 578 000', icon: Icons.coronavirus_outlined,   color: AppColors.statusInProgress),
+            _Entry(name: l.svcAntiPoison,  desc: l.svcAntiPoisonDesc,  number: '71 578 000', icon: PhosphorIconsDuotone.firstAidKit,   color: p.info),
           ],
         ),
         _Section(
           title: l.emergencyCatSocial,
           color: const Color(0xFF9333EA),
           entries: [
-            _Entry(name: l.svcSosFemmes, desc: l.svcSosFemmesDesc, number: '1899', icon: Icons.support_agent_rounded,         color: const Color(0xFF9333EA)),
-            _Entry(name: l.svcEnfance,   desc: l.svcEnfanceDesc,   number: '116',  icon: Icons.child_care_rounded,            color: const Color(0xFFDB2777)),
+            _Entry(name: l.svcSosFemmes, desc: l.svcSosFemmesDesc, number: '1899', icon: PhosphorIconsDuotone.handHeart,       color: const Color(0xFF9333EA)),
+            _Entry(name: l.svcEnfance,   desc: l.svcEnfanceDesc,   number: '116',  icon: PhosphorIconsDuotone.babyCarriage,    color: const Color(0xFFDB2777)),
           ],
         ),
         _Section(
           title: l.emergencyCatServices,
-          color: AppColors.statusReceived,
+          color: p.info,
           entries: [
-            _Entry(name: l.svcSteg,              desc: l.svcStegDesc,              number: '7000',       icon: Icons.bolt_rounded,              color: AppColors.catLighting),
-            _Entry(name: l.svcSonede,            desc: l.svcSonedeDesc,            number: '1882',       icon: Icons.water_drop_rounded,        color: AppColors.catWater),
-            _Entry(name: l.svcPoliceMunicipale,  desc: l.svcPoliceMunicipaleDesc,  number: '1819',       icon: Icons.account_balance_rounded,   color: AppColors.textSecondary),
+            _Entry(name: l.svcSteg,              desc: l.svcStegDesc,              number: '7000',       icon: PhosphorIconsDuotone.lightning,      color: p.catLighting),
+            _Entry(name: l.svcSonede,            desc: l.svcSonedeDesc,            number: '1882',       icon: PhosphorIconsDuotone.drop,           color: p.catWater),
+            _Entry(name: l.svcPoliceMunicipale,  desc: l.svcPoliceMunicipaleDesc,  number: '1819',       icon: PhosphorIconsDuotone.bank,           color: p.textSecondary),
           ],
         ),
       ];
@@ -89,83 +92,35 @@ class EmergencyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final sections = _sections(l);
+    final p = AppPalette.of(context);
+    final sections = _sections(l, p);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // ── Collapsible hero header ─────────────────────────────────────
+          // ── Plain centered header ────────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 160,
             pinned: true,
+            backgroundColor: Colors.transparent,
+            centerTitle: true,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+              icon: Icon(PhosphorIconsRegular.arrowLeft, color: p.textPrimary),
               onPressed: () => context.go(AppRoutes.home),
-            ),
-            backgroundColor: AppColors.error,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFFB91C1C), AppColors.error],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 56, 20, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 46,
-                              height: 46,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.emergency_rounded,
-                                  color: Colors.white, size: 24),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    l.emergencyTitle,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                  Text(
-                                    l.emergencySubtitle,
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.80),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             ),
             title: Text(
               l.emergencyTitle,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+              style: TextStyle(color: p.textPrimary, fontWeight: FontWeight.w800),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                l.emergencySubtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: p.textSecondary, fontSize: 13),
+              ),
             ),
           ),
 
@@ -211,20 +166,21 @@ class _UniqueNumberCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return GestureDetector(
       onTap: onCall,
       child: Container(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFB91C1C), AppColors.error],
+        decoration: AppShapes.card(
+          gradient: LinearGradient(
+            colors: [const Color(0xFFB91C1C), p.urgent],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
+          radius: AppShapes.radiusLg,
+          shadows: [
             BoxShadow(
-              color: AppColors.error.withValues(alpha: 0.30),
+              color: p.urgent.withValues(alpha: 0.30),
               blurRadius: 18,
               offset: const Offset(0, 6),
             ),
@@ -268,11 +224,8 @@ class _UniqueNumberCard extends StatelessWidget {
             Container(
               width: 52,
               height: 52,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.22),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.call_rounded, color: Colors.white, size: 26),
+              decoration: AppShapes.card(color: Colors.white.withValues(alpha: 0.22), radius: AppShapes.radiusPill),
+              child: const Icon(PhosphorIconsFill.phone, color: Colors.white, size: 26),
             ),
           ],
         ),
@@ -301,10 +254,7 @@ class _SectionBlock extends StatelessWidget {
         // Category header pill
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          decoration: BoxDecoration(
-            color: section.color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(100),
-          ),
+          decoration: AppShapes.card(color: section.color.withValues(alpha: 0.12), radius: AppShapes.radiusPill),
           child: Text(
             section.title,
             style: TextStyle(
@@ -316,10 +266,11 @@ class _SectionBlock extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         // Entries
-        ...section.entries.map((e) => _EntryTile(
-              entry: e,
+        ...section.entries.asMap().entries.map((it) => _EntryTile(
+              entry: it.value,
               l: l,
-              onCall: () => onCall(e.number),
+              onCall: () => onCall(it.value.number),
+              index: it.key,
             )),
       ],
     );
@@ -333,31 +284,27 @@ class _EntryTile extends StatelessWidget {
     required this.entry,
     required this.l,
     required this.onCall,
+    this.index = 0,
   });
   final _Entry entry;
   final AppLocalizations l;
   final VoidCallback onCall;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
-      ),
+      decoration: AppShapes.card(color: p.surface, radius: AppShapes.radiusMd, borderColor: p.divider),
       child: Row(
         children: [
           // Icon
           Container(
             width: 42,
             height: 42,
-            decoration: BoxDecoration(
-              color: entry.color.withValues(alpha: 0.10),
-              shape: BoxShape.circle,
-            ),
+            decoration: AppShapes.card(color: entry.color.withValues(alpha: 0.10), radius: AppShapes.radiusPill),
             child: Icon(entry.icon, color: entry.color, size: 20),
           ),
           const SizedBox(width: 14),
@@ -368,16 +315,16 @@ class _EntryTile extends StatelessWidget {
               children: [
                 Text(
                   entry.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: p.textPrimary,
                   ),
                 ),
                 Text(
                   entry.desc,
-                  style: const TextStyle(
-                      fontSize: 11, color: AppColors.textHint),
+                  style: TextStyle(
+                      fontSize: 11, color: p.textHint),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -404,14 +351,11 @@ class _EntryTile extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: entry.color.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
+                  decoration: AppShapes.card(color: entry.color.withValues(alpha: 0.10), radius: AppShapes.radiusPill),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.call_rounded, color: entry.color, size: 12),
+                      Icon(PhosphorIconsFill.phone, color: entry.color, size: 12),
                       const SizedBox(width: 4),
                       Text(
                         l.callBtn,
@@ -429,6 +373,6 @@ class _EntryTile extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).animate().fadeIn(duration: 260.ms, delay: (30 * index).ms).slideX(begin: 0.04, end: 0, curve: Curves.easeOutCubic);
   }
 }

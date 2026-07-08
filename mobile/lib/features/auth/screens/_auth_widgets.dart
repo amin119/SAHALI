@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_colors.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../shared/widgets/sahali_logo.dart';
 import '../../../core/l10n/app_localizations.dart';
 
@@ -11,6 +14,7 @@ class AuthHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -20,20 +24,17 @@ class AuthHeader extends StatelessWidget {
             const SizedBox(width: 10),
             Text(
               AppLocalizations.of(context).appNameAr,
-              style: const TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+              style: TextStyle(
+                  fontSize: 20, fontWeight: FontWeight.w800, color: p.textPrimary),
             ),
           ],
         ),
         const SizedBox(height: 28),
-        Text(title,
-            style: const TextStyle(
-                fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+        Text(title, style: Theme.of(context).textTheme.displaySmall),
         const SizedBox(height: 6),
-        Text(subtitle,
-            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+        Text(subtitle, style: TextStyle(fontSize: 14, color: p.textSecondary)),
       ],
-    );
+    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.08, end: 0, curve: Curves.easeOutCubic);
   }
 }
 
@@ -45,25 +46,44 @@ class AuthErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (error == null || error!.isEmpty) return const SizedBox.shrink();
+    final p = AppPalette.of(context);
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.errorContainer,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
-      ),
+      decoration: AppShapes.card(color: p.urgentSoft, radius: AppShapes.radiusMd),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, size: 18, color: AppColors.error),
+          Icon(PhosphorIconsRegular.warningCircle, size: 18, color: p.urgent),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(error!,
-                style: const TextStyle(fontSize: 13, color: AppColors.error)),
+            child: Text(error!, style: TextStyle(fontSize: 13, color: p.urgent)),
           ),
         ],
       ),
+    ).animate().shake(duration: 320.ms, hz: 4);
+  }
+}
+
+/// Dev-only OTP/verification code hint — shown on phone OTP, email verify,
+/// and password reset screens when the backend returns a debug code.
+class AuthDebugCodeHint extends StatelessWidget {
+  const AuthDebugCodeHint({super.key, required this.code});
+  final String code;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: AppShapes.card(color: p.warningContainer, radius: AppShapes.radiusSm),
+      child: Row(children: [
+        Icon(PhosphorIconsRegular.bugBeetle, size: 16, color: p.warning),
+        const SizedBox(width: 8),
+        Text('${l10n.devCodeHint} $code',
+            style: TextStyle(fontSize: 13, color: p.warning, fontWeight: FontWeight.w600)),
+      ]),
     );
   }
 }
@@ -113,6 +133,7 @@ class AuthOutlinedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return SizedBox(
       width: double.infinity,
       height: 52,
@@ -121,9 +142,9 @@ class AuthOutlinedButton extends StatelessWidget {
         icon: Icon(icon, size: 20),
         label: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppColors.border, width: 1.5),
-          foregroundColor: AppColors.textPrimary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          side: BorderSide(color: p.border, width: 1.5),
+          foregroundColor: p.textPrimary,
+          shape: AppShapes.pill(),
         ),
       ),
     );
@@ -135,15 +156,15 @@ class AuthDivider extends StatelessWidget {
   const AuthDivider({super.key});
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Row(
       children: [
-        const Expanded(child: Divider(color: AppColors.divider)),
+        Expanded(child: Divider(color: p.divider)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text('ou',
-              style: const TextStyle(fontSize: 12, color: AppColors.textHint)),
+          child: Text('ou', style: TextStyle(fontSize: 12, color: p.textHint)),
         ),
-        const Expanded(child: Divider(color: AppColors.divider)),
+        Expanded(child: Divider(color: p.divider)),
       ],
     );
   }
@@ -163,21 +184,22 @@ class AuthBottomLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Center(
       child: Wrap(
         alignment: WrapAlignment.center,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           if (question.isNotEmpty) ...[
-            Text(question, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+            Text(question, style: TextStyle(fontSize: 14, color: p.textSecondary)),
             const SizedBox(width: 4),
           ],
           GestureDetector(
             onTap: onTap,
             child: Text(actionLabel,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.primary,
+                    color: p.ink,
                     fontWeight: FontWeight.w700)),
           ),
         ],

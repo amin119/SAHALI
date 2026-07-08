@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/providers/language_provider.dart';
+import 'core/providers/theme_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/providers/auth_provider.dart';
@@ -21,6 +22,7 @@ class _SahaliAppState extends State<SahaliApp> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final lang = context.watch<LanguageProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
 
     _router ??= buildRouter(auth);
 
@@ -28,6 +30,8 @@ class _SahaliAppState extends State<SahaliApp> {
       title: 'سهلي',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeProvider.themeMode,
       routerConfig: _router!,
       locale: lang.locale,
       localizationsDelegates: const [

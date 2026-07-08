@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(Get-ChildItem -Recurse -Force)",
-      "PowerShell(head *)"
+      "PowerShell(head *)",
+      "PowerShell($ready = $false; for \\($i = 1; $i -le 20; $i++\\) { Start-Sleep -Seconds 15; try { $r = Invoke-RestMethod \"https://sahali-1.onrender.com/health/db\" -UseBasicParsing; $json = $r | ConvertTo-Json -Compress; Write-Output \"Attempt $i - DB: $json\"; if \\($r.db -eq \"ok\"\\) { $ready = $true; break } } catch { Write-Output \"Attempt $i - not ready yet\" } }; if \\($ready\\) { Write-Output \"Database connected - testing login...\"; try { $login = Invoke-RestMethod -Uri \"https://sahali-1.onrender.com/v1/auth/login\" -Method POST -ContentType \"application/json\" -Body '{\"identifier\":\"admin@sahali.tn\",\"password\":\"Demo1234!\"}'; Write-Output \"LOGIN SUCCESS - got access_token: $\\($login.access_token.Substring\\(0,30\\)\\)...\" } catch { Write-Output \"Login failed: $\\($_.Exception.Message\\)\" } })"
     ]
   }
 }

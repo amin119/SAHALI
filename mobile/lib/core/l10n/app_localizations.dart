@@ -126,6 +126,50 @@ class AppLocalizations {
   String get privacyPolicy => _t('privacyPolicy');
   String get helpSupport => _t('helpSupport');
   String get signOut => _t('signOut');
+  String get theme => _t('theme');
+  String get themeSystem => _t('themeSystem');
+  String get themeLight => _t('themeLight');
+  String get themeDark => _t('themeDark');
+
+  // ── Notification settings ──────────────────────────────────────────────────────
+  String get notificationSettingsTitle => _t('notificationSettingsTitle');
+  String get pushNotifications => _t('pushNotifications');
+  String get pushNotificationsDesc => _t('pushNotificationsDesc');
+  String get notifyMeAbout => _t('notifyMeAbout');
+
+  // ── Help & Support ──────────────────────────────────────────────────────────────
+  String get faqSectionTitle => _t('faqSectionTitle');
+  String get faq1Q => _t('faq1Q');
+  String get faq1A => _t('faq1A');
+  String get faq2Q => _t('faq2Q');
+  String get faq2A => _t('faq2A');
+  String get faq3Q => _t('faq3Q');
+  String get faq3A => _t('faq3A');
+  String get faq4Q => _t('faq4Q');
+  String get faq4A => _t('faq4A');
+  String get faq5Q => _t('faq5Q');
+  String get faq5A => _t('faq5A');
+  String get contactSupportTitle => _t('contactSupportTitle');
+  String get contactSupportSub => _t('contactSupportSub');
+  String get yourName => _t('yourName');
+  String get yourEmail => _t('yourEmail');
+  String get yourMessage => _t('yourMessage');
+  String get sendMessage => _t('sendMessage');
+
+  // ── Privacy policy ──────────────────────────────────────────────────────────────
+  String get privacyIntro => _t('privacyIntro');
+  String get privacy1Title => _t('privacy1Title');
+  String get privacy1Body => _t('privacy1Body');
+  String get privacy2Title => _t('privacy2Title');
+  String get privacy2Body => _t('privacy2Body');
+  String get privacy3Title => _t('privacy3Title');
+  String get privacy3Body => _t('privacy3Body');
+  String get privacy4Title => _t('privacy4Title');
+  String get privacy4Body => _t('privacy4Body');
+  String get privacy5Title => _t('privacy5Title');
+  String get privacy5Body => _t('privacy5Body');
+  String get privacy6Title => _t('privacy6Title');
+  String get privacy6Body => _t('privacy6Body');
 
   // ── Onboarding ────────────────────────────────────────────────────────────────
   String get onboardingSkip => _t('onboardingSkip');
@@ -409,10 +453,51 @@ const _en = <String, String>{
   'privacyPolicy': 'Privacy Policy',
   'helpSupport': 'Help & Support',
   'signOut': 'Sign Out',
+  'theme': 'Theme',
+  'themeSystem': 'System',
+  'themeLight': 'Light',
+  'themeDark': 'Dark',
+
+  'notificationSettingsTitle': 'Notifications',
+  'pushNotifications': 'Push notifications',
+  'pushNotificationsDesc': 'Get an alert when the status of your reports changes.',
+  'notifyMeAbout': 'Notify me about',
+
+  'faqSectionTitle': 'Frequently asked questions',
+  'faq1Q': 'How do I report a problem?',
+  'faq1A': 'Tap the "+" button on the home screen, choose a category, add a photo and a short description, then confirm the location on the map.',
+  'faq2Q': 'How long does it take to process my report?',
+  'faq2A': 'Most reports are reviewed within a few days. You\'ll get a notification each time the status changes.',
+  'faq3Q': 'Can I report anonymously?',
+  'faq3A': 'You need an account so we can keep you updated, but your contact details are never shown to other citizens.',
+  'faq4Q': 'How do I track my report?',
+  'faq4A': 'Open "My reports" from the bottom bar — every report shows its current status and full history.',
+  'faq5Q': 'What if my report is rejected?',
+  'faq5A': 'You\'ll get a notification explaining why. You can submit a new report with more details if needed.',
+  'contactSupportTitle': 'Still need help?',
+  'contactSupportSub': 'Send us a message and we\'ll get back to you.',
+  'yourName': 'Your name',
+  'yourEmail': 'Your email',
+  'yourMessage': 'How can we help?',
+  'sendMessage': 'Send message',
+
+  'privacyIntro': 'This policy explains what information Sahali collects, how it\'s used, and the choices you have.',
+  'privacy1Title': 'Data we collect',
+  'privacy1Body': 'Account details (name, email or phone), the reports you submit (photos, description, location), and basic device/app diagnostics.',
+  'privacy2Title': 'How we use your data',
+  'privacy2Body': 'To route your reports to the relevant municipal department, keep you updated on their status, and improve the service.',
+  'privacy3Title': 'Data sharing',
+  'privacy3Body': 'Report details are shared only with the municipal staff responsible for handling them. We never sell your personal data.',
+  'privacy4Title': 'Data retention',
+  'privacy4Body': 'Reports and account data are kept as long as your account is active, or as required by law.',
+  'privacy5Title': 'Your rights',
+  'privacy5Body': 'You can request access to, correction of, or deletion of your personal data at any time from the Profile screen or by contacting support.',
+  'privacy6Title': 'Contact',
+  'privacy6Body': 'Questions about this policy? Reach us from the Help & Support screen.',
 
   'navEmergency': 'SOS',
   'emergencyTitle': 'Emergency Numbers',
-  'emergencySubtitle': 'Tunisia — 24/7 hotlines',
+  'emergencySubtitle': 'Tunisia - Emergency numbers 24/7',
   'emergencyAvail': 'Available 24 h/24',
   'callBtn': 'Call',
   'callDialogCancel': 'Cancel',
@@ -666,10 +751,51 @@ const _fr = <String, String>{
   'privacyPolicy': 'Politique de confidentialité',
   'helpSupport': 'Aide & Support',
   'signOut': 'Déconnexion',
+  'theme': 'Thème',
+  'themeSystem': 'Système',
+  'themeLight': 'Clair',
+  'themeDark': 'Sombre',
+
+  'notificationSettingsTitle': 'Notifications',
+  'pushNotifications': 'Notifications push',
+  'pushNotificationsDesc': 'Recevoir une alerte quand le statut de vos signalements change.',
+  'notifyMeAbout': 'Me notifier pour',
+
+  'faqSectionTitle': 'Questions fréquentes',
+  'faq1Q': 'Comment signaler un problème ?',
+  'faq1A': 'Appuyez sur le bouton « + » sur l\'accueil, choisissez une catégorie, ajoutez une photo et une courte description, puis confirmez la localisation sur la carte.',
+  'faq2Q': 'Combien de temps faut-il pour traiter mon signalement ?',
+  'faq2A': 'La plupart des signalements sont examinés en quelques jours. Vous recevrez une notification à chaque changement de statut.',
+  'faq3Q': 'Puis-je signaler de façon anonyme ?',
+  'faq3A': 'Un compte est nécessaire pour vous tenir informé, mais vos coordonnées ne sont jamais visibles par les autres citoyens.',
+  'faq4Q': 'Comment suivre l\'état de mon signalement ?',
+  'faq4A': 'Ouvrez « Mes signalements » depuis la barre du bas — chaque signalement affiche son statut actuel et son historique complet.',
+  'faq5Q': 'Que faire si mon signalement est rejeté ?',
+  'faq5A': 'Vous recevrez une notification expliquant pourquoi. Vous pouvez soumettre un nouveau signalement avec plus de détails si besoin.',
+  'contactSupportTitle': 'Besoin d\'aide supplémentaire ?',
+  'contactSupportSub': 'Envoyez-nous un message, nous vous répondrons rapidement.',
+  'yourName': 'Votre nom',
+  'yourEmail': 'Votre email',
+  'yourMessage': 'Comment pouvons-nous vous aider ?',
+  'sendMessage': 'Envoyer le message',
+
+  'privacyIntro': 'Cette politique explique quelles informations Sahali collecte, comment elles sont utilisées, et les choix qui s\'offrent à vous.',
+  'privacy1Title': 'Données collectées',
+  'privacy1Body': 'Informations de compte (nom, email ou téléphone), les signalements que vous soumettez (photos, description, localisation), et des données techniques de base sur l\'appareil et l\'application.',
+  'privacy2Title': 'Utilisation des données',
+  'privacy2Body': 'Pour orienter vos signalements vers le service municipal concerné, vous tenir informé de leur statut, et améliorer le service.',
+  'privacy3Title': 'Partage des données',
+  'privacy3Body': 'Les détails des signalements ne sont partagés qu\'avec le personnel municipal chargé de leur traitement. Nous ne vendons jamais vos données personnelles.',
+  'privacy4Title': 'Conservation des données',
+  'privacy4Body': 'Les signalements et les données de compte sont conservés tant que votre compte est actif, ou selon les obligations légales.',
+  'privacy5Title': 'Vos droits',
+  'privacy5Body': 'Vous pouvez demander l\'accès, la correction ou la suppression de vos données personnelles à tout moment depuis l\'écran Profil ou en contactant le support.',
+  'privacy6Title': 'Contact',
+  'privacy6Body': 'Des questions sur cette politique ? Contactez-nous depuis l\'écran Aide & Support.',
 
   'navEmergency': 'SOS',
   'emergencyTitle': 'Numéros d\'urgence',
-  'emergencySubtitle': 'Tunisie — Lignes d\'urgence 24h/24',
+  'emergencySubtitle': 'Tunisie - Numéros d\'urgence 24/7',
   'emergencyAvail': 'Disponible 24 h/24',
   'callBtn': 'Appeler',
   'callDialogCancel': 'Annuler',
@@ -923,10 +1049,51 @@ const _ar = <String, String>{
   'privacyPolicy': 'سياسة الخصوصية',
   'helpSupport': 'المساعدة والدعم',
   'signOut': 'تسجيل الخروج',
+  'theme': 'المظهر',
+  'themeSystem': 'النظام',
+  'themeLight': 'فاتح',
+  'themeDark': 'داكن',
+
+  'notificationSettingsTitle': 'الإشعارات',
+  'pushNotifications': 'الإشعارات الفورية',
+  'pushNotificationsDesc': 'تلقي تنبيه عند تغير حالة بلاغاتك.',
+  'notifyMeAbout': 'أعلمني بخصوص',
+
+  'faqSectionTitle': 'الأسئلة الشائعة',
+  'faq1Q': 'كيف أبلغ عن مشكلة؟',
+  'faq1A': 'اضغط على زر "+" في الصفحة الرئيسية، اختر فئة، أضف صورة ووصفا مختصرا، ثم أكد الموقع على الخريطة.',
+  'faq2Q': 'كم من الوقت يستغرق معالجة بلاغي؟',
+  'faq2A': 'تتم مراجعة معظم البلاغات خلال أيام قليلة. ستتلقى إشعارا في كل مرة تتغير فيها الحالة.',
+  'faq3Q': 'هل يمكنني الإبلاغ بشكل مجهول؟',
+  'faq3A': 'يلزم إنشاء حساب لإبقائك على اطلاع، لكن بياناتك الشخصية لا تظهر أبدا للمواطنين الآخرين.',
+  'faq4Q': 'كيف أتابع حالة بلاغي؟',
+  'faq4A': 'افتح "بلاغاتي" من الشريط السفلي — يعرض كل بلاغ حالته الحالية وسجله الكامل.',
+  'faq5Q': 'ماذا أفعل إذا تم رفض بلاغي؟',
+  'faq5A': 'ستتلقى إشعارا يوضح السبب. يمكنك تقديم بلاغ جديد بمزيد من التفاصيل عند الحاجة.',
+  'contactSupportTitle': 'ما زلت بحاجة إلى مساعدة؟',
+  'contactSupportSub': 'أرسل لنا رسالة وسنرد عليك.',
+  'yourName': 'اسمك',
+  'yourEmail': 'بريدك الإلكتروني',
+  'yourMessage': 'كيف يمكننا مساعدتك؟',
+  'sendMessage': 'إرسال الرسالة',
+
+  'privacyIntro': 'توضح هذه السياسة المعلومات التي يجمعها تطبيق سهلي، وكيفية استخدامها، والخيارات المتاحة لك.',
+  'privacy1Title': 'البيانات التي نجمعها',
+  'privacy1Body': 'بيانات الحساب (الاسم، البريد الإلكتروني أو الهاتف)، البلاغات التي تقدمها (الصور، الوصف، الموقع)، وبيانات تقنية أساسية عن الجهاز والتطبيق.',
+  'privacy2Title': 'كيفية استخدام بياناتك',
+  'privacy2Body': 'لتوجيه بلاغاتك إلى المصلحة البلدية المعنية، وإبقائك على اطلاع بحالتها، وتحسين الخدمة.',
+  'privacy3Title': 'مشاركة البيانات',
+  'privacy3Body': 'لا تتم مشاركة تفاصيل البلاغات إلا مع الموظفين البلديين المسؤولين عن معالجتها. لا نبيع بياناتك الشخصية أبدا.',
+  'privacy4Title': 'الاحتفاظ بالبيانات',
+  'privacy4Body': 'يتم الاحتفاظ بالبلاغات وبيانات الحساب طالما حسابك نشط، أو وفقا لما يقتضيه القانون.',
+  'privacy5Title': 'حقوقك',
+  'privacy5Body': 'يمكنك طلب الوصول إلى بياناتك الشخصية أو تصحيحها أو حذفها في أي وقت من صفحة الملف الشخصي أو بالتواصل مع الدعم.',
+  'privacy6Title': 'التواصل',
+  'privacy6Body': 'لديك أسئلة حول هذه السياسة؟ تواصل معنا من صفحة المساعدة والدعم.',
 
   'navEmergency': 'SOS',
   'emergencyTitle': 'أرقام الطوارئ',
-  'emergencySubtitle': 'تونس — خطوط الطوارئ 24/24',
+  'emergencySubtitle': 'تونس - أرقام الطوارئ 24/7',
   'emergencyAvail': 'متاح 24 ساعة',
   'callBtn': 'اتصال',
   'callDialogCancel': 'إلغاء',

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, 
 from fastapi.responses import StreamingResponse
 import io
 from sqlalchemy import func, text
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from geoalchemy2.functions import ST_DWithin, ST_MakePoint, ST_SetSRID
 from typing import Annotated
 import asyncio
@@ -23,6 +23,7 @@ from app.services.storage import generate_presigned_upload, upload_photo as stor
 from app.services.notification import notify_citizen, notify_staff
 from app.services.ai_client import analyze_report
 from app.services.event_bus import publish_report_event
+from app.utils.retry import with_retries
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -155,7 +156,7 @@ def submit_report(
     db.refresh(report)
 
     background.add_task(_run_ai_analysis, report.id, body, current_user.preferred_language)
-    background.add_task(_notify, db, report, "SUBMITTED")
+    background.add_task(_notify, report.id, "SUBMITTED")
     background.add_task(_notify_staff, report.id)
 
     publish_report_event("report_created", {
@@ -247,24 +248,26 @@ def submit_anonymous_report(
     return _report_to_out(report)
 
 
-def _notify(db: Session, report: Report, event: str):
-    try:
-        notify_citizen(db, report, event)
-        db.commit()
-    except Exception:
-        pass
+def _notify(report_id, event: str):
+    def _do():
+        from app.database import SessionLocal
+        with SessionLocal() as db:
+            r = db.get(Report, report_id)
+            if r:
+                notify_citizen(db, r, event)
+                db.commit()
+    with_retries(_do, task_name="notify_citizen")
 
 
 def _notify_staff(report_id):
-    try:
+    def _do():
         from app.database import SessionLocal
         with SessionLocal() as db:
             r = db.get(Report, report_id)
             if r:
                 notify_staff(db, r)
                 db.commit()
-    except Exception:
-        pass
+    with_retries(_do, task_name="notify_staff")
 
 
 def _run_ai_analysis(report_id, body: ReportCreate, lang: str):
@@ -285,7 +288,7 @@ def _run_ai_analysis(report_id, body: ReportCreate, lang: str):
                     if result.get("priority"):
                         r.priority = result["priority"]
                     sess.commit()
-    asyncio.run(_inner())
+    with_retries(lambda: asyncio.run(_inner()), task_name="ai_analysis")
 
 
 @router.get("", response_model=ReportListOut)
@@ -452,14 +455,19 @@ def assign_report(
         Assignment.is_active == True,
     ).update({"is_active": False})
 
+    agents_by_id = {
+        str(a.id): a
+        for a in db.query(User).filter(User.id.in_(body.agent_ids)).all()
+    }
+    missing = [agent_id for agent_id in body.agent_ids if agent_id not in agents_by_id]
+    if missing:
+        raise HTTPException(status_code=404, detail=f"Agent(s) not found: {', '.join(missing)}")
+
     new_assignments: list[Assignment] = []
     for agent_id in body.agent_ids:
-        agent = db.get(User, agent_id)
-        if not agent:
-            raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
         a = Assignment(
             report_id=report.id,
-            agent_id=agent.id,
+            agent_id=agents_by_id[agent_id].id,
             assigned_by=current_user.id,
             note=body.note,
             is_active=True,
@@ -468,8 +476,7 @@ def assign_report(
         new_assignments.append(a)
 
     # Keep assigned_to pointing to the first agent (backward compat / field_agent filter)
-    first_agent = db.get(User, body.agent_ids[0])
-    report.assigned_to = first_agent.id
+    report.assigned_to = agents_by_id[body.agent_ids[0]].id
 
     db.commit()
     for a in new_assignments:
@@ -496,6 +503,7 @@ def get_assignments(
         raise HTTPException(status_code=404, detail="Report not found")
     assignments = (
         db.query(Assignment)
+        .options(joinedload(Assignment.agent), joinedload(Assignment.assigner))
         .filter(Assignment.report_id == report.id)
         .order_by(Assignment.created_at.desc())
         .all()
@@ -561,6 +569,7 @@ def get_status_history(
         raise HTTPException(status_code=403, detail="Access denied")
     history = (
         db.query(ReportStatusHistory)
+        .options(joinedload(ReportStatusHistory.changed_by_user))
         .filter(ReportStatusHistory.report_id == report.id)
         .order_by(ReportStatusHistory.created_at)
         .all()

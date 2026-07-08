@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/router/app_router.dart';
-import '../../../shared/widgets/sahali_logo.dart';
 import '../providers/auth_provider.dart';
 import '_auth_widgets.dart';
 
@@ -30,8 +30,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final l10n = AppLocalizations.of(context);
+    final p = AppPalette.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 autofillHints: const [AutofillHints.email],
                 decoration: InputDecoration(
                   labelText: l10n.emailAddress,
-                  prefixIcon: const Icon(Icons.email_outlined),
+                  prefixIcon: Icon(PhosphorIconsRegular.envelopeSimple),
                 ),
               ),
               const SizedBox(height: 16),
@@ -64,9 +64,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 autofillHints: const [AutofillHints.password],
                 decoration: InputDecoration(
                   labelText: l10n.password,
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  prefixIcon: Icon(PhosphorIconsRegular.lockSimple),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    icon: Icon(_obscure ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeClosed),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
                 ),
@@ -78,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: TextButton(
                   onPressed: () => context.push(AppRoutes.forgotPassword),
                   child: Text(l10n.forgotPassword,
-                      style: const TextStyle(fontSize: 13, color: AppColors.primary)),
+                      style: TextStyle(fontSize: 13, color: p.ink)),
                 ),
               ),
               const SizedBox(height: 4),
@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Phone OTP
               AuthOutlinedButton(
-                icon: Icons.phone_outlined,
+                icon: PhosphorIconsRegular.phone,
                 label: l10n.loginWithPhone,
                 onPressed: () => context.push(AppRoutes.phoneOtp),
               ),
@@ -119,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: TextButton(
                   onPressed: () => context.go(AppRoutes.home),
                   child: Text(l10n.skipForNow,
-                      style: const TextStyle(fontSize: 13, color: AppColors.textHint)),
+                      style: TextStyle(fontSize: 13, color: p.textHint)),
                 ),
               ),
               const SizedBox(height: 24),

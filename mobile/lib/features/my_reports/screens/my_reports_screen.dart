@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../core/utils/category_utils.dart';
 import '../../../data/models/report_model.dart';
 import '../../../features/report/providers/reports_provider.dart';
@@ -19,20 +22,12 @@ class MyReportsScreen extends StatefulWidget {
 class _MyReportsScreenState extends State<MyReportsScreen> {
   int _filterIndex = 0;
 
-  static const _statusFilters = [null, 'active', 'resolved', 'rejected'];
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ReportsProvider>().loadMyReports(refresh: true);
     });
-  }
-
-  String? _apiStatus() {
-    if (_filterIndex == 0) return null;
-    // API accepts individual status values; we filter client-side for grouped tabs
-    return null;
   }
 
   List<ReportModel> _filtered(List<ReportModel> all) {
@@ -56,18 +51,19 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
       l10n.filterClosed,
     ];
     final filtered = _filtered(provider.reports);
+    final p = AppPalette.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         title: Text(l10n.myReports),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => context.go(AppRoutes.home),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_rounded),
+            icon: Icon(PhosphorIconsRegular.plus),
             onPressed: () => context.go(AppRoutes.reportCategory),
           ),
         ],
@@ -88,10 +84,10 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                     duration: const Duration(milliseconds: 200),
                     margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: active ? AppColors.primary : AppColors.surface,
-                      borderRadius: BorderRadius.circular(100),
-                      border: Border.all(color: active ? AppColors.primary : AppColors.divider),
+                    decoration: AppShapes.card(
+                      color: active ? p.ink : p.surface,
+                      radius: AppShapes.radiusPill,
+                      borderColor: active ? p.ink : p.divider,
                     ),
                     alignment: Alignment.center,
                     child: Text(
@@ -99,7 +95,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: active ? Colors.white : AppColors.textSecondary,
+                        color: active ? Colors.white : p.textSecondary,
                       ),
                     ),
                   ),
@@ -116,9 +112,9 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.wifi_off_rounded, color: AppColors.textHint, size: 40),
+                            Icon(PhosphorIconsRegular.wifiSlash, color: p.textHint, size: 40),
                             const SizedBox(height: 12),
-                            Text(provider.error!, style: const TextStyle(color: AppColors.textHint, fontSize: 14)),
+                            Text(provider.error!, style: TextStyle(color: p.textHint, fontSize: 14)),
                             const SizedBox(height: 12),
                             TextButton(
                               onPressed: () => provider.loadMyReports(refresh: true),
@@ -132,9 +128,9 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.inbox_outlined, size: 56, color: AppColors.textHint.withValues(alpha: 0.5)),
+                                Icon(PhosphorIconsDuotone.tray, size: 56, color: p.textHint.withValues(alpha: 0.5)),
                                 const SizedBox(height: 12),
-                                Text(l10n.noReportsFound, style: const TextStyle(fontSize: 15, color: AppColors.textHint)),
+                                Text(l10n.noReportsFound, style: TextStyle(fontSize: 15, color: p.textHint)),
                               ],
                             ),
                           )
@@ -147,6 +143,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                                 report: filtered[i],
                                 provider: provider,
                                 onTap: () => context.go('/report/${filtered[i].id}'),
+                                index: i,
                               ),
                             ),
                           ),
@@ -158,13 +155,15 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
 }
 
 class _ReportCard extends StatelessWidget {
-  const _ReportCard({required this.report, required this.provider, required this.onTap});
+  const _ReportCard({required this.report, required this.provider, required this.onTap, this.index = 0});
   final ReportModel report;
   final ReportsProvider provider;
   final VoidCallback onTap;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     final cat = provider.categoryById(report.categoryId);
     final slug = cat?.slug ?? 'infrastructure';
     final color = categoryColorBySlug(slug);
@@ -178,11 +177,7 @@ class _ReportCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.divider),
-        ),
+        decoration: AppShapes.card(color: p.surface, radius: AppShapes.radiusLg, borderColor: p.divider),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -191,10 +186,7 @@ class _ReportCard extends StatelessWidget {
                 Container(
                   width: 36,
                   height: 36,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: AppShapes.card(color: color.withValues(alpha: 0.12), radius: AppShapes.radiusSm),
                   child: Icon(icon, color: color, size: 18),
                 ),
                 const SizedBox(width: 10),
@@ -202,8 +194,8 @@ class _ReportCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(catLabel, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textHint)),
-                      Text(dateStr, style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
+                      Text(catLabel, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: p.textHint)),
+                      Text(dateStr, style: TextStyle(fontSize: 11, color: p.textHint)),
                     ],
                   ),
                 ),
@@ -213,31 +205,31 @@ class _ReportCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               report.title,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: p.textPrimary),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 6),
             Row(
               children: [
-                const Icon(Icons.location_on_outlined, size: 13, color: AppColors.textHint),
+                Icon(PhosphorIconsRegular.mapPin, size: 13, color: p.textHint),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     report.address ?? report.city ?? '${report.lat?.toStringAsFixed(4) ?? ''}, ${report.lng?.toStringAsFixed(4) ?? ''}',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textHint),
+                    style: TextStyle(fontSize: 12, color: p.textHint),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Text(
                   report.trackingCode,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textHint, fontFamily: 'monospace'),
+                  style: TextStyle(fontSize: 11, color: p.textHint, fontFamily: 'monospace'),
                 ),
               ],
             ),
           ],
         ),
       ),
-    );
+    ).animate().fadeIn(duration: 260.ms, delay: (40 * index).ms).slideY(begin: 0.06, end: 0, curve: Curves.easeOutCubic);
   }
 }

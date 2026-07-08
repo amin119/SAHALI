@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/router/app_router.dart';
 import '../providers/auth_provider.dart';
 import '_auth_widgets.dart';
@@ -36,7 +36,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final auth = context.watch<AuthProvider>();
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -56,7 +55,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.fullName,
                   hintText: l10n.fullNameHint,
-                  prefixIcon: const Icon(Icons.person_outline),
+                  prefixIcon: Icon(PhosphorIconsRegular.user),
                 ),
               ),
               const SizedBox(height: 16),
@@ -69,7 +68,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 autofillHints: const [AutofillHints.email],
                 decoration: InputDecoration(
                   labelText: l10n.emailAddress,
-                  prefixIcon: const Icon(Icons.email_outlined),
+                  prefixIcon: Icon(PhosphorIconsRegular.envelopeSimple),
                 ),
               ),
               const SizedBox(height: 16),
@@ -82,9 +81,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.password,
                   hintText: l10n.passwordTooShort,
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  prefixIcon: Icon(PhosphorIconsRegular.lockSimple),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    icon: Icon(_obscure ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeClosed),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
                 ),
@@ -99,9 +98,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onSubmitted: (_) => _submit(context),
                 decoration: InputDecoration(
                   labelText: l10n.confirmPassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  prefixIcon: Icon(PhosphorIconsRegular.lockSimple),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirm ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    icon: Icon(_obscureConfirm ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeClosed),
                     onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
                 ),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/utils/category_utils.dart';
 import '../../../features/report/providers/reports_provider.dart';
@@ -41,15 +43,16 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
 
     if (provider.error != null || provider.selectedReport == null) {
       final l10n = AppLocalizations.of(context);
+      final p = AppPalette.of(context);
       return Scaffold(
-        appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.go(AppRoutes.myReports))),
+        appBar: AppBar(backgroundColor: Colors.transparent, leading: IconButton(icon: Icon(PhosphorIconsRegular.arrowLeft), onPressed: () => context.go(AppRoutes.myReports))),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.textHint),
+              Icon(PhosphorIconsRegular.warningCircle, size: 48, color: p.textHint),
               const SizedBox(height: 12),
-              Text(provider.error ?? l10n.reportNotFound, style: const TextStyle(color: AppColors.textHint)),
+              Text(provider.error ?? l10n.reportNotFound, style: TextStyle(color: p.textHint)),
               const SizedBox(height: 12),
               if (widget.reportId != null)
                 TextButton(
@@ -63,6 +66,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     }
 
     final l10n = AppLocalizations.of(context);
+    final p = AppPalette.of(context);
     final report = provider.selectedReport!;
     final cat = provider.categoryById(report.categoryId);
     final slug = cat?.slug ?? 'infrastructure';
@@ -72,17 +76,17 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     final status = ReportStatusX.fromApi(report.status);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 220,
             pinned: true,
+            backgroundColor: Colors.transparent,
             leading: IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: const BoxDecoration(color: Colors.black38, shape: BoxShape.circle),
-                child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 18),
+                child: const Icon(PhosphorIconsBold.arrowLeft, color: Colors.white, size: 18),
               ),
               onPressed: () => context.go(AppRoutes.myReports),
             ),
@@ -115,7 +119,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                       Expanded(
                         child: Text(
                           report.title,
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, height: 1.3),
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: p.textPrimary, height: 1.3),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -126,22 +130,22 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                   if (report.address != null || report.city != null)
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined, size: 14, color: AppColors.textHint),
+                        Icon(PhosphorIconsRegular.mapPin, size: 14, color: p.textHint),
                         const SizedBox(width: 4),
                         Text(
                           report.address ?? report.city ?? '',
-                          style: const TextStyle(fontSize: 13, color: AppColors.textHint),
+                          style: TextStyle(fontSize: 13, color: p.textHint),
                         ),
                       ],
                     ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.schedule_rounded, size: 14, color: AppColors.textHint),
+                      Icon(PhosphorIconsRegular.clock, size: 14, color: p.textHint),
                       const SizedBox(width: 4),
                       Text(
                         DateFormat('d MMM y · HH:mm').format(report.createdAt.toLocal()),
-                        style: const TextStyle(fontSize: 13, color: AppColors.textHint),
+                        style: TextStyle(fontSize: 13, color: p.textHint),
                       ),
                     ],
                   ),
@@ -151,21 +155,18 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     onTap: () => Clipboard.setData(ClipboardData(text: report.trackingCode)),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryContainer,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
+                      decoration: AppShapes.card(color: p.infoSoft, radius: AppShapes.radiusPill),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.tag_rounded, size: 14, color: AppColors.primary),
+                          Icon(PhosphorIconsRegular.hash, size: 14, color: p.info),
                           const SizedBox(width: 6),
                           Text(
                             report.trackingCode,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary, letterSpacing: 1),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: p.info, letterSpacing: 1),
                           ),
                           const SizedBox(width: 8),
-                          const Icon(Icons.copy_rounded, size: 13, color: AppColors.primary),
+                          Icon(PhosphorIconsRegular.copySimple, size: 13, color: p.info),
                         ],
                       ),
                     ),
@@ -177,7 +178,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     const SizedBox(height: 8),
                     Text(
                       report.description!,
-                      style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, height: 1.6),
+                      style: TextStyle(fontSize: 14, color: p.textPrimary, height: 1.6),
                     ),
                   ],
 
@@ -216,7 +217,7 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     text,
-    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textHint, letterSpacing: 0.8),
+    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppPalette.of(context).textHint, letterSpacing: 0.8),
   );
 }
 
@@ -234,7 +235,8 @@ class _TimelineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? status.color : AppColors.divider;
+    final p = AppPalette.of(context);
+    final color = isActive ? status.color(p) : p.divider;
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,14 +250,14 @@ class _TimelineRow extends StatelessWidget {
                   height: 12,
                   margin: const EdgeInsets.only(top: 3),
                   decoration: BoxDecoration(
-                    color: isActive ? color : AppColors.surfaceVariant,
+                    color: isActive ? color : p.surfaceVariant,
                     shape: BoxShape.circle,
                     border: Border.all(color: color, width: 2),
                   ),
                 ),
                 if (!isLast)
                   Expanded(
-                    child: Container(width: 2, color: AppColors.divider, margin: const EdgeInsets.symmetric(vertical: 4)),
+                    child: Container(width: 2, color: p.divider, margin: const EdgeInsets.symmetric(vertical: 4)),
                   ),
               ],
             ),
@@ -269,9 +271,9 @@ class _TimelineRow extends StatelessWidget {
                 children: [
                   StatusBadge(status: status),
                   const SizedBox(height: 4),
-                  Text(note, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4)),
+                  Text(note, style: TextStyle(fontSize: 13, color: p.textSecondary, height: 1.4)),
                   const SizedBox(height: 2),
-                  Text(date, style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
+                  Text(date, style: TextStyle(fontSize: 11, color: p.textHint)),
                 ],
               ),
             ),
@@ -313,7 +315,7 @@ class _PhotoHeroState extends State<_PhotoHero> {
             headers: const {'ngrok-skip-browser-warning': '1'},
             errorBuilder: (_, __, ___) => const ColoredBox(
               color: Color(0xFFe8edf2),
-              child: Icon(Icons.broken_image_outlined, size: 40, color: Color(0xFF94A3B8)),
+              child: Icon(PhosphorIconsRegular.imageBroken, size: 40, color: Color(0xFF94A3B8)),
             ),
           ),
         ),

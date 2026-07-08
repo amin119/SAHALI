@@ -9,18 +9,33 @@ from app.config import get_settings
 settings = get_settings()
 log = structlog.get_logger()
 
-# Notification templates keyed by (event, language)
+# Notification templates keyed by (event, language). `event` is normalized
+# to uppercase before lookup, since callers pass both the uppercase literal
+# ("SUBMITTED") and the lowercase ReportStatus enum value (e.g. "resolved").
 _TEMPLATES: dict[tuple[str, str], dict] = {
     ("SUBMITTED", "en"): {"title": "Report received", "body": "Your report #{code} has been received."},
     ("SUBMITTED", "fr"): {"title": "Signalement reçu", "body": "Votre signalement #{code} a été reçu."},
     ("SUBMITTED", "ar"): {"title": "تم استلام البلاغ", "body": "تم استلام بلاغك #{code}."},
+    ("RECEIVED", "en"): {"title": "Report acknowledged", "body": "Report #{code} has been acknowledged by the responsible department."},
+    ("RECEIVED", "fr"): {"title": "Signalement pris en charge", "body": "Votre signalement #{code} a été pris en charge par le service concerné."},
+    ("RECEIVED", "ar"): {"title": "تم تولي البلاغ", "body": "تم تولي بلاغك #{code} من طرف المصلحة المعنية."},
+    ("UNDER_REVIEW", "en"): {"title": "Report under review", "body": "Report #{code} is currently being reviewed."},
+    ("UNDER_REVIEW", "fr"): {"title": "Signalement en cours d'examen", "body": "Votre signalement #{code} est en cours d'examen."},
+    ("UNDER_REVIEW", "ar"): {"title": "البلاغ قيد الدراسة", "body": "بلاغك #{code} قيد الدراسة حاليا."},
+    ("IN_PROGRESS", "en"): {"title": "Work in progress", "body": "Report #{code} is now being handled."},
+    ("IN_PROGRESS", "fr"): {"title": "Intervention en cours", "body": "Le traitement du signalement #{code} a commencé."},
+    ("IN_PROGRESS", "ar"): {"title": "جارٍ التعامل مع البلاغ", "body": "بدأ التعامل مع بلاغك #{code}."},
     ("RESOLVED", "en"): {"title": "Issue resolved", "body": "Report #{code} at {address} has been resolved."},
     ("RESOLVED", "fr"): {"title": "Problème résolu", "body": "Le signalement #{code} à {address} a été résolu."},
     ("RESOLVED", "ar"): {"title": "تم حل المشكلة", "body": "تم حل البلاغ #{code} في {address}."},
+    ("REJECTED", "en"): {"title": "Report rejected", "body": "Report #{code} could not be processed."},
+    ("REJECTED", "fr"): {"title": "Signalement rejeté", "body": "Votre signalement #{code} n'a pas pu être traité."},
+    ("REJECTED", "ar"): {"title": "تم رفض البلاغ", "body": "لم يتم قبول معالجة بلاغك #{code}."},
 }
 
 
 def _get_template(event: str, lang: str) -> dict:
+    event = event.upper()
     return _TEMPLATES.get((event, lang), _TEMPLATES.get((event, "en"), {"title": event, "body": ""}))
 
 

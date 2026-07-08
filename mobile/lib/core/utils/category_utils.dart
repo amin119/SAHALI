@@ -1,40 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../theme/app_colors.dart';
 
 IconData categoryIconData(String? iconName) {
   switch (iconName) {
     case 'construction':
-      return Icons.construction_rounded;
+      return PhosphorIconsDuotone.hammer;
     case 'light':
     case 'lightbulb':
-      return Icons.lightbulb_outline_rounded;
+      return PhosphorIconsDuotone.lightbulb;
     case 'delete_forever':
     case 'delete':
-      return Icons.delete_outline_rounded;
+      return PhosphorIconsDuotone.trash;
     case 'park':
     case 'eco':
     case 'nature':
-      return Icons.park_outlined;
+      return PhosphorIconsDuotone.tree;
     case 'water':
     case 'water_drop':
-      return Icons.water_drop_outlined;
+      return PhosphorIconsDuotone.drop;
     case 'drain':
     case 'plumbing':
-      return Icons.plumbing_outlined;
+      return PhosphorIconsDuotone.wrench;
     case 'directions_bus':
     case 'bus':
-      return Icons.directions_bus_outlined;
+      return PhosphorIconsDuotone.bus;
     case 'shield':
     case 'security':
-      return Icons.shield_outlined;
+      return PhosphorIconsDuotone.shieldCheck;
     case 'signpost':
-      return Icons.signpost_outlined;
+      return PhosphorIconsDuotone.signpost;
     case 'directions_walk':
-      return Icons.directions_walk_rounded;
+      return PhosphorIconsDuotone.personSimpleWalk;
     case 'warning':
     case 'report':
     default:
-      return Icons.report_problem_outlined;
+      return PhosphorIconsDuotone.warningCircle;
   }
 }
 

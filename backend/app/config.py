@@ -18,6 +18,8 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql://citizen_alert:password@localhost:5432/citizen_alert_db"
+    DB_POOL_SIZE: int = 2
+    DB_MAX_OVERFLOW: int = 4
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"

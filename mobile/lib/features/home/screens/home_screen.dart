@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_shapes.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/notifications/providers/notifications_provider.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/services/local_notification_service.dart';
 import '../../../core/services/sync_service.dart';
 import '../../../shared/widgets/sahali_logo.dart';
 
@@ -31,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen>
       final auth = context.read<AuthProvider>();
       if (auth.isLoggedIn) {
         context.read<NotificationsProvider>().load();
+        LocalNotificationService.instance.requestPermissionIfNeeded();
       }
     });
     _pulseCtrl = AnimationController(
@@ -65,13 +69,12 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: _appBar(context, l10n),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             // ── Community / Tunisia stats ───────────────────────────────
             _CommunityCard(l10n: l10n),
             // ── Offline queue banner ────────────────────────────────────
@@ -96,21 +99,22 @@ class _HomeScreenState extends State<HomeScreen>
   PreferredSizeWidget _appBar(
       BuildContext context, AppLocalizations l10n) {
     final unread = context.watch<NotificationsProvider>().unreadCount;
+    final p = AppPalette.of(context);
     return AppBar(
       automaticallyImplyLeading: false,
       elevation: 0,
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       title: Row(
-        children: const [
-          SahaliLogo(size: 36),
-          SizedBox(width: 10),
+        children: [
+          const SahaliLogo(size: 36),
+          const SizedBox(width: 10),
           Text(
             'سهلي',
             style: TextStyle(
               fontSize: 21,
               fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
+              color: p.ink,
             ),
           ),
         ],
@@ -119,27 +123,26 @@ class _HomeScreenState extends State<HomeScreen>
         Stack(
           alignment: Alignment.center,
           children: [
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined,
-                  color: AppColors.textPrimary),
-              onPressed: () => context.go(AppRoutes.notifications),
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              decoration: AppShapes.card(color: Colors.white.withValues(alpha: 0.55), radius: AppShapes.radiusMd),
+              child: IconButton(
+                icon: PhosphorIcon(PhosphorIconsDuotone.bell, color: p.ink),
+                onPressed: () => context.go(AppRoutes.notifications),
+              ),
             ),
             if (unread > 0)
               Positioned(
-                top: 10,
-                right: 10,
+                top: 6,
+                right: 14,
                 child: Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFF4444),
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: BoxDecoration(color: p.urgent, shape: BoxShape.circle),
                 ),
               ),
           ],
         ),
-        const SizedBox(width: 4),
       ],
     );
   }
@@ -202,18 +205,19 @@ class _CommunityCardState extends State<_CommunityCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = widget.l10n;
+    final p = AppPalette.of(context);
     final resolvedPct = _total > 0 ? _resolved / _total : 0.0;
     final resolvedPctStr = _total > 0 ? ' (${(_resolved * 100 ~/ _total)}%)' : '';
 
     return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.primaryContainer, width: 1.5),
-        boxShadow: [
+      padding: const EdgeInsets.all(20),
+      decoration: AppShapes.card(
+        color: p.surface,
+        radius: AppShapes.radiusXl,
+        borderColor: p.divider,
+        shadows: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.06),
+            color: p.ink.withValues(alpha: 0.05),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -225,23 +229,28 @@ class _CommunityCardState extends State<_CommunityCard> {
           // ── Header ─────────────────────────────────────────────────────
           Row(
             children: [
-              const Text('🇹🇳', style: TextStyle(fontSize: 22)),
-              const SizedBox(width: 10),
+              Container(
+                width: 38,
+                height: 38,
+                decoration: AppShapes.card(color: p.infoSoft, radius: AppShapes.radiusSm),
+                child: PhosphorIcon(PhosphorIconsDuotone.chartLineUp, color: p.info, size: 20),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       l10n.communityTitle,
-                      style: const TextStyle(
-                        fontSize: 13,
+                      style: TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: p.ink,
                       ),
                     ),
                     Text(
                       l10n.communitySub,
-                      style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+                      style: TextStyle(fontSize: 11, color: p.textHint),
                     ),
                   ],
                 ),
@@ -250,7 +259,7 @@ class _CommunityCardState extends State<_CommunityCard> {
             ],
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
 
           // ── Big number ──────────────────────────────────────────────────
           Row(
@@ -259,15 +268,15 @@ class _CommunityCardState extends State<_CommunityCard> {
               _loaded
                   ? Text(
                       _fmt(_total),
-                      style: const TextStyle(
-                        fontSize: 44,
+                      style: TextStyle(
+                        fontSize: 40,
                         fontWeight: FontWeight.w900,
-                        color: AppColors.primary,
+                        color: p.ink,
                         height: 1.0,
                       ),
                     )
                   : const SizedBox(
-                      width: 80, height: 44,
+                      width: 80, height: 40,
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: SizedBox(width: 20, height: 20,
@@ -279,41 +288,52 @@ class _CommunityCardState extends State<_CommunityCard> {
                 padding: const EdgeInsets.only(bottom: 5),
                 child: Text(
                   l10n.reportsSuffix,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
+                    color: p.inkSoft,
                   ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           // ── Progress bar ─────────────────────────────────────────────────
           ClipRRect(
             borderRadius: BorderRadius.circular(100),
-            child: LinearProgressIndicator(
-              value: resolvedPct,
-              backgroundColor: AppColors.divider,
-              valueColor: const AlwaysStoppedAnimation(AppColors.success),
-              minHeight: 8,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: resolvedPct),
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.easeOutCubic,
+              builder: (_, value, _) => LinearProgressIndicator(
+                value: value,
+                backgroundColor: p.divider,
+                valueColor: AlwaysStoppedAnimation(p.safe),
+                minHeight: 6,
+              ),
             ),
           ),
 
-          const SizedBox(height: 7),
+          const SizedBox(height: 14),
 
           Row(
             children: [
-              _DotLabel(
-                color: AppColors.success,
-                text: '${_fmt(_resolved)} ${l10n.resolvedLabel2}$resolvedPctStr',
+              Expanded(
+                child: _StatPill(
+                  color: p.safe,
+                  softColor: p.safeSoft,
+                  text: '${_fmt(_resolved)} ${l10n.resolvedLabel2}$resolvedPctStr',
+                ),
               ),
-              const Spacer(),
-              _DotLabel(
-                color: AppColors.statusInProgress,
-                text: '${_fmt(_active)} ${l10n.activeLabel2}',
+              const SizedBox(width: 8),
+              Expanded(
+                child: _StatPill(
+                  color: p.info,
+                  softColor: p.infoSoft,
+                  text: '${_fmt(_active)} ${l10n.activeLabel2}',
+                ),
               ),
             ],
           ),
@@ -334,6 +354,7 @@ class _QueueBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sync = context.watch<SyncService>();
+    final p = AppPalette.of(context);
     if (!sync.hasPending) return const SizedBox.shrink();
 
     return GestureDetector(
@@ -341,31 +362,23 @@ class _QueueBanner extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(top: 12),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFF3CD),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFFFD700), width: 1),
-        ),
+        decoration: AppShapes.card(color: p.infoSoft, radius: AppShapes.radiusMd),
         child: Row(
           children: [
-            const Icon(Icons.cloud_upload_outlined, size: 18, color: Color(0xFF856404)),
+            PhosphorIcon(PhosphorIconsDuotone.cloudArrowUp, size: 18, color: p.info),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 l10n.pendingReportsBanner(sync.pendingCount),
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF856404),
-                ),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: p.info),
               ),
             ),
             Text(
               l10n.syncNow,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF856404),
+                color: p.info,
                 decoration: TextDecoration.underline,
               ),
             ),
@@ -407,12 +420,10 @@ class _LiveBadgeState extends State<_LiveBadge>
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: AppColors.successContainer,
-        borderRadius: BorderRadius.circular(100),
-      ),
+      decoration: AppShapes.card(color: p.urgentSoft, radius: AppShapes.radiusPill),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -421,8 +432,8 @@ class _LiveBadgeState extends State<_LiveBadge>
             child: Container(
               width: 6,
               height: 6,
-              decoration: const BoxDecoration(
-                color: AppColors.success,
+              decoration: BoxDecoration(
+                color: p.urgent,
                 shape: BoxShape.circle,
               ),
             ),
@@ -430,10 +441,10 @@ class _LiveBadgeState extends State<_LiveBadge>
           const SizedBox(width: 5),
           Text(
             widget.label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: AppColors.success,
+              color: p.urgent,
             ),
           ),
         ],
@@ -442,31 +453,39 @@ class _LiveBadgeState extends State<_LiveBadge>
   }
 }
 
-class _DotLabel extends StatelessWidget {
-  const _DotLabel({required this.color, required this.text});
+class _StatPill extends StatelessWidget {
+  const _StatPill({required this.color, required this.softColor, required this.text});
   final Color color;
+  final Color softColor;
   final String text;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 5),
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: color,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: AppShapes.card(color: softColor, radius: AppShapes.radiusPill),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
-        ),
-      ],
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              text,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -491,18 +510,19 @@ class _CenteredFab extends StatelessWidget {
   final GestureTapUpCallback onTapUp;
   final VoidCallback onTapCancel;
 
-  static const _btnD = 100.0;
+  static const _btnD = 96.0;
   static const _maxMul = 2.0;
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Column(
       children: [
         Text(
           l10n.tapToReport,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
-            color: AppColors.textHint,
+            color: p.inkSoft,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -524,15 +544,15 @@ class _CenteredFab extends StatelessWidget {
                   // Outer sonar ring 2
                   _SonarRing(
                       diameter: _btnD * (1 + r2 * (_maxMul - 1)),
-                      opacity: (1 - r2) * 0.12),
+                      opacity: (1 - r2) * 0.14),
                   // Outer sonar ring 1
                   _SonarRing(
                       diameter: _btnD * (1 + r1 * (_maxMul - 1)),
-                      opacity: (1 - r1) * 0.12),
+                      opacity: (1 - r1) * 0.14),
                   // Glow halo (static)
                   _SonarRing(
                       diameter: _btnD + 26,
-                      opacity: 0.10),
+                      opacity: 0.12),
                   // Button (child keeps scale-transition alive)
                   child!,
                 ],
@@ -547,16 +567,12 @@ class _CenteredFab extends StatelessWidget {
                 child: Container(
                   width: _btnD,
                   height: _btnD,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF2B6CE6), AppColors.primary],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
+                  decoration: AppShapes.card(
+                    color: p.urgent,
+                    radius: AppShapes.radiusXl,
+                    shadows: [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.44),
+                        color: p.urgent.withValues(alpha: 0.44),
                         blurRadius: 30,
                         offset: const Offset(0, 10),
                       ),
@@ -565,7 +581,7 @@ class _CenteredFab extends StatelessWidget {
                   child: const Icon(
                     Icons.add_rounded,
                     color: Colors.white,
-                    size: 46,
+                    size: 42,
                   ),
                 ),
               ),
@@ -575,17 +591,17 @@ class _CenteredFab extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           l10n.reportNow,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: p.ink,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           l10n.reportNowSub,
-          style: const TextStyle(
-              fontSize: 13, color: AppColors.textSecondary),
+          style: TextStyle(
+              fontSize: 13, color: p.inkSoft),
         ),
       ],
     );
@@ -599,14 +615,14 @@ class _SonarRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Container(
       width: diameter,
       height: diameter,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primary.withValues(alpha: opacity),
+        color: p.urgent.withValues(alpha: opacity),
       ),
     );
   }
 }
-
