@@ -13,8 +13,15 @@ def _extract_address_city(data: dict) -> dict:
         addr.get("city") or addr.get("town") or addr.get("village")
         or addr.get("municipality") or addr.get("county")
     )
-    road = addr.get("road") or addr.get("pedestrian") or addr.get("neighbourhood")
-    street = " ".join(p for p in [addr.get("house_number"), road] if p) or None
+    # Prefer an actual named street; fall back through neighbourhood-level
+    # names since many areas outside major roads have no street mapped in OSM.
+    place = (
+        addr.get("road") or addr.get("pedestrian")
+        or addr.get("neighbourhood") or addr.get("suburb")
+        or addr.get("quarter") or addr.get("city_district")
+        or addr.get("hamlet")
+    )
+    street = " ".join(p for p in [addr.get("house_number"), place] if p) or None
     return {"address": street, "city": city}
 
 
