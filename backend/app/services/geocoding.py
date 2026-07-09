@@ -5,6 +5,7 @@ import structlog
 log = structlog.get_logger()
 
 NOMINATIM_REVERSE_URL = "https://nominatim.openstreetmap.org/reverse"
+NOMINATIM_SEARCH_URL = "https://nominatim.openstreetmap.org/search"
 USER_AGENT = "SahaliApp/1.0 (contact: support@sahali.tn)"
 
 
@@ -14,15 +15,12 @@ def _extract_address_city(data: dict) -> dict:
         addr.get("city") or addr.get("town") or addr.get("village")
         or addr.get("municipality") or addr.get("county")
     )
-    # Prefer an actual named street; fall back through neighbourhood-level
-    # names since many areas outside major roads have no street mapped in OSM.
-    place = (
-        addr.get("road") or addr.get("pedestrian")
-        or addr.get("neighbourhood") or addr.get("suburb")
-        or addr.get("quarter") or addr.get("city_district")
-        or addr.get("hamlet")
-    )
-    street = " ".join(p for p in [addr.get("house_number"), place] if p) or None
+    # Only trust an actual named road — OSM's suburb/neighbourhood polygons
+    # in Tunisia are often imprecise or missing, so substituting one in as a
+    # "street" is more likely to be wrong than to be helpful. City stays
+    # reliable, so leave address empty rather than guess.
+    road = addr.get("road") or addr.get("pedestrian")
+    street = " ".join(p for p in [addr.get("house_number"), road] if p) or None
     return {"address": street, "city": city}
 
 
@@ -61,3 +59,23 @@ async def reverse_geocode(lat: float, lng: float) -> dict | None:
         "address_ar": ar.get("address"),
         "city_ar": ar.get("city"),
     }
+
+
+async def forward_geocode(query: str) -> tuple[float, float] | None:
+    """Best-effort forward geocode of a place name (e.g. a municipality name)
+    to (lat, lng) via OSM Nominatim. Returns None on failure or no match."""
+    try:
+        async with httpx.AsyncClient(timeout=8) as client:
+            resp = await client.get(
+                NOMINATIM_SEARCH_URL,
+                params={"format": "jsonv2", "q": query, "limit": 1},
+                headers={"User-Agent": USER_AGENT},
+            )
+            resp.raise_for_status()
+            results = resp.json()
+            if not results:
+                return None
+            return float(results[0]["lat"]), float(results[0]["lon"])
+    except Exception as e:
+        log.warning("forward_geocode_failed", query=query, error=str(e))
+        return None

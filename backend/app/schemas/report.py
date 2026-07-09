@@ -108,6 +108,7 @@ class ReportOut(BaseModel):
     city: str | None
     address_ar: str | None = None
     city_ar: str | None = None
+    municipality_id: int | None = None
     ward: str | None
     lat: float | None = None
     lng: float | None = None

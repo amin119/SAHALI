@@ -23,6 +23,7 @@ from app.services.storage import generate_presigned_upload, upload_photo as stor
 from app.services.notification import notify_citizen, notify_staff
 from app.services.ai_client import analyze_report
 from app.services.geocoding import reverse_geocode
+from app.services.municipality_matching import closest_municipality_id
 from app.services.event_bus import publish_report_event
 from app.utils.retry import with_retries
 
@@ -141,6 +142,7 @@ def submit_report(
         location=point,
         address=body.address,
         city=body.city,
+        municipality_id=closest_municipality_id(db, body.lat, body.lng),
         ward=body.ward,
     )
     db.add(report)
@@ -221,6 +223,7 @@ def submit_anonymous_report(
         location=point,
         address=body.address,
         city=body.city,
+        municipality_id=closest_municipality_id(db, body.lat, body.lng),
         ward=body.ward,
     )
     db.add(report)

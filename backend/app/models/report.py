@@ -45,6 +45,7 @@ class Report(Base):
     address_ar     = Column(Text, nullable=True)
     city_ar        = Column(String(100), nullable=True)
     ward           = Column(String(100), nullable=True)
+    municipality_id = Column(ForeignKey("municipalities.id", ondelete="SET NULL"), nullable=True)
     assigned_to    = Column(ForeignKey("users.id"), nullable=True)
     analyzed_by    = Column(ForeignKey("users.id"), nullable=True)
     department_id  = Column(ForeignKey("departments.id"), nullable=True)
