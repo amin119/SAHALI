@@ -29,8 +29,16 @@ const PAGE_SIZE = 20
 
 type DetailTab = 'info' | 'history' | 'assignation' | 'rapport'
 
+function displayCity(r: Pick<Report, 'city' | 'city_ar'>, lang: string): string | null {
+  return lang === 'ar' ? (r.city_ar || r.city || null) : (r.city || r.city_ar || null)
+}
+
+function displayAddress(r: Pick<Report, 'address' | 'address_ar'>, lang: string): string | null {
+  return lang === 'ar' ? (r.address_ar || r.address || null) : (r.address || r.address_ar || null)
+}
+
 export default function Reports() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [reports, setReports] = useState<Report[]>([])
@@ -145,7 +153,9 @@ export default function Reports() {
           r.tracking_code.toLowerCase().includes(q) ||
           r.title.toLowerCase().includes(q) ||
           (r.city ?? '').toLowerCase().includes(q) ||
-          (r.address ?? '').toLowerCase().includes(q)
+          (r.address ?? '').toLowerCase().includes(q) ||
+          (r.city_ar ?? '').toLowerCase().includes(q) ||
+          (r.address_ar ?? '').toLowerCase().includes(q)
         )
       })
     : reports
@@ -336,8 +346,8 @@ export default function Reports() {
                       <td className="px-4 py-3.5 text-sm text-[#181c20] max-w-48 truncate">{r.title}</td>
                       <td className="px-4 py-3.5">
                         <div>
-                          <p className="text-sm text-[#181c20]">{r.city}</p>
-                          <p className="text-xs text-[#94A3B8] truncate max-w-32">{r.address}</p>
+                          <p className="text-sm text-[#181c20]">{displayCity(r, lang)}</p>
+                          <p className="text-xs text-[#94A3B8] truncate max-w-32">{displayAddress(r, lang)}</p>
                         </div>
                       </td>
                       <td className="px-4 py-3.5">
@@ -451,7 +461,7 @@ export default function Reports() {
                 </div>
                 <div>
                   <p className="text-[#94A3B8] text-xs mb-1">Adresse</p>
-                  <p className="text-sm text-[#181c20]">{[detailReport.address, detailReport.city].filter(Boolean).join(', ') || '—'}</p>
+                  <p className="text-sm text-[#181c20]">{[displayAddress(detailReport, lang), displayCity(detailReport, lang)].filter(Boolean).join(', ') || '—'}</p>
                 </div>
                 {detailReport.lat != null && detailReport.lng != null && (
                   <div>

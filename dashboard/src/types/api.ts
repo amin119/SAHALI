@@ -42,6 +42,8 @@ export interface Report {
   lng?: number
   address: string | null
   city: string | null
+  address_ar?: string | null
+  city_ar?: string | null
   ward?: string | null
   status: ReportStatus
   priority: Priority

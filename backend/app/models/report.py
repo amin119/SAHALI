@@ -42,6 +42,8 @@ class Report(Base):
     location       = Column(Geometry("POINT", srid=4326), nullable=False)
     address        = Column(Text, nullable=True)
     city           = Column(String(100), nullable=True)
+    address_ar     = Column(Text, nullable=True)
+    city_ar        = Column(String(100), nullable=True)
     ward           = Column(String(100), nullable=True)
     assigned_to    = Column(ForeignKey("users.id"), nullable=True)
     analyzed_by    = Column(ForeignKey("users.id"), nullable=True)

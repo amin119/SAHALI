@@ -299,13 +299,15 @@ def _run_ai_analysis(report_id, body: ReportCreate, lang: str):
 def _geocode_and_update(report_id, lat: float, lng: float):
     def _do():
         result = asyncio.run(reverse_geocode(lat, lng))
-        if result and (result.get("address") or result.get("city")):
+        if result and any(result.values()):
             from app.database import SessionLocal
             with SessionLocal() as sess:
                 r = sess.get(Report, report_id)
                 if r and not r.address and not r.city:
                     r.address = result.get("address")
                     r.city = result.get("city")
+                    r.address_ar = result.get("address_ar")
+                    r.city_ar = result.get("city_ar")
                     sess.commit()
     with_retries(_do, task_name="reverse_geocode")
 

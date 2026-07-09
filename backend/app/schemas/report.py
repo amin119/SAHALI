@@ -106,6 +106,8 @@ class ReportOut(BaseModel):
     photo_urls: list[str] = []
     address: str | None
     city: str | None
+    address_ar: str | None = None
+    city_ar: str | None = None
     ward: str | None
     lat: float | None = None
     lng: float | None = None

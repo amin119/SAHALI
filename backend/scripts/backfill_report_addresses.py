@@ -37,9 +37,11 @@ def main():
             point = to_shape(report.location)
             lat, lng = point.y, point.x
             result = asyncio.run(reverse_geocode(lat, lng))
-            if result and (result.get("address") or result.get("city")):
+            if result and any(result.values()):
                 report.address = result.get("address")
                 report.city = result.get("city")
+                report.address_ar = result.get("address_ar")
+                report.city_ar = result.get("city_ar")
                 db.commit()
                 updated += 1
                 print(f"  [{i}/{len(reports)}] {report.tracking_code}: "

@@ -40,7 +40,7 @@ function makeCircleIcon(color: string) {
 }
 
 export default function Map() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const mapRef = useRef<L.Map | null>(null)
   const markersRef = useRef<L.Marker[]>([])
   const mapContainerRef = useRef<HTMLDivElement>(null)
@@ -113,19 +113,20 @@ export default function Map() {
 
     toShow.forEach(r => {
       if (r.lat == null || r.lng == null) return
+      const city = lang === 'ar' ? (r.city_ar || r.city) : (r.city || r.city_ar)
       const marker = L.marker([r.lat, r.lng], { icon: makeCircleIcon(STATUS_COLOR[r.status]) })
       marker.bindPopup(`
         <div style="min-width:180px;font-family:sans-serif">
           <p style="font-size:10px;color:#94A3B8;margin:0 0 4px">${r.tracking_code}</p>
           <p style="font-size:13px;font-weight:600;color:#181c20;margin:0 0 6px;line-height:1.3">${r.title}</p>
-          ${r.city ? `<p style="font-size:11px;color:#64748B;margin:0">${r.city}</p>` : ''}
+          ${city ? `<p style="font-size:11px;color:#64748B;margin:0">${city}</p>` : ''}
         </div>
       `, { maxWidth: 220 })
       marker.on('click', () => setSelected(r))
       marker.addTo(map)
       markersRef.current.push(marker)
     })
-  }, [reports, filterStatus])
+  }, [reports, filterStatus, lang])
 
   const displayed = filterStatus === 'all' ? reports.filter(r => r.lat != null) : reports.filter(r => r.status === filterStatus && r.lat != null)
   const byStatus = stats?.by_status ?? {}
@@ -238,7 +239,9 @@ export default function Map() {
                 </button>
               </div>
               <p className="text-sm font-semibold text-[#181c20] mb-1 line-clamp-2">{selected.title}</p>
-              {selected.city && <p className="text-xs text-[#64748B] mb-2">{selected.city}</p>}
+              {(lang === 'ar' ? (selected.city_ar || selected.city) : (selected.city || selected.city_ar)) && (
+                <p className="text-xs text-[#64748B] mb-2">{lang === 'ar' ? (selected.city_ar || selected.city) : (selected.city || selected.city_ar)}</p>
+              )}
               <StatusBadge status={selected.status} />
             </div>
           )}
