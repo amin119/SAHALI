@@ -22,6 +22,7 @@ from app.utils.security import generate_tracking_code
 from app.services.storage import generate_presigned_upload, upload_photo as storage_upload_photo, get_photo as storage_get_photo
 from app.services.notification import notify_citizen, notify_staff
 from app.services.ai_client import analyze_report
+from app.services.geocoding import reverse_geocode
 from app.services.event_bus import publish_report_event
 from app.utils.retry import with_retries
 
@@ -158,6 +159,8 @@ def submit_report(
     background.add_task(_run_ai_analysis, report.id, body, current_user.preferred_language)
     background.add_task(_notify, report.id, "SUBMITTED")
     background.add_task(_notify_staff, report.id)
+    if not report.address and not report.city:
+        background.add_task(_geocode_and_update, report.id, body.lat, body.lng)
 
     publish_report_event("report_created", {
         "id": str(report.id),
@@ -235,6 +238,8 @@ def submit_anonymous_report(
 
     background.add_task(_run_ai_analysis, report.id, body, "fr")
     background.add_task(_notify_staff, report.id)
+    if not report.address and not report.city:
+        background.add_task(_geocode_and_update, report.id, body.lat, body.lng)
 
     publish_report_event("report_created", {
         "id": str(report.id),
@@ -289,6 +294,20 @@ def _run_ai_analysis(report_id, body: ReportCreate, lang: str):
                         r.priority = result["priority"]
                     sess.commit()
     with_retries(lambda: asyncio.run(_inner()), task_name="ai_analysis")
+
+
+def _geocode_and_update(report_id, lat: float, lng: float):
+    def _do():
+        result = asyncio.run(reverse_geocode(lat, lng))
+        if result and (result.get("address") or result.get("city")):
+            from app.database import SessionLocal
+            with SessionLocal() as sess:
+                r = sess.get(Report, report_id)
+                if r and not r.address and not r.city:
+                    r.address = result.get("address")
+                    r.city = result.get("city")
+                    sess.commit()
+    with_retries(_do, task_name="reverse_geocode")
 
 
 @router.get("", response_model=ReportListOut)
