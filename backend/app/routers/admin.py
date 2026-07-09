@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, text, or_
 from sqlalchemy.exc import IntegrityError
@@ -16,6 +16,7 @@ from app.schemas.municipality import (
     MunicipalityOut, MunicipalityListOut, MunicipalityCreate, MunicipalityUpdate,
 )
 from app.schemas.notification import BroadcastRequest
+from app.services import backfill as backfill_service
 from app.utils.deps import require_admin, require_supervisor, require_staff, get_current_user
 from app.utils.pagination import PaginationParams
 from app.utils.security import hash_password
@@ -365,3 +366,42 @@ def broadcast(
         db.add(Notification(user_id=u.id, title=body.title, body=body.body))
     db.commit()
     return {"message": f"Broadcast sent to {len(users)} users"}
+
+
+# ── One-off backfill triggers ────────────────────────────────────────────
+# Run these instead of the equivalent scripts/*.py when Shell access isn't
+# available (e.g. Render's free tier). Each runs in the background using the
+# server's own DB connection and outbound network access — progress and
+# completion show up in the service's Logs tab (structlog "backfill_*" events).
+
+def _run_backfill(fn):
+    from app.database import SessionLocal
+    with SessionLocal() as db:
+        fn(db)
+
+
+@router.post("/backfill/municipality-coordinates")
+def trigger_backfill_municipality_coordinates(
+    background: BackgroundTasks,
+    _: User = Depends(require_admin),
+):
+    background.add_task(_run_backfill, backfill_service.backfill_municipality_coordinates)
+    return {"message": "Started in background — this takes several minutes for ~335 municipalities. Watch the Logs tab for backfill_municipality_coordinates_* events."}
+
+
+@router.post("/backfill/report-municipality")
+def trigger_backfill_report_municipality(
+    background: BackgroundTasks,
+    _: User = Depends(require_admin),
+):
+    background.add_task(_run_backfill, backfill_service.backfill_report_municipality)
+    return {"message": "Started in background. Watch the Logs tab for backfill_report_municipality_* events."}
+
+
+@router.post("/backfill/report-addresses")
+def trigger_backfill_report_addresses(
+    background: BackgroundTasks,
+    _: User = Depends(require_admin),
+):
+    background.add_task(_run_backfill, backfill_service.backfill_report_addresses)
+    return {"message": "Started in background. Watch the Logs tab for backfill_report_addresses_* events."}
