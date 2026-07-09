@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.category import Category
-from app.schemas.category import CategoryOut
-from app.utils.deps import require_staff
+from app.schemas.category import CategoryOut, CategoryUpdate
+from app.utils.deps import require_staff, require_supervisor
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -37,6 +37,26 @@ def toggle_category(
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
     cat.is_active = not cat.is_active
+    db.commit()
+    db.refresh(cat)
+    return cat
+
+
+@router.patch("/{category_id}", response_model=CategoryOut)
+def update_category(
+    category_id: int,
+    body: CategoryUpdate,
+    db: Session = Depends(get_db),
+    _=Depends(require_supervisor),
+):
+    """Supervisor/admin — update a category's SLA target (in hours)."""
+    cat = db.get(Category, category_id)
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    if body.sla_hours is not None:
+        if body.sla_hours <= 0:
+            raise HTTPException(status_code=400, detail="SLA hours must be positive")
+        cat.sla_hours = body.sla_hours
     db.commit()
     db.refresh(cat)
     return cat

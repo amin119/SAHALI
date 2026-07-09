@@ -18,3 +18,7 @@ class CategoryOut(BaseModel):
 
 
 CategoryOut.model_rebuild()
+
+
+class CategoryUpdate(BaseModel):
+    sla_hours: int | None = None
