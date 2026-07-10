@@ -29,7 +29,7 @@ class StaffUserCreate(BaseModel):
     email: EmailStr
     phone: str | None = None
     role: UserRole
-    municipality_id: int
+    municipality_id: int | None = None
     password: str
     preferred_language: str = "fr"
 

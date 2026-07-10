@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/api'
 import type { User, Report, UserListOut, Municipality, MunicipalityListOut } from '../types/api'
 import { useLang } from '../context/LangContext'
+import { useAuth } from '../context/AuthContext'
 
 const PAGE_SIZE = 20
 
@@ -44,6 +45,8 @@ const EMPTY_FORM: AddAgentForm = {
 
 export default function Teams() {
   const { t, locale } = useLang()
+  const { user } = useAuth()
+  const isSuperAdminUser = user?.role === 'admin' && user?.municipality_id == null
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [staff, setStaff] = useState<User[]>([])
   const [total, setTotal] = useState(0)
@@ -66,7 +69,7 @@ export default function Teams() {
   const [submitting, setSubmitting] = useState(false)
 
   const [editingAgent, setEditingAgent] = useState<User | null>(null)
-  const [editForm, setEditForm] = useState({ full_name: '', role: 'field_agent', municipality_id: '' })
+  const [editForm, setEditForm] = useState({ full_name: '', role: 'field_agent', municipality_id: '', promoteSuperAdmin: false })
   const [editError, setEditError] = useState<string | null>(null)
   const [savingEdit, setSavingEdit] = useState(false)
 
@@ -104,11 +107,14 @@ export default function Teams() {
 
   // Municipality list for the add/edit dropdowns — fetched once, large page
   // so it covers the full list regardless of the staff table's own paging.
+  // Only super-admins pick a municipality freely; municipal admins are
+  // locked to their own, so they don't need this cross-municipality list.
   useEffect(() => {
+    if (!isSuperAdminUser) return
     api.get<MunicipalityListOut>('/admin/municipalities', { page_size: 500 })
       .then(data => setMunicipalities(data.items ?? []))
       .catch(() => setMunicipalities([]))
-  }, [])
+  }, [isSuperAdminUser])
 
   // Reports (for the per-agent stats) — fetched once, independent of the
   // staff table's own pagination/search/role filter.
@@ -162,7 +168,8 @@ export default function Teams() {
   }, [selectedId])
 
   async function submitAdd() {
-    if (!form.full_name.trim() || !form.email.trim() || !form.password.trim() || !form.municipality_id) {
+    const municipalityRequired = !(isSuperAdminUser && form.role === 'admin')
+    if (!form.full_name.trim() || !form.email.trim() || !form.password.trim() || (municipalityRequired && !form.municipality_id)) {
       setFormError(t('required_fields_err'))
       return
     }
@@ -194,6 +201,7 @@ export default function Teams() {
       full_name: user.full_name,
       role: user.role,
       municipality_id: user.municipality_id != null ? String(user.municipality_id) : '',
+      promoteSuperAdmin: false,
     })
     setEditError(null)
   }
@@ -207,7 +215,9 @@ export default function Teams() {
       await api.patch(`/admin/users/${editingAgent.id}`, {
         full_name: editForm.full_name.trim(),
         role: editForm.role,
-        municipality_id: editForm.municipality_id ? parseInt(editForm.municipality_id) : undefined,
+        municipality_id: editForm.promoteSuperAdmin
+          ? null
+          : (editForm.municipality_id ? parseInt(editForm.municipality_id) : undefined),
       })
       setEditingAgent(null)
       fetchStaff()
@@ -252,7 +262,7 @@ export default function Teams() {
     { value: 'field_agent', label: t('role_field_agent') },
     { value: 'analyst',     label: t('role_analyst') },
     { value: 'supervisor',  label: t('role_supervisor') },
-    { value: 'admin',       label: t('role_admin') },
+    ...(isSuperAdminUser ? [{ value: 'admin', label: t('role_admin') }] : []),
   ]
 
   const listHeaders = [t('col_agent'), t('col_role'), t('col_status'), t('stat_assigned'), t('stat_resolved_n'), t('performance'), 'Email', t('col_actions')]
@@ -278,7 +288,14 @@ export default function Teams() {
             ))}
           </div>
           <button
-            onClick={() => { setShowAdd(true); setFormError(null); setForm(EMPTY_FORM) }}
+            onClick={() => {
+              setShowAdd(true)
+              setFormError(null)
+              setForm({
+                ...EMPTY_FORM,
+                municipality_id: !isSuperAdminUser && user?.municipality_id != null ? String(user.municipality_id) : '',
+              })
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-[#0038AF] text-white rounded-xl text-sm font-semibold shadow-md hover:opacity-90 transition-opacity">
             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>person_add</span>
             {t('btn_add_agent')}
@@ -653,14 +670,21 @@ export default function Teams() {
                     {roleOptions.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-1.5">{t('lbl_municipality_f')}</label>
-                  <select value={form.municipality_id} onChange={e => setForm(f => ({ ...f, municipality_id: e.target.value }))}
-                    className="w-full bg-[#f7f9fe] border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0038AF]/20 focus:border-[#0038AF]">
-                    <option value="">{t('select_option')}</option>
-                    {municipalities.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                  </select>
-                </div>
+                {!(isSuperAdminUser && form.role === 'admin') && (
+                  <div>
+                    <label className="block text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-1.5">{t('lbl_municipality_f')}</label>
+                    {isSuperAdminUser ? (
+                      <select value={form.municipality_id} onChange={e => setForm(f => ({ ...f, municipality_id: e.target.value }))}
+                        className="w-full bg-[#f7f9fe] border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0038AF]/20 focus:border-[#0038AF]">
+                        <option value="">{t('select_option')}</option>
+                        {municipalities.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                      </select>
+                    ) : (
+                      <input disabled value={t('muni_locked_own')}
+                        className="w-full bg-[#f1f4f9] border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm outline-none text-[#94A3B8] cursor-not-allowed" />
+                    )}
+                  </div>
+                )}
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-1.5">{t('lbl_password_f')}</label>
                   <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
@@ -717,15 +741,29 @@ export default function Teams() {
                     {roleOptions.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-1.5">{t('lbl_municipality_f')}</label>
-                  <select value={editForm.municipality_id} onChange={e => setEditForm(f => ({ ...f, municipality_id: e.target.value }))}
-                    className="w-full bg-[#f7f9fe] border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0038AF]/20 focus:border-[#0038AF]">
-                    <option value="">{t('select_option')}</option>
-                    {municipalities.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                  </select>
-                </div>
+                {!editForm.promoteSuperAdmin && (
+                  <div>
+                    <label className="block text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-1.5">{t('lbl_municipality_f')}</label>
+                    {isSuperAdminUser ? (
+                      <select value={editForm.municipality_id} onChange={e => setEditForm(f => ({ ...f, municipality_id: e.target.value }))}
+                        className="w-full bg-[#f7f9fe] border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0038AF]/20 focus:border-[#0038AF]">
+                        <option value="">{t('select_option')}</option>
+                        {municipalities.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                      </select>
+                    ) : (
+                      <input disabled value={t('muni_locked_own')}
+                        className="w-full bg-[#f1f4f9] border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm outline-none text-[#94A3B8] cursor-not-allowed" />
+                    )}
+                  </div>
+                )}
               </div>
+              {isSuperAdminUser && editForm.role === 'admin' && (
+                <label className="flex items-center gap-2 text-sm text-[#181c20] cursor-pointer">
+                  <input type="checkbox" checked={editForm.promoteSuperAdmin}
+                    onChange={e => setEditForm(f => ({ ...f, promoteSuperAdmin: e.target.checked }))} />
+                  {t('promote_super_admin')}
+                </label>
+              )}
             </div>
             <div className="px-6 pb-6 flex gap-3">
               <button onClick={() => setEditingAgent(null)}

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.category import Category
 from app.schemas.category import CategoryOut, CategoryUpdate
-from app.utils.deps import require_staff, require_supervisor
+from app.utils.deps import require_staff, require_super_admin
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -30,9 +30,11 @@ def list_all_categories(db: Session = Depends(get_db), _=Depends(require_staff))
 def toggle_category(
     category_id: int,
     db: Session = Depends(get_db),
-    _=Depends(require_staff),
+    _=Depends(require_super_admin),
 ):
-    """Staff-only — flip is_active on a root or child category."""
+    """Super-admin-only — flip is_active on a root or child category.
+    This is shared, platform-wide taxonomy, so a municipal admin toggling it
+    would silently affect every other municipality too."""
     cat = db.get(Category, category_id)
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
@@ -47,9 +49,10 @@ def update_category(
     category_id: int,
     body: CategoryUpdate,
     db: Session = Depends(get_db),
-    _=Depends(require_supervisor),
+    _=Depends(require_super_admin),
 ):
-    """Supervisor/admin — update a category's SLA target (in hours)."""
+    """Super-admin-only — update a category's SLA target (in hours).
+    Shared, platform-wide config — see toggle_category's docstring."""
     cat = db.get(Category, category_id)
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
