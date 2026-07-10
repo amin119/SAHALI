@@ -24,7 +24,10 @@ import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/help_support_screen.dart';
 import '../../features/profile/screens/privacy_policy_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/agent/screens/agent_missions_screen.dart';
+import '../../features/agent/screens/agent_mission_detail_screen.dart';
 import '../../shared/widgets/main_shell.dart';
+import '../../shared/widgets/agent_shell.dart';
 
 class AppRoutes {
   static const splash = '/';
@@ -51,6 +54,12 @@ class AppRoutes {
   static const profile = '/profile';
   static const helpSupport = '/profile/help';
   static const privacyPolicy = '/profile/privacy';
+
+  // ── Field-agent shell ──────────────────────────────────────────────
+  static const agentMissions = '/agent/missions';
+  static const agentMissionDetail = '/agent/missions/:id';
+  static const agentNotifications = '/agent/notifications';
+  static const agentProfile = '/agent/profile';
 }
 
 int _shellIndex(GoRouterState state) {
@@ -61,12 +70,48 @@ int _shellIndex(GoRouterState state) {
   return 0;
 }
 
+int _agentShellIndex(GoRouterState state) {
+  final p = state.uri.path;
+  if (p.startsWith(AppRoutes.agentNotifications)) return 1;
+  if (p.startsWith(AppRoutes.agentProfile)) return 2;
+  return 0; // agentMissions and its detail sub-route
+}
+
+// Routes only a citizen should reach — the report wizard, its detail screen,
+// "my reports", home, and emergency. Anything under /report/ is covered by
+// the prefix check, which is why the new agent detail route deliberately
+// lives under /agent/missions/ instead.
+bool _isCitizenOnlyRoute(String path) =>
+    path == AppRoutes.home ||
+    path.startsWith(AppRoutes.myReports) ||
+    path.startsWith('/report/') ||
+    path == AppRoutes.emergency;
+
+bool _isAgentOnlyRoute(String path) => path.startsWith('/agent/');
+
 GoRouter buildRouter(AuthProvider auth) => GoRouter(
   refreshListenable: auth,
   initialLocation: AppRoutes.splash,
   redirect: (context, state) {
     final path = state.uri.path;
-    if (path == AppRoutes.login && auth.isLoggedIn) return AppRoutes.home;
+    final isAgent = auth.user?.isFieldAgent ?? false;
+
+    if (path == AppRoutes.login && auth.isLoggedIn) {
+      return isAgent ? AppRoutes.agentMissions : AppRoutes.home;
+    }
+    if (!auth.isLoggedIn) return null;
+
+    if (isAgent) {
+      if (_isCitizenOnlyRoute(path)) return AppRoutes.agentMissions;
+      // Shared screens reached via an old citizen-path reference (e.g. a
+      // notification bell icon still calling context.go(AppRoutes.profile))
+      // land on the agent-shelled alias instead, so the bottom nav stays
+      // correct rather than falling back to the citizen shell.
+      if (path == AppRoutes.profile) return AppRoutes.agentProfile;
+      if (path == AppRoutes.notifications) return AppRoutes.agentNotifications;
+    } else if (_isAgentOnlyRoute(path)) {
+      return AppRoutes.home;
+    }
     return null;
   },
   routes: [
@@ -120,6 +165,24 @@ GoRouter buildRouter(AuthProvider auth) => GoRouter(
         GoRoute(path: AppRoutes.myReports, builder: (_, s) => const MyReportsScreen()),
         GoRoute(path: AppRoutes.emergency, builder: (_, s) => const EmergencyScreen()),
         GoRoute(path: AppRoutes.profile,   builder: (_, s) => const ProfileScreen()),
+      ],
+    ),
+
+    // ── Field-agent shell — persistent floating nav, distinct tab set ──
+    ShellRoute(
+      builder: (context, state, child) => AgentShell(
+        currentIndex: _agentShellIndex(state),
+        child: child,
+      ),
+      routes: [
+        GoRoute(path: AppRoutes.agentMissions, builder: (_, s) => const AgentMissionsScreen()),
+        GoRoute(
+          path: AppRoutes.agentMissionDetail,
+          builder: (_, state) =>
+              AgentMissionDetailScreen(reportId: state.pathParameters['id']!),
+        ),
+        GoRoute(path: AppRoutes.agentNotifications, builder: (_, s) => const NotificationsScreen()),
+        GoRoute(path: AppRoutes.agentProfile,       builder: (_, s) => const ProfileScreen()),
       ],
     ),
   ],

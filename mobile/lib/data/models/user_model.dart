@@ -31,4 +31,5 @@ class UserModel {
       );
 
   bool get isCitizen => role == 'citizen';
+  bool get isFieldAgent => role == 'field_agent';
 }

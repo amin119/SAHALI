@@ -54,7 +54,12 @@ class _SplashScreenState extends State<SplashScreen>
     final auth = context.read<AuthProvider>();
     final isLoggedIn = await auth.tryAutoLogin();
     if (!mounted) return;
-    context.go(isLoggedIn ? AppRoutes.home : AppRoutes.onboarding);
+    if (!isLoggedIn) {
+      context.go(AppRoutes.onboarding);
+      return;
+    }
+    final isAgent = auth.user?.isFieldAgent ?? false;
+    context.go(isAgent ? AppRoutes.agentMissions : AppRoutes.home);
   }
 
   @override

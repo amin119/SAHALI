@@ -93,6 +93,28 @@ class ReportModel {
   /// All display-ready photo URLs for this report.
   List<String> get displayPhotoUrls => photoUrls.map(resolveUrl).toList();
 
+  ReportModel copyWith({List<StatusHistoryItem>? history}) => ReportModel(
+        id: id,
+        trackingCode: trackingCode,
+        categoryId: categoryId,
+        status: status,
+        priority: priority,
+        title: title,
+        description: description,
+        photoUrl: photoUrl,
+        thumbnailUrl: thumbnailUrl,
+        photoUrls: photoUrls,
+        address: address,
+        city: city,
+        lat: lat,
+        lng: lng,
+        isDuplicate: isDuplicate,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        resolvedAt: resolvedAt,
+        history: history ?? this.history,
+      );
+
   bool get isActive => ['submitted', 'received', 'under_review', 'in_progress']
       .contains(status);
   bool get isResolved => status == 'resolved';

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../../../core/network/api_client.dart';
 import '../../../data/models/report_model.dart';
@@ -87,7 +88,9 @@ class ReportsProvider extends ChangeNotifier {
     notifyListeners();
     try {
       await loadCategories();
-      _selectedReport = await _reportService.getReport(id);
+      final report = await _reportService.getReport(id);
+      final history = await _reportService.getHistory(id).catchError((_) => <StatusHistoryItem>[]);
+      _selectedReport = report.copyWith(history: history);
       _loadingDetail = false;
       notifyListeners();
     } catch (e) {
@@ -95,6 +98,40 @@ class ReportsProvider extends ChangeNotifier {
       _loadingDetail = false;
       notifyListeners();
     }
+  }
+
+  /// Pure upload, no local state to update.
+  Future<String> uploadPhoto(File file) => _reportService.uploadPhoto(file);
+
+  /// Advances/rejects a report's status, then refreshes [selectedReport]
+  /// (including its status history) in place. Returns false on failure,
+  /// leaving [error] populated for the caller to surface.
+  Future<bool> updateStatus(String id, String status, {String? note}) async {
+    try {
+      await _reportService.updateStatus(id, status, note: note);
+      await loadReport(id);
+      return true;
+    } catch (e) {
+      _error = dioMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Rethrows on failure so the resolve sheet's own retry/409-as-success
+  /// handling applies — this method deliberately doesn't touch local state.
+  Future<void> createResolutionReport(
+    String id, {
+    required String comment,
+    String? materials,
+    String? photoUrl,
+  }) {
+    return _reportService.createResolutionReport(
+      id,
+      comment: comment,
+      materials: materials,
+      photoUrl: photoUrl,
+    );
   }
 
   void clearError() {

@@ -137,6 +137,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final pass = _passCtrl.text;
     if (email.isEmpty || pass.isEmpty) return;
     final ok = await auth.loginWithPassword(email, pass);
-    if (ok && mounted) context.go(AppRoutes.home);
+    if (!ok || !context.mounted) return;
+    final isAgent = auth.user?.isFieldAgent ?? false;
+    context.go(isAgent ? AppRoutes.agentMissions : AppRoutes.home);
   }
 }
