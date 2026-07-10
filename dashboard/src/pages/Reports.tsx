@@ -460,7 +460,7 @@ export default function Reports() {
                   <p className="text-sm text-[#181c20]">{categories[detailReport.category_id]?.label_fr ?? `#${detailReport.category_id}`}</p>
                 </div>
                 <div>
-                  <p className="text-[#94A3B8] text-xs mb-1">Adresse</p>
+                  <p className="text-[#94A3B8] text-xs mb-1">Ville</p>
                   <p className="text-sm text-[#181c20]">{[displayAddress(detailReport, lang), displayCity(detailReport, lang)].filter(Boolean).join(', ') || '—'}</p>
                 </div>
                 {detailReport.lat != null && detailReport.lng != null && (
