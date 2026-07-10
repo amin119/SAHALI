@@ -360,6 +360,30 @@ class AppLocalizations {
   String get reportQueued => _t('reportQueued');
   String pendingReportsBanner(int n) => _t('pendingReportsBanner').replaceAll('{n}', '$n');
   String get syncNow => _t('syncNow');
+
+  // ── Field agent ───────────────────────────────────────────────────────────────
+  String get agentMissionsTitle => _t('agentMissionsTitle');
+  String get agentNoMissions => _t('agentNoMissions');
+  String get agentFilterToDo => _t('agentFilterToDo');
+  String get agentFilterDone => _t('agentFilterDone');
+  String get agentAdvanceToReview => _t('agentAdvanceToReview');
+  String get agentAdvanceToProgress => _t('agentAdvanceToProgress');
+  String get agentResolveCta => _t('agentResolveCta');
+  String get agentResolveTitle => _t('agentResolveTitle');
+  String get agentResolvePhotoLabel => _t('agentResolvePhotoLabel');
+  String get agentResolvePhotoRequired => _t('agentResolvePhotoRequired');
+  String get agentResolveCommentLabel => _t('agentResolveCommentLabel');
+  String get agentResolveCommentRequired => _t('agentResolveCommentRequired');
+  String get agentResolveMaterialsLabel => _t('agentResolveMaterialsLabel');
+  String get agentResolveSubmit => _t('agentResolveSubmit');
+  String get agentResolveSuccess => _t('agentResolveSuccess');
+  String get agentRejectCta => _t('agentRejectCta');
+  String get agentRejectTitle => _t('agentRejectTitle');
+  String get agentRejectReasonLabel => _t('agentRejectReasonLabel');
+  String get agentRejectReasonRequired => _t('agentRejectReasonRequired');
+  String get agentNoteOptionalLabel => _t('agentNoteOptionalLabel');
+  String get agentMissionClosed => _t('agentMissionClosed');
+  String get agentConfirm => _t('agentConfirm');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -662,6 +686,29 @@ const _en = <String, String>{
   'reportQueued': 'No connection — report saved, will send automatically.',
   'pendingReportsBanner': '{n} report(s) waiting to sync — tap to send now',
   'syncNow': 'Send now',
+
+  'agentMissionsTitle': 'My missions',
+  'agentNoMissions': 'No missions assigned',
+  'agentFilterToDo': 'To do',
+  'agentFilterDone': 'Done',
+  'agentAdvanceToReview': 'Move to review',
+  'agentAdvanceToProgress': 'Start intervention',
+  'agentResolveCta': 'Resolve report',
+  'agentResolveTitle': 'Resolve this report',
+  'agentResolvePhotoLabel': 'Proof photo',
+  'agentResolvePhotoRequired': 'A photo is required',
+  'agentResolveCommentLabel': 'Comment',
+  'agentResolveCommentRequired': 'A comment is required',
+  'agentResolveMaterialsLabel': 'Materials used (optional)',
+  'agentResolveSubmit': 'Confirm resolution',
+  'agentResolveSuccess': 'Report resolved!',
+  'agentRejectCta': 'Reject',
+  'agentRejectTitle': 'Reject this report',
+  'agentRejectReasonLabel': 'Reason for rejection',
+  'agentRejectReasonRequired': 'A reason is required',
+  'agentNoteOptionalLabel': 'Note (optional)',
+  'agentMissionClosed': 'This mission is closed',
+  'agentConfirm': 'Confirm',
 };
 
 const _fr = <String, String>{
@@ -960,6 +1007,29 @@ const _fr = <String, String>{
   'reportQueued': 'Pas de connexion — signalement sauvegardé, envoi automatique dès reconnexion.',
   'pendingReportsBanner': '{n} signalement(s) en attente — appuyez pour envoyer',
   'syncNow': 'Envoyer',
+
+  'agentMissionsTitle': 'Mes missions',
+  'agentNoMissions': 'Aucune mission assignée',
+  'agentFilterToDo': 'À traiter',
+  'agentFilterDone': 'Terminé',
+  'agentAdvanceToReview': 'Passer en examen',
+  'agentAdvanceToProgress': 'Démarrer l\'intervention',
+  'agentResolveCta': 'Résoudre le signalement',
+  'agentResolveTitle': 'Résoudre ce signalement',
+  'agentResolvePhotoLabel': 'Photo de preuve',
+  'agentResolvePhotoRequired': 'Une photo est requise',
+  'agentResolveCommentLabel': 'Commentaire',
+  'agentResolveCommentRequired': 'Un commentaire est requis',
+  'agentResolveMaterialsLabel': 'Matériel utilisé (optionnel)',
+  'agentResolveSubmit': 'Confirmer la résolution',
+  'agentResolveSuccess': 'Signalement résolu !',
+  'agentRejectCta': 'Rejeter',
+  'agentRejectTitle': 'Rejeter ce signalement',
+  'agentRejectReasonLabel': 'Motif du rejet',
+  'agentRejectReasonRequired': 'Un motif est requis',
+  'agentNoteOptionalLabel': 'Note (optionnel)',
+  'agentMissionClosed': 'Cette mission est clôturée',
+  'agentConfirm': 'Confirmer',
 };
 
 const _ar = <String, String>{
@@ -1258,6 +1328,29 @@ const _ar = <String, String>{
   'reportQueued': 'لا يوجد اتصال — تم حفظ التقرير، سيُرسل تلقائياً عند الاتصال.',
   'pendingReportsBanner': '{n} تقرير(ات) في انتظار الإرسال — اضغط للإرسال الآن',
   'syncNow': 'إرسال الآن',
+
+  'agentMissionsTitle': 'مهامي',
+  'agentNoMissions': 'لا توجد مهام مسندة',
+  'agentFilterToDo': 'قيد المعالجة',
+  'agentFilterDone': 'منتهية',
+  'agentAdvanceToReview': 'الانتقال إلى المراجعة',
+  'agentAdvanceToProgress': 'بدء التدخل',
+  'agentResolveCta': 'حل البلاغ',
+  'agentResolveTitle': 'حل هذا البلاغ',
+  'agentResolvePhotoLabel': 'صورة إثبات',
+  'agentResolvePhotoRequired': 'الصورة مطلوبة',
+  'agentResolveCommentLabel': 'تعليق',
+  'agentResolveCommentRequired': 'التعليق مطلوب',
+  'agentResolveMaterialsLabel': 'المواد المستخدمة (اختياري)',
+  'agentResolveSubmit': 'تأكيد الحل',
+  'agentResolveSuccess': 'تم حل البلاغ!',
+  'agentRejectCta': 'رفض',
+  'agentRejectTitle': 'رفض هذا البلاغ',
+  'agentRejectReasonLabel': 'سبب الرفض',
+  'agentRejectReasonRequired': 'السبب مطلوب',
+  'agentNoteOptionalLabel': 'ملاحظة (اختياري)',
+  'agentMissionClosed': 'هذه المهمة مغلقة',
+  'agentConfirm': 'تأكيد',
 };
 
 class _AppLocalizationsDelegate

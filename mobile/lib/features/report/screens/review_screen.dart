@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +13,7 @@ import '../../../features/auth/providers/auth_provider.dart';
 import '../../../shared/widgets/step_bar.dart';
 import '../../../shared/widgets/sa_button.dart';
 import '../../../shared/widgets/sa_bottom_sheet.dart';
+import '../providers/reports_provider.dart';
 import '../viewmodels/report_form_provider.dart';
 
 class ReviewScreen extends StatefulWidget {
@@ -46,24 +46,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
       if (form.photos.isNotEmpty) {
         setState(() => _uploadingPhoto = true);
+        final reports = context.read<ReportsProvider>();
         for (final file in form.photos) {
           try {
-            final filename = file.path.split(Platform.pathSeparator).last;
-            final ext = filename.split('.').last.toLowerCase();
-            final contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
-            final formData = FormData.fromMap({
-              'file': await MultipartFile.fromFile(
-                file.path,
-                filename: filename,
-                contentType: DioMediaType.parse(contentType),
-              ),
-            });
-            final res = await ApiClient.instance.dio.post(
-              '/reports/photo',
-              data: formData,
-              options: Options(sendTimeout: const Duration(seconds: 60)),
-            );
-            uploadedUrls.add(res.data['photo_url'] as String);
+            uploadedUrls.add(await reports.uploadPhoto(file));
           } catch (_) {
             // Storage not configured on Render — skip photo
           }

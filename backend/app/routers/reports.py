@@ -40,11 +40,26 @@ _TRANSITIONS: dict[ReportStatus, list[ReportStatus]] = {
 }
 
 
-def _check_municipality_access(report: Report, current_user: User) -> None:
-    """Municipality-scoped staff (admin/supervisor/analyst/field_agent with a
-    municipality_id set) can only reach reports belonging to their own
-    municipality. 404, not 403, so existence in another municipality isn't
-    revealed. No-op for super-admins (municipality_id is None)."""
+def _check_municipality_access(report: Report, current_user: User, db: Session) -> None:
+    """Municipality-scoped admin/supervisor/analyst can only reach reports
+    belonging to their own municipality. 404, not 403, so existence in
+    another municipality isn't revealed. No-op for super-admins
+    (municipality_id is None).
+
+    Field agents are NOT municipality-scoped here — their real access grant
+    is an Assignment row, which can legitimately exist even when the
+    report's own municipality_id hasn't been backfilled yet (or, in principle,
+    differs from the agent's). Comparing municipality_id for them would
+    wrongly 404 a report they're genuinely assigned to."""
+    if current_user.role == UserRole.field_agent:
+        assigned = db.query(Assignment).filter(
+            Assignment.report_id == report.id,
+            Assignment.agent_id == current_user.id,
+            Assignment.is_active == True,
+        ).first()
+        if not assigned:
+            raise HTTPException(status_code=404, detail="Report not found")
+        return
     if current_user.municipality_id is not None and report.municipality_id != current_user.municipality_id:
         raise HTTPException(status_code=404, detail="Report not found")
 
@@ -418,7 +433,7 @@ def get_report(
         raise HTTPException(status_code=404, detail="Report not found")
     if current_user.role == UserRole.citizen and report.citizen_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
-    _check_municipality_access(report, current_user)
+    _check_municipality_access(report, current_user, db)
     return _report_to_out(report)
 
 
@@ -432,7 +447,7 @@ def update_status(
     report = db.get(Report, report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
-    _check_municipality_access(report, current_user)
+    _check_municipality_access(report, current_user, db)
 
     allowed = _TRANSITIONS.get(report.status, [])
     if body.status not in allowed and current_user.role != UserRole.admin:
@@ -486,7 +501,7 @@ def assign_report(
     report = db.get(Report, report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
-    _check_municipality_access(report, current_user)
+    _check_municipality_access(report, current_user, db)
 
     if not body.agent_ids:
         raise HTTPException(status_code=400, detail="At least one agent_id is required")
@@ -546,7 +561,7 @@ def get_assignments(
     report = db.get(Report, report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
-    _check_municipality_access(report, current_user)
+    _check_municipality_access(report, current_user, db)
     assignments = (
         db.query(Assignment)
         .options(joinedload(Assignment.agent), joinedload(Assignment.assigner))
@@ -567,7 +582,7 @@ def create_resolution_report(
     report = db.get(Report, report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
-    _check_municipality_access(report, current_user)
+    _check_municipality_access(report, current_user, db)
     if report.status != ReportStatus.RESOLVED:
         raise HTTPException(status_code=400, detail="Resolution report requires status RESOLVED")
     existing = db.query(ResolutionReport).filter(ResolutionReport.report_id == report.id).first()
@@ -597,7 +612,7 @@ def get_resolution_report(
     report = db.get(Report, report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
-    _check_municipality_access(report, current_user)
+    _check_municipality_access(report, current_user, db)
     rr = db.query(ResolutionReport).filter(ResolutionReport.report_id == report.id).first()
     if not rr:
         raise HTTPException(status_code=404, detail="No resolution report for this report")
@@ -615,7 +630,7 @@ def get_status_history(
         raise HTTPException(status_code=404, detail="Report not found")
     if current_user.role == UserRole.citizen and report.citizen_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
-    _check_municipality_access(report, current_user)
+    _check_municipality_access(report, current_user, db)
     history = (
         db.query(ReportStatusHistory)
         .options(joinedload(ReportStatusHistory.changed_by_user))
