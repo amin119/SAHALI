@@ -101,7 +101,7 @@ class ReportsProvider extends ChangeNotifier {
   }
 
   /// Pure upload, no local state to update.
-  Future<String> uploadPhoto(File file) => _reportService.uploadPhoto(file);
+  Future<String> uploadFile(File file) => _reportService.uploadFile(file);
 
   /// Advances/rejects a report's status, then refreshes [selectedReport]
   /// (including its status history) in place. Returns false on failure,
@@ -124,13 +124,17 @@ class ReportsProvider extends ChangeNotifier {
     String id, {
     required String comment,
     String? materials,
-    String? photoUrl,
+    List<String> photoUrls = const [],
+    String? videoUrl,
+    String? voiceNoteUrl,
   }) {
     return _reportService.createResolutionReport(
       id,
       comment: comment,
       materials: materials,
-      photoUrl: photoUrl,
+      photoUrls: photoUrls,
+      videoUrl: videoUrl,
+      voiceNoteUrl: voiceNoteUrl,
     );
   }
 

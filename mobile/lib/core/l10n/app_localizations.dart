@@ -384,6 +384,12 @@ class AppLocalizations {
   String get agentNoteOptionalLabel => _t('agentNoteOptionalLabel');
   String get agentMissionClosed => _t('agentMissionClosed');
   String get agentConfirm => _t('agentConfirm');
+  String get agentResolveVideoLabel => _t('agentResolveVideoLabel');
+  String get agentResolveVoiceLabel => _t('agentResolveVoiceLabel');
+  String get agentRecordVoice => _t('agentRecordVoice');
+  String get agentStopRecording => _t('agentStopRecording');
+  String get agentAddPhoto => _t('agentAddPhoto');
+  String get agentVisualProofRequired => _t('agentVisualProofRequired');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -709,6 +715,12 @@ const _en = <String, String>{
   'agentNoteOptionalLabel': 'Note (optional)',
   'agentMissionClosed': 'This mission is closed',
   'agentConfirm': 'Confirm',
+  'agentResolveVideoLabel': 'Video (optional)',
+  'agentResolveVoiceLabel': 'Voice note (optional)',
+  'agentRecordVoice': 'Record',
+  'agentStopRecording': 'Stop recording',
+  'agentAddPhoto': 'Add photo',
+  'agentVisualProofRequired': 'At least one photo or a video is required',
 };
 
 const _fr = <String, String>{
@@ -1030,6 +1042,12 @@ const _fr = <String, String>{
   'agentNoteOptionalLabel': 'Note (optionnel)',
   'agentMissionClosed': 'Cette mission est clôturée',
   'agentConfirm': 'Confirmer',
+  'agentResolveVideoLabel': 'Vidéo (optionnel)',
+  'agentResolveVoiceLabel': 'Note vocale (optionnel)',
+  'agentRecordVoice': 'Enregistrer',
+  'agentStopRecording': "Arrêter l'enregistrement",
+  'agentAddPhoto': 'Ajouter une photo',
+  'agentVisualProofRequired': "Au moins une photo ou une vidéo est requise",
 };
 
 const _ar = <String, String>{
@@ -1351,6 +1369,12 @@ const _ar = <String, String>{
   'agentNoteOptionalLabel': 'ملاحظة (اختياري)',
   'agentMissionClosed': 'هذه المهمة مغلقة',
   'agentConfirm': 'تأكيد',
+  'agentResolveVideoLabel': 'فيديو (اختياري)',
+  'agentResolveVoiceLabel': 'رسالة صوتية (اختياري)',
+  'agentRecordVoice': 'تسجيل',
+  'agentStopRecording': 'إيقاف التسجيل',
+  'agentAddPhoto': 'إضافة صورة',
+  'agentVisualProofRequired': 'مطلوب صورة واحدة على الأقل أو فيديو',
 };
 
 class _AppLocalizationsDelegate
