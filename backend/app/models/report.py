@@ -105,13 +105,16 @@ class ResolutionReport(Base):
     """Filled by the agent when closing a report as resolved."""
     __tablename__ = "resolution_reports"
 
-    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    report_id   = Column(ForeignKey("reports.id"), nullable=False, unique=True)
-    resolved_by = Column(ForeignKey("users.id"), nullable=False)
-    comment     = Column(Text, nullable=False)
-    materials   = Column(Text, nullable=True)
-    photo_url   = Column(Text, nullable=True)
-    created_at  = Column(DateTime(timezone=True), server_default=func.now())
+    id             = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    report_id      = Column(ForeignKey("reports.id"), nullable=False, unique=True)
+    resolved_by    = Column(ForeignKey("users.id"), nullable=False)
+    comment        = Column(Text, nullable=False)
+    materials      = Column(Text, nullable=True)
+    photo_url      = Column(Text, nullable=True)
+    photo_urls     = Column(JSONB, nullable=True, default=list)
+    video_url      = Column(Text, nullable=True)
+    voice_note_url = Column(Text, nullable=True)
+    created_at     = Column(DateTime(timezone=True), server_default=func.now())
 
     report   = relationship("Report", back_populates="resolution_report")
     resolver = relationship("User", foreign_keys=[resolved_by])

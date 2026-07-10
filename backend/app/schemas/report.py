@@ -79,6 +79,9 @@ class ResolutionReportCreate(BaseModel):
     comment: str
     materials: str | None = None
     photo_url: str | None = None
+    photo_urls: list[str] = []
+    video_url: str | None = None
+    voice_note_url: str | None = None
 
 
 class ResolutionReportOut(BaseModel):
@@ -86,6 +89,9 @@ class ResolutionReportOut(BaseModel):
     comment: str
     materials: str | None
     photo_url: str | None
+    photo_urls: list[str] = []
+    video_url: str | None = None
+    voice_note_url: str | None = None
     resolved_by_user: UserBrief
     created_at: datetime
 

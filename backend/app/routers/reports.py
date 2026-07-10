@@ -93,6 +93,9 @@ def _resolution_to_out(rr: ResolutionReport) -> ResolutionReportOut:
         comment=rr.comment,
         materials=rr.materials,
         photo_url=rr.photo_url,
+        photo_urls=rr.photo_urls or [],
+        video_url=rr.video_url,
+        voice_note_url=rr.voice_note_url,
         resolved_by_user=UserBrief(id=rr.resolver.id, full_name=rr.resolver.full_name, role=rr.resolver.role),
         created_at=rr.created_at,
     )
@@ -588,13 +591,18 @@ def create_resolution_report(
     existing = db.query(ResolutionReport).filter(ResolutionReport.report_id == report.id).first()
     if existing:
         raise HTTPException(status_code=409, detail="Resolution report already exists for this report")
+    if not body.photo_urls and not body.video_url:
+        raise HTTPException(status_code=400, detail="At least one photo or a video is required as proof")
 
     rr = ResolutionReport(
         report_id=report.id,
         resolved_by=current_user.id,
         comment=body.comment,
         materials=body.materials,
-        photo_url=body.photo_url,
+        photo_url=body.photo_urls[0] if body.photo_urls else body.photo_url,
+        photo_urls=body.photo_urls,
+        video_url=body.video_url,
+        voice_note_url=body.voice_note_url,
     )
     db.add(rr)
     db.commit()

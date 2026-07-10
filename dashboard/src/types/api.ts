@@ -77,6 +77,9 @@ export interface ResolutionReport {
   comment: string
   materials?: string
   photo_url?: string
+  photo_urls?: string[]
+  video_url?: string
+  voice_note_url?: string
   resolved_by_user: UserBrief
   created_at: string
 }

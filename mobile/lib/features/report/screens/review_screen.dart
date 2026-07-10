@@ -49,7 +49,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         final reports = context.read<ReportsProvider>();
         for (final file in form.photos) {
           try {
-            uploadedUrls.add(await reports.uploadPhoto(file));
+            uploadedUrls.add(await reports.uploadFile(file));
           } catch (_) {
             // Storage not configured on Render — skip photo
           }

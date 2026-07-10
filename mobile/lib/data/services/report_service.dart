@@ -51,12 +51,25 @@ class ReportService {
     return ReportModel.fromJson(res.data as Map<String, dynamic>);
   }
 
-  /// Uploads a single photo and returns its URL. Shared by the citizen
-  /// report wizard and the field-agent resolve flow.
-  Future<String> uploadPhoto(File file) async {
+  static const _contentTypeByExt = {
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'mp4': 'video/mp4',
+    'mov': 'video/quicktime',
+    'm4a': 'audio/mp4',
+    'aac': 'audio/aac',
+    '3gp': 'video/3gpp',
+  };
+
+  /// Uploads any single media file (photo, video, or voice note) and
+  /// returns its URL. The backend's `/reports/photo` endpoint is a fully
+  /// generic byte-blob store despite the name — reused for every media
+  /// type rather than adding separate upload endpoints.
+  Future<String> uploadFile(File file) async {
     final filename = file.path.split(Platform.pathSeparator).last;
     final ext = filename.split('.').last.toLowerCase();
-    final contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
+    final contentType = _contentTypeByExt[ext] ?? 'application/octet-stream';
     final formData = FormData.fromMap({
       'file': await MultipartFile.fromFile(
         file.path,
@@ -84,12 +97,16 @@ class ReportService {
     String id, {
     required String comment,
     String? materials,
-    String? photoUrl,
+    List<String> photoUrls = const [],
+    String? videoUrl,
+    String? voiceNoteUrl,
   }) async {
     await _dio.post('/reports/$id/resolution-report', data: {
       'comment': comment,
       if (materials != null && materials.isNotEmpty) 'materials': materials,
-      if (photoUrl != null) 'photo_url': photoUrl,
+      'photo_urls': photoUrls,
+      if (videoUrl != null) 'video_url': videoUrl,
+      if (voiceNoteUrl != null) 'voice_note_url': voiceNoteUrl,
     });
   }
 

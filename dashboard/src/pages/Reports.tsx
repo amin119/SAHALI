@@ -751,6 +751,54 @@ export default function Reports() {
                         <p className="text-sm text-[#64748B]">{resolution.materials}</p>
                       </div>
                     )}
+                    {(() => {
+                      const rawUrls: string[] = resolution.photo_urls?.length
+                        ? resolution.photo_urls
+                        : resolution.photo_url ? [resolution.photo_url] : []
+                      const photos = rawUrls.map(u => u.startsWith('/') ? `${API_BASE}${u}` : u)
+                      if (!photos.length) return null
+                      return (
+                        <div>
+                          <p className="text-[#94A3B8] text-xs font-medium mb-2">
+                            {photos.length > 1 ? `Photos (${photos.length})` : 'Photo'}
+                          </p>
+                          <div className={`grid gap-2 ${photos.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                            {photos.map((src, i) => (
+                              <a key={i} href={src} target="_blank" rel="noopener noreferrer">
+                                <img
+                                  src={src}
+                                  alt={`Photo ${i + 1}`}
+                                  className="w-full rounded-xl object-cover cursor-zoom-in hover:opacity-90 transition-opacity"
+                                  style={{ maxHeight: photos.length > 1 ? 120 : 200 }}
+                                  onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = 'none' }}
+                                />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })()}
+                    {resolution.video_url && (
+                      <div>
+                        <p className="text-[#94A3B8] text-xs font-medium mb-2">Vidéo</p>
+                        <video
+                          controls
+                          className="w-full rounded-xl bg-black"
+                          style={{ maxHeight: 240 }}
+                          src={resolution.video_url.startsWith('/') ? `${API_BASE}${resolution.video_url}` : resolution.video_url}
+                        />
+                      </div>
+                    )}
+                    {resolution.voice_note_url && (
+                      <div>
+                        <p className="text-[#94A3B8] text-xs font-medium mb-2">Note vocale</p>
+                        <audio
+                          controls
+                          className="w-full"
+                          src={resolution.voice_note_url.startsWith('/') ? `${API_BASE}${resolution.voice_note_url}` : resolution.voice_note_url}
+                        />
+                      </div>
+                    )}
                     {assignments.filter(a => a.is_active).length > 0 && (
                       <div>
                         <p className="text-[#94A3B8] text-xs font-medium mb-1">Équipe</p>
