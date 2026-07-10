@@ -40,6 +40,15 @@ _TRANSITIONS: dict[ReportStatus, list[ReportStatus]] = {
 }
 
 
+def _check_municipality_access(report: Report, current_user: User) -> None:
+    """Municipality-scoped staff (admin/supervisor/analyst/field_agent with a
+    municipality_id set) can only reach reports belonging to their own
+    municipality. 404, not 403, so existence in another municipality isn't
+    revealed. No-op for super-admins (municipality_id is None)."""
+    if current_user.municipality_id is not None and report.municipality_id != current_user.municipality_id:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+
 def _report_to_out(r: Report) -> ReportOut:
     lat = lng = None
     if r.location is not None:
@@ -171,6 +180,7 @@ def submit_report(
         "category_id": report.category_id,
         "status": report.status.value,
         "priority": report.priority.value if report.priority else None,
+        "municipality_id": report.municipality_id,
     })
 
     return _report_to_out(report)
@@ -251,6 +261,7 @@ def submit_anonymous_report(
         "category_id": report.category_id,
         "status": report.status.value,
         "priority": report.priority.value if report.priority else None,
+        "municipality_id": report.municipality_id,
     })
 
     return _report_to_out(report)
@@ -335,7 +346,10 @@ def list_reports(
                      .filter(Assignment.agent_id == current_user.id, Assignment.is_active == True)\
                      .filter(Report.status != ReportStatus.SUBMITTED)
     else:
-        # Admin / supervisor / analyst see ALL reports including submitted
+        # Admin / supervisor / analyst see ALL reports including submitted,
+        # unless scoped to a single municipality (municipal admin/supervisor/analyst)
+        if current_user.municipality_id is not None:
+            query = query.filter(Report.municipality_id == current_user.municipality_id)
         if agent_id:
             query = query.join(Assignment, Assignment.report_id == Report.id)\
                          .filter(Assignment.agent_id == agent_id, Assignment.is_active == True)
@@ -404,6 +418,7 @@ def get_report(
         raise HTTPException(status_code=404, detail="Report not found")
     if current_user.role == UserRole.citizen and report.citizen_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
+    _check_municipality_access(report, current_user)
     return _report_to_out(report)
 
 
@@ -417,6 +432,7 @@ def update_status(
     report = db.get(Report, report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
+    _check_municipality_access(report, current_user)
 
     allowed = _TRANSITIONS.get(report.status, [])
     if body.status not in allowed and current_user.role != UserRole.admin:
@@ -454,6 +470,7 @@ def update_status(
         "id": str(report.id),
         "tracking_code": report.tracking_code,
         "status": report.status.value,
+        "municipality_id": report.municipality_id,
     })
 
     return _report_to_out(report)
@@ -469,6 +486,7 @@ def assign_report(
     report = db.get(Report, report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
+    _check_municipality_access(report, current_user)
 
     if not body.agent_ids:
         raise HTTPException(status_code=400, detail="At least one agent_id is required")
@@ -479,10 +497,12 @@ def assign_report(
         Assignment.is_active == True,
     ).update({"is_active": False})
 
-    agents_by_id = {
-        str(a.id): a
-        for a in db.query(User).filter(User.id.in_(body.agent_ids)).all()
-    }
+    agent_query = db.query(User).filter(User.id.in_(body.agent_ids))
+    if report.municipality_id is not None:
+        # Never assign an agent from a different municipality than the
+        # report's, regardless of the caller's own scope.
+        agent_query = agent_query.filter(User.municipality_id == report.municipality_id)
+    agents_by_id = {str(a.id): a for a in agent_query.all()}
     missing = [agent_id for agent_id in body.agent_ids if agent_id not in agents_by_id]
     if missing:
         raise HTTPException(status_code=404, detail=f"Agent(s) not found: {', '.join(missing)}")
@@ -511,6 +531,7 @@ def assign_report(
         "tracking_code": report.tracking_code,
         "agent_ids": body.agent_ids,
         "assigned_by": str(current_user.id),
+        "municipality_id": report.municipality_id,
     })
 
     return [_assignment_to_out(a) for a in new_assignments]
@@ -525,6 +546,7 @@ def get_assignments(
     report = db.get(Report, report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
+    _check_municipality_access(report, current_user)
     assignments = (
         db.query(Assignment)
         .options(joinedload(Assignment.agent), joinedload(Assignment.assigner))
@@ -545,6 +567,7 @@ def create_resolution_report(
     report = db.get(Report, report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
+    _check_municipality_access(report, current_user)
     if report.status != ReportStatus.RESOLVED:
         raise HTTPException(status_code=400, detail="Resolution report requires status RESOLVED")
     existing = db.query(ResolutionReport).filter(ResolutionReport.report_id == report.id).first()
@@ -574,6 +597,7 @@ def get_resolution_report(
     report = db.get(Report, report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
+    _check_municipality_access(report, current_user)
     rr = db.query(ResolutionReport).filter(ResolutionReport.report_id == report.id).first()
     if not rr:
         raise HTTPException(status_code=404, detail="No resolution report for this report")
@@ -591,6 +615,7 @@ def get_status_history(
         raise HTTPException(status_code=404, detail="Report not found")
     if current_user.role == UserRole.citizen and report.citizen_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
+    _check_municipality_access(report, current_user)
     history = (
         db.query(ReportStatusHistory)
         .options(joinedload(ReportStatusHistory.changed_by_user))

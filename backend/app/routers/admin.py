@@ -17,7 +17,7 @@ from app.schemas.municipality import (
 )
 from app.schemas.notification import BroadcastRequest
 from app.services import backfill as backfill_service
-from app.utils.deps import require_admin, require_supervisor, require_staff, get_current_user
+from app.utils.deps import require_admin, require_supervisor, require_staff, require_super_admin, get_current_user
 from app.utils.pagination import PaginationParams
 from app.utils.security import hash_password
 
@@ -46,7 +46,7 @@ def _municipality_query_page(db: Session, pagination: "PaginationParams", search
             COUNT(DISTINCT CASE WHEN r.status NOT IN ('resolved','rejected') THEN r.id END) AS open_reports,
             COUNT(DISTINCT u.id) FILTER (WHERE u.role = 'field_agent')  AS agent_count
         FROM municipalities m
-        LEFT JOIN reports r ON r.city ILIKE '%' || m.name || '%'
+        LEFT JOIN reports r ON r.municipality_id = m.id
         LEFT JOIN users u   ON u.municipality_id = m.id
         {where_clause}
         GROUP BY m.id, m.name, m.subscription_tier
@@ -75,7 +75,7 @@ def _municipality_stats_by_id(db: Session, municipality_id: int) -> dict | None:
             COUNT(DISTINCT CASE WHEN r.status NOT IN ('resolved','rejected') THEN r.id END) AS open_reports,
             COUNT(DISTINCT u.id) FILTER (WHERE u.role = 'field_agent')  AS agent_count
         FROM municipalities m
-        LEFT JOIN reports r ON r.city ILIKE '%' || m.name || '%'
+        LEFT JOIN reports r ON r.municipality_id = m.id
         LEFT JOIN users u   ON u.municipality_id = m.id
         WHERE m.id = :id
         GROUP BY m.id, m.name, m.subscription_tier
@@ -125,20 +125,23 @@ def public_stats(db: Session = Depends(get_db)):
 @router.get("/stats")
 def dashboard_stats(
     db: Session = Depends(get_db),
-    _: User = Depends(require_staff),
+    current_user: User = Depends(require_staff),
 ):
     today = datetime.now(timezone.utc).date()
-    total = db.query(func.count(Report.id)).scalar()
-    today_count = db.query(func.count(Report.id)).filter(func.date(Report.created_at) == today).scalar()
+    base = db.query(Report)
+    if current_user.municipality_id is not None:
+        base = base.filter(Report.municipality_id == current_user.municipality_id)
+
+    total = base.with_entities(func.count(Report.id)).scalar()
+    today_count = base.filter(func.date(Report.created_at) == today).with_entities(func.count(Report.id)).scalar()
     by_status = (
-        db.query(Report.status, func.count(Report.id))
+        base.with_entities(Report.status, func.count(Report.id))
         .group_by(Report.status)
         .all()
     )
-    resolved = db.query(Report).filter(Report.resolved_at.isnot(None))
-    avg_resolution = db.query(
+    avg_resolution = base.filter(Report.resolved_at.isnot(None)).with_entities(
         func.avg(func.extract("epoch", Report.resolved_at - Report.created_at) / 3600)
-    ).filter(Report.resolved_at.isnot(None)).scalar()
+    ).scalar()
 
     return {
         "total_reports": total,
@@ -151,11 +154,13 @@ def dashboard_stats(
 @router.get("/reports/export")
 def export_reports(
     db: Session = Depends(get_db),
-    _: User = Depends(require_supervisor),
+    current_user: User = Depends(require_supervisor),
     city: str | None = Query(None),
     report_status: ReportStatus | None = Query(None, alias="status"),
 ):
     query = db.query(Report)
+    if current_user.municipality_id is not None:
+        query = query.filter(Report.municipality_id == current_user.municipality_id)
     if city:
         query = query.filter(Report.city.ilike(f"%{city}%"))
     if report_status:
@@ -180,7 +185,7 @@ def export_reports(
 @router.get("/users", response_model=UserListOut)
 def list_staff(
     db: Session = Depends(get_db),
-    _: User = Depends(require_staff),
+    current_user: User = Depends(require_staff),
     pagination: Annotated[PaginationParams, Depends()] = None,
     search: str | None = Query(None, description="Match against full name or email"),
     role: UserRole | None = Query(None),
@@ -192,7 +197,9 @@ def list_staff(
         query = query.filter(or_(User.full_name.ilike(like), User.email.ilike(like)))
     if role:
         query = query.filter(User.role == role)
-    if municipality_id:
+    if current_user.municipality_id is not None:
+        query = query.filter(User.municipality_id == current_user.municipality_id)
+    elif municipality_id:
         query = query.filter(User.municipality_id == municipality_id)
 
     total = query.count()
@@ -209,16 +216,23 @@ def list_staff(
 def create_staff(
     body: StaffUserCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
+    current_user: User = Depends(require_admin),
 ):
     if db.query(User).filter(User.email == body.email).first():
         raise HTTPException(status_code=409, detail="Email already used")
+
+    municipality_id = body.municipality_id
+    if current_user.municipality_id is not None:
+        if body.role == UserRole.admin:
+            raise HTTPException(status_code=403, detail="Only a super-admin can create admin accounts")
+        municipality_id = current_user.municipality_id
+
     user = User(
         full_name=body.full_name,
         email=body.email,
         phone=body.phone,
         role=body.role,
-        municipality_id=body.municipality_id,
+        municipality_id=municipality_id,
         password_hash=hash_password(body.password),
         preferred_language=body.preferred_language,
     )
@@ -233,18 +247,27 @@ def update_staff(
     user_id: str,
     body: StaffUserUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
+    current_user: User = Depends(require_admin),
 ):
     user = db.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    scoped = current_user.municipality_id is not None
+    if scoped and user.municipality_id != current_user.municipality_id:
+        raise HTTPException(status_code=404, detail="User not found")
+    if scoped and body.role == UserRole.admin:
+        raise HTTPException(status_code=403, detail="Only a super-admin can create admin accounts")
+    if scoped and "municipality_id" in body.model_fields_set:
+        raise HTTPException(status_code=403, detail="Only a super-admin can change a user's municipality")
+
     if body.full_name is not None:
         user.full_name = body.full_name
     if body.role is not None:
         user.role = body.role
     if body.is_active is not None:
         user.is_active = body.is_active
-    if body.municipality_id is not None:
+    if "municipality_id" in body.model_fields_set:
         user.municipality_id = body.municipality_id
     db.commit()
     db.refresh(user)
@@ -255,10 +278,12 @@ def update_staff(
 def delete_staff(
     user_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
+    current_user: User = Depends(require_admin),
 ):
     user = db.get(User, user_id)
     if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if current_user.municipality_id is not None and user.municipality_id != current_user.municipality_id:
         raise HTTPException(status_code=404, detail="User not found")
     try:
         db.delete(user)
@@ -274,7 +299,7 @@ def delete_staff(
 @router.get("/municipalities", response_model=MunicipalityListOut)
 def list_municipalities(
     db: Session = Depends(get_db),
-    _: User = Depends(require_staff),
+    _: User = Depends(require_super_admin),
     pagination: Annotated[PaginationParams, Depends()] = None,
     search: str | None = Query(None, description="Match against municipality name"),
 ):
@@ -286,7 +311,7 @@ def list_municipalities(
 def create_municipality(
     body: MunicipalityCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
+    _: User = Depends(require_super_admin),
 ):
     if db.query(Municipality).filter(Municipality.name == body.name).first():
         raise HTTPException(status_code=409, detail="A municipality with this name already exists")
@@ -306,7 +331,7 @@ def update_municipality(
     municipality_id: int,
     body: MunicipalityUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
+    _: User = Depends(require_super_admin),
 ):
     muni = db.get(Municipality, municipality_id)
     if not muni:
@@ -333,7 +358,7 @@ def update_municipality(
 def delete_municipality(
     municipality_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
+    _: User = Depends(require_super_admin),
 ):
     muni = db.get(Municipality, municipality_id)
     if not muni:
@@ -383,7 +408,7 @@ def _run_backfill(fn):
 @router.post("/backfill/municipality-coordinates")
 def trigger_backfill_municipality_coordinates(
     background: BackgroundTasks,
-    _: User = Depends(require_admin),
+    _: User = Depends(require_super_admin),
 ):
     background.add_task(_run_backfill, backfill_service.backfill_municipality_coordinates)
     return {"message": "Started in background — this takes several minutes for ~335 municipalities. Watch the Logs tab for backfill_municipality_coordinates_* events."}
@@ -392,7 +417,7 @@ def trigger_backfill_municipality_coordinates(
 @router.post("/backfill/report-municipality")
 def trigger_backfill_report_municipality(
     background: BackgroundTasks,
-    _: User = Depends(require_admin),
+    _: User = Depends(require_super_admin),
 ):
     background.add_task(_run_backfill, backfill_service.backfill_report_municipality)
     return {"message": "Started in background. Watch the Logs tab for backfill_report_municipality_* events."}
@@ -401,7 +426,7 @@ def trigger_backfill_report_municipality(
 @router.post("/backfill/report-addresses")
 def trigger_backfill_report_addresses(
     background: BackgroundTasks,
-    _: User = Depends(require_admin),
+    _: User = Depends(require_super_admin),
 ):
     background.add_task(_run_backfill, backfill_service.backfill_report_addresses)
     return {"message": "Started in background. Watch the Logs tab for backfill_report_addresses_* events."}
