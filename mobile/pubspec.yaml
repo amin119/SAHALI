@@ -54,7 +54,7 @@ dependencies:
   image_picker: ^1.1.2
 
   # Voice-note recording (agent resolve flow)
-  record: ^5.2.1
+  record: ^6.0.0
   path_provider: ^2.1.6
 
   # Permissions
