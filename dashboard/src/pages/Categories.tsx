@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import { categoryIcon } from '../lib/categoryIcon'
 import { useLang } from '../context/LangContext'
+import { useAuth } from '../context/AuthContext'
 
 interface Category {
   id: number
@@ -44,6 +45,8 @@ function Skeleton() {
 
 export default function Categories() {
   const { t, lang } = useLang()
+  const { user } = useAuth()
+  const isMunicipalAdmin = user?.role === 'admin' && user?.municipality_id != null
   const [categories, setCategories] = useState<Category[]>([])
   const [enabled, setEnabled] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
@@ -178,8 +181,11 @@ export default function Categories() {
                       </div>
                     </div>
                     <button
-                      onClick={() => toggleEnabled(cat.id)}
-                      className="w-10 h-5 rounded-full relative transition-colors flex-shrink-0"
+                      onClick={isMunicipalAdmin ? undefined : () => toggleEnabled(cat.id)}
+                      disabled={isMunicipalAdmin}
+                      title={isMunicipalAdmin ? 'Réservé au super-admin' : undefined}
+                      className={`w-10 h-5 rounded-full relative transition-colors flex-shrink-0
+                        ${isMunicipalAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
                       style={{ backgroundColor: isEnabled ? color : '#E2E8F0' }}>
                       <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all
                         ${isEnabled ? 'left-5' : 'left-0.5'}`} />

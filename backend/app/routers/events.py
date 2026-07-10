@@ -1,4 +1,5 @@
 import asyncio
+import json
 import redis.asyncio as aioredis
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -14,7 +15,7 @@ router = APIRouter(prefix="/events", tags=["events"])
 _KEEPALIVE_SECONDS = 20
 
 
-async def _stream(request: Request):
+async def _stream(request: Request, municipality_id: int | None):
     settings = get_settings()
     r = aioredis.from_url(settings.REDIS_URL)
     pubsub = r.pubsub()
@@ -28,7 +29,15 @@ async def _stream(request: Request):
             msg = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
             now = loop.time()
             if msg and isinstance(msg.get("data"), bytes):
-                yield f"data: {msg['data'].decode()}\n\n"
+                raw = msg["data"].decode()
+                if municipality_id is not None:
+                    try:
+                        event_municipality_id = json.loads(raw).get("municipality_id")
+                    except ValueError:
+                        event_municipality_id = None
+                    if event_municipality_id != municipality_id:
+                        continue
+                yield f"data: {raw}\n\n"
                 last_sent = now
             elif now - last_sent > _KEEPALIVE_SECONDS:
                 yield ": keepalive\n\n"
@@ -57,7 +66,7 @@ async def report_events(request: Request, token: str = Query(...)):
         return JSONResponse({"detail": "Unauthorized"}, status_code=401)
 
     return StreamingResponse(
-        _stream(request),
+        _stream(request, user.municipality_id),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

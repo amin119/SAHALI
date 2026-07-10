@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { useLang, type TranslationKey } from '../../context/LangContext'
+import { useAuth } from '../../context/AuthContext'
 
 const NAV_ITEMS: { path: string; icon: string; labelKey: TranslationKey }[] = [
   { path: '/dashboard',      icon: 'dashboard',      labelKey: 'nav_dashboard' },
@@ -16,6 +17,9 @@ const NAV_ITEMS: { path: string; icon: string; labelKey: TranslationKey }[] = [
 export default function Sidebar() {
   const location = useLocation()
   const { lang, setLang, t } = useLang()
+  const { user } = useAuth()
+  const isMunicipalAdmin = user?.role === 'admin' && user?.municipality_id != null
+  const navItems = NAV_ITEMS.filter(item => !(isMunicipalAdmin && item.path === '/municipalities'))
 
   return (
     <aside
@@ -47,7 +51,7 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 space-y-0.5">
-        {NAV_ITEMS.map(({ path, icon, labelKey }) => {
+        {navItems.map(({ path, icon, labelKey }) => {
           const isActive = location.pathname === path
           return (
             <NavLink
