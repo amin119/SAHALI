@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utils.security import decode_token
+from app.services.token_blacklist import is_revoked
 from app.models.user import User, UserRole
 
 bearer_scheme = HTTPBearer()
@@ -20,6 +21,10 @@ def get_current_user(
 
     if payload.get("type") != "access":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Wrong token type")
+
+    jti = payload.get("jti")
+    if jti and is_revoked(jti):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked")
 
     user = db.get(User, payload["sub"])
     if not user or not user.is_active:

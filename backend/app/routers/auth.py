@@ -1,4 +1,6 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.auth import (
@@ -12,10 +14,12 @@ from app.utils.security import (
     hash_password, verify_password,
     create_access_token, create_refresh_token, decode_token,
 )
+from app.utils.deps import get_current_user, bearer_scheme
 from app.services.otp import (
     send_otp, verify_otp,
     send_email_otp, verify_email_otp,
 )
+from app.services.token_blacklist import revoke, is_revoked
 from app.config import get_settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -176,6 +180,9 @@ def refresh_token(body: RefreshRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     if payload.get("type") != "refresh":
         raise HTTPException(status_code=401, detail="Wrong token type")
+    jti = payload.get("jti")
+    if jti and is_revoked(jti):
+        raise HTTPException(status_code=401, detail="Refresh token has been revoked")
 
     user = db.get(User, payload["sub"])
     if not user or not user.is_active:
@@ -185,3 +192,22 @@ def refresh_token(body: RefreshRequest, db: Session = Depends(get_db)):
         access_token=create_access_token(str(user.id), user.role),
         refresh_token=create_refresh_token(str(user.id)),
     )
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    body: RefreshRequest,
+    _: User = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    """Revokes both the access token used to call this endpoint and the
+    supplied refresh token, so logout takes effect immediately instead of
+    waiting for the access token's own expiry."""
+    for token in (credentials.credentials, body.refresh_token):
+        try:
+            payload = decode_token(token)
+        except ValueError:
+            continue
+        jti, exp = payload.get("jti"), payload.get("exp")
+        if jti and exp:
+            revoke(jti, datetime.fromtimestamp(exp, tz=timezone.utc))

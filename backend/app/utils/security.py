@@ -1,5 +1,6 @@
 import random
 import string
+import uuid
 from functools import lru_cache
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
@@ -41,13 +42,13 @@ def _get_public_key() -> str:
 
 def create_access_token(subject: str, role: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
-    payload = {"sub": subject, "role": role, "exp": expire, "type": "access"}
+    payload = {"sub": subject, "role": role, "exp": expire, "type": "access", "jti": str(uuid.uuid4())}
     return jwt.encode(payload, _get_private_key(), algorithm="RS256")
 
 
 def create_refresh_token(subject: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
-    payload = {"sub": subject, "exp": expire, "type": "refresh"}
+    payload = {"sub": subject, "exp": expire, "type": "refresh", "jti": str(uuid.uuid4())}
     return jwt.encode(payload, _get_private_key(), algorithm="RS256")
 
 
