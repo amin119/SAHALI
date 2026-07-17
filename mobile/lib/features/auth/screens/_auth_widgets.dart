@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -63,6 +64,10 @@ class AuthDebugCodeHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Defense in depth: the backend only sends debug_code outside production,
+    // but don't rely solely on that — never render it in a release build.
+    if (!kDebugMode) return const SizedBox.shrink();
+
     final p = AppPalette.of(context);
     final l10n = AppLocalizations.of(context);
     return Container(

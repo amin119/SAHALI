@@ -5,7 +5,6 @@ from typing import Literal
 
 class Settings(BaseSettings):
     APP_ENV: Literal["development", "staging", "production"] = "development"
-    SECRET_KEY: str = "change-me-in-production"
     DEBUG: bool = True
 
     # JWT — file paths for local dev, base64 env vars for production (Render)
@@ -65,7 +64,6 @@ class Settings(BaseSettings):
 
     # Rate limiting
     RATE_LIMIT_PER_MINUTE: int = 100
-    USER_RATE_LIMIT_PER_MINUTE: int = 20
 
     class Config:
         env_file = ".env"
