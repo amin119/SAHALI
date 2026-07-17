@@ -88,7 +88,6 @@ def generate_presigned_upload(filename: str, content_type: str) -> dict:
     )
 
     internal_base = settings.AWS_S3_ENDPOINT_URL or f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com"
-    public_base = settings.AWS_S3_PUBLIC_URL or internal_base
     if settings.AWS_S3_PUBLIC_URL and settings.AWS_S3_ENDPOINT_URL:
         upload_url = upload_url.replace(settings.AWS_S3_ENDPOINT_URL, settings.AWS_S3_PUBLIC_URL, 1)
 

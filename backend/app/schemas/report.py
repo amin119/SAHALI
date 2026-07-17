@@ -1,7 +1,6 @@
 from pydantic import BaseModel, field_validator
 from uuid import UUID
 from datetime import datetime
-from typing import Any
 from app.models.report import ReportStatus, ReportPriority
 
 

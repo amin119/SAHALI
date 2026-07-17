@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks, Query, UploadFile, File, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
 import io
-from sqlalchemy import func, text
 from sqlalchemy.orm import Session, joinedload
 from geoalchemy2.functions import ST_DWithin, ST_MakePoint, ST_SetSRID
 from typing import Annotated
@@ -12,7 +11,7 @@ from app.models.report import Report, ReportStatus, ReportStatusHistory, Assignm
 from app.models.user import User, UserRole
 from app.schemas.report import (
     ReportCreate, ReportOut, ReportListOut, StatusUpdate,
-    CommentCreate, PresignedUrlRequest, PresignedUrlResponse, PhotoUploadResponse,
+    PresignedUrlRequest, PresignedUrlResponse, PhotoUploadResponse,
     AssignCreate, AssignmentOut, ResolutionReportCreate, ResolutionReportOut,
     UserBrief,
 )
@@ -66,7 +65,7 @@ def _check_municipality_access(report: Report, current_user: User, db: Session) 
         assigned = db.query(Assignment).filter(
             Assignment.report_id == report.id,
             Assignment.agent_id == current_user.id,
-            Assignment.is_active == True,
+            Assignment.is_active,
         ).first()
         if not assigned:
             raise HTTPException(status_code=404, detail="Report not found")
@@ -117,6 +116,8 @@ def get_presigned_url(
     body: PresignedUrlRequest,
     _: User = Depends(get_current_user),
 ):
+    if body.content_type not in _ALLOWED_UPLOAD_CONTENT_TYPES:
+        raise HTTPException(status_code=415, detail="Unsupported file type")
     result = generate_presigned_upload(body.filename, body.content_type)
     return PresignedUrlResponse(**result)
 
@@ -150,7 +151,9 @@ async def upload_report_photo(
     if content_type not in _ALLOWED_UPLOAD_CONTENT_TYPES:
         raise HTTPException(status_code=415, detail="Unsupported file type")
 
-    data = await file.read()
+    # Bounded read: never buffer more than the cap allows, even for a client
+    # that ignores it and sends a much larger file.
+    data = await file.read(MAX_UPLOAD_BYTES + 1)
     if len(data) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="File too large (max 25MB)")
 
@@ -391,7 +394,7 @@ def list_reports(
     elif current_user.role == UserRole.field_agent:
         # Field agents see reports assigned to them
         query = query.join(Assignment, Assignment.report_id == Report.id)\
-                     .filter(Assignment.agent_id == current_user.id, Assignment.is_active == True)\
+                     .filter(Assignment.agent_id == current_user.id, Assignment.is_active)\
                      .filter(Report.status != ReportStatus.SUBMITTED)
     else:
         # Admin / supervisor / analyst see ALL reports including submitted,
@@ -400,7 +403,7 @@ def list_reports(
             query = query.filter(Report.municipality_id == current_user.municipality_id)
         if agent_id:
             query = query.join(Assignment, Assignment.report_id == Report.id)\
-                         .filter(Assignment.agent_id == agent_id, Assignment.is_active == True)
+                         .filter(Assignment.agent_id == agent_id, Assignment.is_active)
 
     if status:
         query = query.filter(Report.status == status)
@@ -542,7 +545,7 @@ def assign_report(
     # Deactivate all previous assignments for this report
     db.query(Assignment).filter(
         Assignment.report_id == report.id,
-        Assignment.is_active == True,
+        Assignment.is_active,
     ).update({"is_active": False})
 
     agent_query = db.query(User).filter(User.id.in_(body.agent_ids))

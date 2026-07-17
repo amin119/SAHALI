@@ -196,6 +196,13 @@ def refresh_token(body: RefreshRequest, db: Session = Depends(get_db)):
     if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="User not found")
 
+    # Rotate: the presented refresh token is single-use, so a stolen token
+    # can't be replayed alongside the legitimate one to mint unlimited pairs.
+    if jti:
+        exp = payload.get("exp")
+        if exp:
+            revoke(jti, datetime.fromtimestamp(exp, tz=timezone.utc))
+
     return TokenResponse(
         access_token=create_access_token(str(user.id), user.role),
         refresh_token=create_refresh_token(str(user.id)),

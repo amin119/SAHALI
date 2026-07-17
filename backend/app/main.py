@@ -2,7 +2,6 @@ import structlog
 import sentry_sdk
 from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
@@ -94,9 +93,8 @@ def health_db(_=Depends(require_super_admin)):
         log.warning("health_db_check_failed", check="db", error=str(e))
         result["db"] = "error"
     try:
-        db = SessionLocal()
-        result["admin_account_exists"] = db.query(User).filter(User.role == UserRole.admin).first() is not None
-        db.close()
+        with SessionLocal() as db:
+            result["admin_account_exists"] = db.query(User).filter(User.role == UserRole.admin).first() is not None
     except Exception as e:
         log.warning("health_db_check_failed", check="admin_account", error=str(e))
         result["admin_account_exists"] = "error"

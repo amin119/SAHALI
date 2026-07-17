@@ -9,9 +9,8 @@ plugins {
 }
 
 // Real release signing, read from android/key.properties (gitignored — see
-// android/.gitignore). Falls back to the debug keystore when that file
-// doesn't exist, so `flutter run --release` keeps working before a release
-// keystore has been generated.
+// android/.gitignore). Required for release builds — see the check() in the
+// release buildType below; debug builds are unaffected either way.
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
@@ -58,11 +57,14 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            // Fail loudly rather than silently shipping a debug-signed release
+            // artifact if key.properties is missing (e.g. a misconfigured CI
+            // secret) — now that a real keystore and an automated release
+            // pipeline both exist, a silent fallback is worse than a red build.
+            check(keystorePropertiesFile.exists()) {
+                "Missing android/key.properties — release builds require a real signing config."
             }
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

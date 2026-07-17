@@ -107,6 +107,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       e.type == DioExceptionType.receiveTimeout ||
       e.type == DioExceptionType.sendTimeout;
 
+  // ignore: unused_element
   Future<bool> _showSignInSheet() async {
     final result = await showSaBottomSheet<bool>(
       context,

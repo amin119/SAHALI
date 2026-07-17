@@ -13,7 +13,7 @@ def list_categories(db: Session = Depends(get_db)):
     """Public — returns only active root categories (with their children)."""
     roots = (
         db.query(Category)
-        .filter(Category.parent_id.is_(None), Category.is_active == True)
+        .filter(Category.parent_id.is_(None), Category.is_active)
         .all()
     )
     return roots

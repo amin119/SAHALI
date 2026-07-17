@@ -3,7 +3,7 @@ import structlog
 from sqlalchemy.orm import Session
 from app.models.notification import Notification
 from app.models.user import User, UserRole
-from app.models.report import Report, ReportStatus
+from app.models.report import Report
 from app.config import get_settings
 
 settings = get_settings()

@@ -4,7 +4,8 @@ from sqlalchemy import func, text, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from typing import Annotated
-import csv, io
+import csv
+import io
 from datetime import datetime, timezone
 
 from app.database import get_db
@@ -17,7 +18,7 @@ from app.schemas.municipality import (
 )
 from app.schemas.notification import BroadcastRequest
 from app.services import backfill as backfill_service
-from app.utils.deps import require_admin, require_supervisor, require_staff, require_super_admin, get_current_user
+from app.utils.deps import require_admin, require_supervisor, require_staff, require_super_admin
 from app.utils.pagination import PaginationParams
 from app.utils.security import hash_password
 
@@ -389,7 +390,7 @@ def broadcast(
 ):
     from app.models.notification import Notification
     from app.models.user import UserRole
-    query = db.query(User).filter(User.role == UserRole.citizen, User.is_active == True)
+    query = db.query(User).filter(User.role == UserRole.citizen, User.is_active)
     if body.city:
         query = query.filter(User.municipality_id.isnot(None))  # simplified; extend with city join if needed
 

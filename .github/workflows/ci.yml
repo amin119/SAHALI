@@ -5,6 +5,11 @@ on:
   push:
     branches: [main]
 
+# Read-only by default — the checkout token can't push or modify anything
+# beyond what each job explicitly needs (none of these jobs need write access).
+permissions:
+  contents: read
+
 jobs:
   backend:
     runs-on: ubuntu-latest
@@ -13,6 +18,8 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -27,10 +34,66 @@ jobs:
           pip install pip-audit
           pip-audit -r requirements.txt
 
+  backend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgis/postgis:15-3.4
+        env:
+          POSTGRES_USER: citizen_alert
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: citizen_alert_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://citizen_alert:password@localhost:5432/citizen_alert_test
+      REDIS_URL: redis://localhost:6379/1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        # Deliberately not `pip install -e .` — this project's flat layout
+        # (app/ and alembic/ both at the top level) trips up setuptools'
+        # package auto-discovery for an editable install, and it isn't
+        # needed anyway: pytest adds backend/ to sys.path on its own.
+        run: pip install -r requirements.txt pytest==8.2.2 pytest-asyncio==0.23.7 pytest-cov==5.0.0
+      - name: Generate throwaway JWT keys (test-only, never used outside this job)
+        run: |
+          openssl genrsa -out private.pem 2048
+          openssl rsa -in private.pem -pubout -out public.pem
+      - name: Apply migrations
+        # 0008 seeds demo accounts with randomly generated passwords and
+        # prints them — harmless for this ephemeral test DB, but real
+        # credential-shaped strings have no business sitting in a CI log.
+        run: alembic upgrade head > /dev/null
+      - name: Run tests
+        run: pytest -v
+
   backend-docker-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Build backend image (catches Dockerfile/dependency issues before Render does)
         run: docker build -t sahali-backend:ci ./backend
 
@@ -41,6 +104,8 @@ jobs:
         working-directory: dashboard
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -61,9 +126,13 @@ jobs:
         working-directory: mobile
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
       - run: flutter pub get
       - name: Analyze
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
+      - name: Test
+        run: flutter test
