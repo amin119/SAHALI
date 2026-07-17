@@ -27,6 +27,13 @@ jobs:
           pip install pip-audit
           pip-audit -r requirements.txt
 
+  backend-docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image (catches Dockerfile/dependency issues before Render does)
+        run: docker build -t sahali-backend:ci ./backend
+
   dashboard:
     runs-on: ubuntu-latest
     defaults:
