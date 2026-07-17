@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Query, UploadFile, File, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks, Query, UploadFile, File, Response
 from fastapi.responses import StreamingResponse
 import io
 from sqlalchemy import func, text
@@ -26,6 +26,7 @@ from app.services.geocoding import reverse_geocode
 from app.services.municipality_matching import closest_municipality_id
 from app.services.event_bus import publish_report_event
 from app.utils.retry import with_retries
+from app.rate_limit import limiter
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -165,7 +166,9 @@ async def upload_report_photo(
 
 
 @router.post("", response_model=ReportOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 def submit_report(
+    request: Request,
     body: ReportCreate,
     background: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -247,7 +250,9 @@ def _get_or_create_anon_user(db: Session) -> User:
 
 
 @router.post("/anonymous", response_model=ReportOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 def submit_anonymous_report(
+    request: Request,
     body: ReportCreate,
     background: BackgroundTasks,
     db: Session = Depends(get_db),

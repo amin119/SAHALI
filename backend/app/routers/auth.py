@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -20,6 +20,7 @@ from app.services.otp import (
     send_email_otp, verify_email_otp,
 )
 from app.services.token_blacklist import revoke, is_revoked
+from app.rate_limit import limiter
 from app.config import get_settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -58,7 +59,8 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(body: LoginRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, body: LoginRequest, db: Session = Depends(get_db)):
     user = (
         db.query(User).filter(User.email == body.identifier).first()
         or db.query(User).filter(User.phone == body.identifier).first()
@@ -77,7 +79,8 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/otp/request")
-def request_otp(body: OTPRequest, db: Session = Depends(get_db)):
+@limiter.limit("3/minute")
+def request_otp(request: Request, body: OTPRequest, db: Session = Depends(get_db)):
     code = send_otp(body.phone)
     response: dict = {"message": "OTP sent"}
     if settings.DEBUG:
@@ -86,7 +89,8 @@ def request_otp(body: OTPRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/otp/verify", response_model=TokenResponse)
-def verify_otp_endpoint(body: OTPVerify, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def verify_otp_endpoint(request: Request, body: OTPVerify, db: Session = Depends(get_db)):
     if not verify_otp(body.phone, body.code):
         raise HTTPException(status_code=400, detail="Invalid or expired OTP")
 
@@ -109,7 +113,8 @@ def verify_otp_endpoint(body: OTPVerify, db: Session = Depends(get_db)):
 
 
 @router.post("/verify-email/send")
-def send_email_verification(body: EmailVerifyRequest, db: Session = Depends(get_db)):
+@limiter.limit("3/minute")
+def send_email_verification(request: Request, body: EmailVerifyRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == str(body.email)).first()
     if not user:
         raise HTTPException(status_code=404, detail="No account found with this email")
@@ -121,14 +126,16 @@ def send_email_verification(body: EmailVerifyRequest, db: Session = Depends(get_
 
 
 @router.post("/verify-email/confirm")
-def confirm_email(body: EmailVerifyConfirm, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def confirm_email(request: Request, body: EmailVerifyConfirm, db: Session = Depends(get_db)):
     if not verify_email_otp(str(body.email), body.code, "verify"):
         raise HTTPException(status_code=400, detail="Invalid or expired code")
     return {"message": "Email verified successfully"}
 
 
 @router.post("/forgot-password")
-def forgot_password(body: ForgotPasswordRequest, db: Session = Depends(get_db)):
+@limiter.limit("3/minute")
+def forgot_password(request: Request, body: ForgotPasswordRequest, db: Session = Depends(get_db)):
     identifier = body.identifier.strip()
     code = None
     if "@" in identifier:
@@ -148,7 +155,8 @@ def forgot_password(body: ForgotPasswordRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/reset-password")
-def reset_password_endpoint(body: ResetPasswordRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def reset_password_endpoint(request: Request, body: ResetPasswordRequest, db: Session = Depends(get_db)):
     identifier = body.identifier.strip()
     verified = False
     user = None

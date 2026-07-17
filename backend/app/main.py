@@ -3,11 +3,11 @@ import sentry_sdk
 from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.config import get_settings
+from app.rate_limit import limiter
 from app.routers import auth, users, reports, notifications, admin, categories, events
 from app.utils.deps import require_super_admin
 
@@ -22,8 +22,13 @@ structlog.configure(
         structlog.processors.JSONRenderer(),
     ]
 )
+log = structlog.get_logger()
 
-limiter = Limiter(key_func=get_remote_address, default_limits=[f"{settings.RATE_LIMIT_PER_MINUTE}/minute"])
+if settings.APP_ENV == "production" and settings.CORS_ORIGINS == "*":
+    log.warning(
+        "cors_wide_open_in_production",
+        detail="CORS_ORIGINS is unset/'*' in a production environment — set it to your real dashboard origin(s).",
+    )
 
 app = FastAPI(
     title="Citizen Alert API",
@@ -39,11 +44,21 @@ _cors_origins = ["*"] if settings.CORS_ORIGINS == "*" else [o.strip() for o in s
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origin_regex=settings.CORS_VERCEL_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+    return response
 
 # Routers
 API_PREFIX = "/v1"
@@ -70,7 +85,6 @@ def health_db(_=Depends(require_super_admin)):
     from sqlalchemy import text
     from app.models.user import User, UserRole
     from app.utils.security import _get_private_key, _get_public_key
-    log = structlog.get_logger()
     result: dict = {}
     try:
         with engine.connect() as conn:

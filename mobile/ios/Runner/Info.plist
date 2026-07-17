@@ -8,6 +8,8 @@
 	<string>Sahali needs camera access to photograph the reported issue.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Sahali needs photo library access to attach an image to your report.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Sahali needs microphone access to record a voice note when resolving a report.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

@@ -18,7 +18,11 @@
       "Bash(./.venv/Scripts/python.exe -c ')",
       "Bash(git check-ignore *)",
       "Bash(flutter build *)",
-      "Bash(jarsigner -verify -verbose -certs build/app/outputs/flutter-apk/app-release.apk)"
+      "Bash(jarsigner -verify -verbose -certs build/app/outputs/flutter-apk/app-release.apk)",
+      "Bash(curl *)",
+      "Bash(openssl genrsa *)",
+      "Bash(openssl rsa *)",
+      "Bash(openssl base64 *)"
     ]
   }
 }
