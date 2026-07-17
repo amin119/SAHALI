@@ -45,8 +45,11 @@ android {
     }
 
     signingConfigs {
-        if (keystorePropertiesFile.exists()) {
-            create("release") {
+        // Always create the config object (so buildTypes.release below can
+        // reference it during configuration without failing) but only
+        // populate it when the properties file actually exists.
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
                 storeFile = file(keystoreProperties["storeFile"] as String)
@@ -57,14 +60,23 @@ android {
 
     buildTypes {
         release {
-            // Fail loudly rather than silently shipping a debug-signed release
-            // artifact if key.properties is missing (e.g. a misconfigured CI
-            // secret) — now that a real keystore and an automated release
-            // pipeline both exist, a silent fallback is worse than a red build.
-            check(keystorePropertiesFile.exists()) {
-                "Missing android/key.properties — release builds require a real signing config."
-            }
             signingConfig = signingConfigs.getByName("release")
+        }
+    }
+}
+
+// Fail loudly rather than silently shipping a debug-signed release artifact
+// if key.properties is missing (e.g. a misconfigured CI secret) — but only
+// when a release variant is actually being built, so debug/profile builds
+// and plain Gradle syncs still work without a keystore. Matches broadly on
+// "Release" (not just assembleRelease/bundleRelease) because the actual
+// signing happens in an earlier task (packageRelease) — a check placed only
+// on the umbrella task never runs, since packaging fails first with AGP's
+// own (less clear) error.
+tasks.matching { it.name.contains("Release") }.configureEach {
+    doFirst {
+        check(keystorePropertiesFile.exists()) {
+            "Missing android/key.properties — release builds require a real signing config."
         }
     }
 }

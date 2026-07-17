@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from app.models.user import UserRole
 from app.services.sse_ticket import consume_ticket
 from tests.conftest import TEST_PASSWORD
@@ -31,6 +33,22 @@ def test_ticket_is_single_use(client, make_user):
 
     assert consume_ticket(ticket) == str(admin.id)
     assert consume_ticket(ticket) is None
+
+
+def test_ticket_concurrent_consumption_only_succeeds_once(client, make_user):
+    """Regression guard for the GET-then-DELETE race: two consumers racing
+    on the same ticket must not both get a value back."""
+    admin = make_user(role=UserRole.admin, email="admin-ticket-race@example.test")
+    token = _login(client, admin)
+
+    ticket_resp = client.post("/v1/events/ticket", headers={"Authorization": f"Bearer {token}"})
+    ticket = ticket_resp.json()["ticket"]
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(consume_ticket, [ticket, ticket]))
+
+    assert results.count(str(admin.id)) == 1
+    assert results.count(None) == 1
 
 
 def test_invalid_ticket_is_rejected(client):

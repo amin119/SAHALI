@@ -59,9 +59,16 @@ def create_sse_ticket(current_user: User = Depends(require_staff)):
 
 
 @router.get("/reports")
-async def report_events(request: Request, ticket: str = Query(...)):
+def report_events(request: Request, ticket: str = Query(...)):
     """SSE stream of report lifecycle events for dashboard clients, gated by
-    a ticket minted via POST /events/ticket (see docstring there)."""
+    a ticket minted via POST /events/ticket (see docstring there).
+
+    Deliberately a sync def, not async: consume_ticket and SessionLocal are
+    both blocking calls, and FastAPI runs sync route functions in a worker
+    thread rather than on the event loop — an async def here would run that
+    blocking preflight work directly on the loop instead. The returned
+    StreamingResponse still streams _stream's async generator normally;
+    that's independent of whether this outer function is sync or async."""
     try:
         user_id = consume_ticket(ticket)
         if not user_id:

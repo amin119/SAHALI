@@ -3,10 +3,28 @@ import uuid
 
 # Must happen before any `app.*` import — app.config.get_settings() is
 # lru_cached and read at import time by app.main, app.database, etc.
-os.environ.setdefault("DATABASE_URL", "postgresql://citizen_alert:password@localhost:5433/citizen_alert_test")
-os.environ.setdefault("REDIS_URL", "redis://localhost:6380/1")  # db 1 — separate from local dev's db 0
-os.environ.setdefault("APP_ENV", "development")
-os.environ.setdefault("DEBUG", "true")
+#
+# Deliberately read from TEST_DATABASE_URL/TEST_REDIS_URL — dedicated names,
+# not DATABASE_URL/REDIS_URL — and then force those into the env unconditionally
+# (not setdefault). Every test flushes Redis; if these fell back to whatever
+# ambient DATABASE_URL/REDIS_URL a shell or misconfigured CI job already had
+# set, that flush could hit a real dev/prod instance instead of the throwaway
+# test one.
+_TEST_DATABASE_URL = os.environ.get(
+    "TEST_DATABASE_URL", "postgresql://citizen_alert:password@localhost:5433/citizen_alert_test"
+)
+_TEST_REDIS_URL = os.environ.get("TEST_REDIS_URL", "redis://localhost:6380/1")
+
+if "test" not in _TEST_DATABASE_URL:
+    raise RuntimeError(
+        f"TEST_DATABASE_URL ({_TEST_DATABASE_URL!r}) doesn't look like a disposable test "
+        "database (expected 'test' in the name) — refusing to run tests against it."
+    )
+
+os.environ["DATABASE_URL"] = _TEST_DATABASE_URL
+os.environ["REDIS_URL"] = _TEST_REDIS_URL
+os.environ["APP_ENV"] = "development"
+os.environ["DEBUG"] = "true"
 
 import pytest
 import redis as redis_lib

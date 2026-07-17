@@ -87,12 +87,26 @@ def generate_presigned_upload(filename: str, content_type: str) -> dict:
         ExpiresIn=600,
     )
 
-    internal_base = settings.AWS_S3_ENDPOINT_URL or f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com"
     if settings.AWS_S3_PUBLIC_URL and settings.AWS_S3_ENDPOINT_URL:
         upload_url = upload_url.replace(settings.AWS_S3_ENDPOINT_URL, settings.AWS_S3_PUBLIC_URL, 1)
 
-    photo_url = f"{internal_base}/{settings.AWS_S3_BUCKET}/{key}"
-    thumbnail_url = f"{internal_base}/{settings.AWS_S3_BUCKET}/{thumb_key}"
+    # The object URL's shape depends on which of these is actually set: a
+    # public base URL is used as-is, a custom endpoint (MinIO) needs the
+    # bucket appended, and plain AWS S3 needs neither the endpoint fallback
+    # nor a duplicated bucket segment.
+    if settings.AWS_S3_PUBLIC_BASE_URL:
+        object_base = settings.AWS_S3_PUBLIC_BASE_URL.rstrip("/")
+        photo_url = f"{object_base}/{key}"
+        thumbnail_url = f"{object_base}/{thumb_key}"
+    elif settings.AWS_S3_ENDPOINT_URL:
+        endpoint = (settings.AWS_S3_PUBLIC_URL or settings.AWS_S3_ENDPOINT_URL).rstrip("/")
+        photo_url = f"{endpoint}/{settings.AWS_S3_BUCKET}/{key}"
+        thumbnail_url = f"{endpoint}/{settings.AWS_S3_BUCKET}/{thumb_key}"
+    else:
+        object_base = f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com"
+        photo_url = f"{object_base}/{key}"
+        thumbnail_url = f"{object_base}/{thumb_key}"
+
     return {"upload_url": upload_url, "photo_url": photo_url, "thumbnail_url": thumbnail_url}
 
 

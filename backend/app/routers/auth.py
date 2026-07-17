@@ -19,7 +19,7 @@ from app.services.otp import (
     send_otp, verify_otp,
     send_email_otp, verify_email_otp,
 )
-from app.services.token_blacklist import revoke, is_revoked
+from app.services.token_blacklist import revoke, consume_once
 from app.rate_limit import limiter
 from app.config import get_settings
 
@@ -188,20 +188,18 @@ def refresh_token(body: RefreshRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     if payload.get("type") != "refresh":
         raise HTTPException(status_code=401, detail="Wrong token type")
-    jti = payload.get("jti")
-    if jti and is_revoked(jti):
+
+    # Rotate: consume_once atomically claims the jti, so two concurrent
+    # refresh calls with the same token can't both succeed — whichever loses
+    # the race gets a 401, closing the replay window a separate
+    # check-then-revoke would leave open.
+    jti, exp = payload.get("jti"), payload.get("exp")
+    if jti and exp and not consume_once(jti, datetime.fromtimestamp(exp, tz=timezone.utc)):
         raise HTTPException(status_code=401, detail="Refresh token has been revoked")
 
     user = db.get(User, payload["sub"])
     if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="User not found")
-
-    # Rotate: the presented refresh token is single-use, so a stolen token
-    # can't be replayed alongside the legitimate one to mint unlimited pairs.
-    if jti:
-        exp = payload.get("exp")
-        if exp:
-            revoke(jti, datetime.fromtimestamp(exp, tz=timezone.utc))
 
     return TokenResponse(
         access_token=create_access_token(str(user.id), user.role),

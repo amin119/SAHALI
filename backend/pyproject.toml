@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "Citizen Alert — FastAPI backend"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi==0.111.0",
+    "fastapi==0.115.14",
     "uvicorn[standard]==0.30.1",
     "sqlalchemy==2.0.30",
     "alembic==1.13.1",
@@ -13,22 +13,22 @@ dependencies = [
     "psycopg2-binary==2.9.9",
     "pydantic==2.7.4",
     "pydantic-settings==2.3.0",
-    "python-jose[cryptography]==3.3.0",
+    "python-jose[cryptography]==3.4.0",
     "passlib[bcrypt]==1.7.4",
     "bcrypt==3.2.2",
-    "python-multipart==0.0.9",
+    "python-multipart==0.0.32",
     "httpx==0.27.0",
     "redis==5.0.6",
     "celery==5.4.0",
     "boto3==1.34.131",
-    "Pillow==11.2.1",
+    "Pillow==12.3.0",
     "sendgrid==6.11.0",
     "firebase-admin==6.5.0",
     "slowapi==0.1.9",
-    "bleach==6.1.0",
-    "python-dotenv==1.0.1",
+    "bleach==6.4.0",
+    "python-dotenv==1.2.2",
     "structlog==24.2.0",
-    "sentry-sdk[fastapi]==2.6.0",
+    "sentry-sdk[fastapi]==2.66.0",
     "twilio==9.2.2",
 ]
 

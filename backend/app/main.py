@@ -24,9 +24,8 @@ structlog.configure(
 log = structlog.get_logger()
 
 if settings.APP_ENV == "production" and settings.CORS_ORIGINS == "*":
-    log.warning(
-        "cors_wide_open_in_production",
-        detail="CORS_ORIGINS is unset/'*' in a production environment — set it to your real dashboard origin(s).",
+    raise RuntimeError(
+        "CORS_ORIGINS must be set to explicit origin(s) in production — refusing to start with '*'."
     )
 
 app = FastAPI(

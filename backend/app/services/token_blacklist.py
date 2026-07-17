@@ -19,3 +19,15 @@ def revoke(jti: str, expires_at: datetime) -> None:
 
 def is_revoked(jti: str) -> bool:
     return bool(_redis.exists(f"{_PREFIX}{jti}"))
+
+
+def consume_once(jti: str, expires_at: datetime) -> bool:
+    """Atomically claims a jti for one-time use — SET...NX is a single Redis
+    round trip, so two concurrent calls with the same jti can't both see it
+    as unclaimed the way a separate exists-then-set check would. Returns True
+    the first time (this call owns the claim), False on any later call
+    (already used or already expired)."""
+    ttl = int((expires_at - datetime.now(timezone.utc)).total_seconds())
+    if ttl <= 0:
+        return False
+    return bool(_redis.set(f"{_PREFIX}{jti}", "1", ex=ttl, nx=True))
