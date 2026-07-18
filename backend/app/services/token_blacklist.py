@@ -1,3 +1,4 @@
+import math
 from datetime import datetime, timezone
 import redis as redis_lib
 from app.config import get_settings
@@ -8,11 +9,20 @@ _redis = redis_lib.from_url(settings.REDIS_URL, decode_responses=True)
 _PREFIX = "revoked_jti:"
 
 
+def _ttl_seconds(expires_at: datetime) -> int:
+    """Rounds up, not down — truncating with int() could set a TTL up to
+    ~1s shorter than the token's real remaining life, letting the denylist
+    entry (or a single-use claim) expire slightly before the token itself
+    does."""
+    remaining = (expires_at - datetime.now(timezone.utc)).total_seconds()
+    return math.ceil(remaining) if remaining > 0 else 0
+
+
 def revoke(jti: str, expires_at: datetime) -> None:
     """Denylists a token's jti until its own expiry — after that it can't be
     replayed anyway, so the Redis key is left to expire with it rather than
     growing the denylist forever."""
-    ttl = int((expires_at - datetime.now(timezone.utc)).total_seconds())
+    ttl = _ttl_seconds(expires_at)
     if ttl > 0:
         _redis.setex(f"{_PREFIX}{jti}", ttl, "1")
 
@@ -27,7 +37,7 @@ def consume_once(jti: str, expires_at: datetime) -> bool:
     as unclaimed the way a separate exists-then-set check would. Returns True
     the first time (this call owns the claim), False on any later call
     (already used or already expired)."""
-    ttl = int((expires_at - datetime.now(timezone.utc)).total_seconds())
+    ttl = _ttl_seconds(expires_at)
     if ttl <= 0:
         return False
     return bool(_redis.set(f"{_PREFIX}{jti}", "1", ex=ttl, nx=True))

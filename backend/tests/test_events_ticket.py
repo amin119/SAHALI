@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+import threading
 
 from app.models.user import UserRole
 from app.services.sse_ticket import consume_ticket
@@ -37,15 +37,30 @@ def test_ticket_is_single_use(client, make_user):
 
 def test_ticket_concurrent_consumption_only_succeeds_once(client, make_user):
     """Regression guard for the GET-then-DELETE race: two consumers racing
-    on the same ticket must not both get a value back."""
+    on the same ticket must not both get a value back. A plain
+    ThreadPoolExecutor.map doesn't guarantee the two calls actually overlap
+    at the Redis boundary — one could finish before the other even starts,
+    which would pass even against the old non-atomic implementation. A
+    Barrier forces both threads to release into consume_ticket at the same
+    instant, so this actually exercises the race."""
     admin = make_user(role=UserRole.admin, email="admin-ticket-race@example.test")
     token = _login(client, admin)
 
     ticket_resp = client.post("/v1/events/ticket", headers={"Authorization": f"Bearer {token}"})
     ticket = ticket_resp.json()["ticket"]
 
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        results = list(executor.map(consume_ticket, [ticket, ticket]))
+    barrier = threading.Barrier(2)
+    results: list[str | None] = [None, None]
+
+    def _consume(i: int) -> None:
+        barrier.wait()
+        results[i] = consume_ticket(ticket)
+
+    threads = [threading.Thread(target=_consume, args=(i,)) for i in range(2)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
 
     assert results.count(str(admin.id)) == 1
     assert results.count(None) == 1
