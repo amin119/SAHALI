@@ -1,0 +1,74 @@
+\chapter{Report Category Taxonomy and SLA Targets}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{Xl}
+\toprule
+\textbf{Category} & \textbf{Target Resolution Time} \\
+\midrule
+Safety and Security                          & 24 hours \\
+Public Lighting --- exposed wiring           & 24 hours \\
+Water and Sanitation                         & 48 hours \\
+Public Lighting --- faulty streetlights      & 72 hours \\
+Infrastructure (potholes, sidewalks, signage) & 7 days \\
+Cleanliness and Waste Management             & 7 days \\
+Transportation (bus stops, traffic signals)  & 7 days \\
+Environment (pollution, illegal tree cutting) & 14 days \\
+\bottomrule
+\end{tabularx}
+\caption{Default service-level targets by report category}
+\end{table}
+
+\chapter{CI Pipeline Excerpt}
+
+Listing~\ref{lst:ci} shows the backend test job from the GitHub Actions workflow, including the real PostgreSQL/PostGIS and Redis service containers used in CI.
+
+\begin{lstlisting}[language=bash, caption={Backend test job (excerpt), \texttt{.github/workflows/ci.yml}}, label={lst:ci}]
+backend-tests:
+  runs-on: ubuntu-latest
+  services:
+    postgres:
+      image: postgis/postgis:15-3.4
+      env:
+        POSTGRES_USER: citizen_alert
+        POSTGRES_PASSWORD: password
+        POSTGRES_DB: citizen_alert_test
+      ports: ["5432:5432"]
+    redis:
+      image: redis:7-alpine
+      ports: ["6379:6379"]
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - run: pip install -r requirements.txt pytest==8.2.2
+    - run: alembic upgrade head > /dev/null
+    - run: python -m pytest -v
+\end{lstlisting}
+
+\chapter{Security Audit Summary}
+
+Table~\ref{tab:security-summary} summarizes the audit's findings by severity, as documented in the project's internal \texttt{SECURITY.md}.
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Severity} & \textbf{Example finding} & \textbf{Status} \\
+\midrule
+Critical & RS256 signing key retrievable from Git history & Rotated \\
+Critical & Photo upload endpoint unauthenticated, no size/type limits & Fixed \\
+Critical & No server-side session revocation & Fixed (Redis denylist) \\
+High     & CORS accepted any \texttt{*.vercel.app} origin & Partially fixed \\
+High     & No per-route rate limiting on sensitive endpoints & Fixed \\
+High     & OTP comparison not constant-time, no attempt cap & Fixed \\
+Medium   & No CI/automated dependency scanning & Fixed \\
+Low      & Non-functional cleartext-traffic allowlist entry & Fixed \\
+\bottomrule
+\end{tabularx}
+\caption{Security audit findings summary}
+\label{tab:security-summary}
+\end{table}

@@ -4,6 +4,9 @@ type Lang = 'fr' | 'ar'
 
 const FR = {
   // Navigation
+  nav_group_overview: 'Vue d\'ensemble',
+  nav_group_reports:  'Signalements & interventions',
+  nav_group_admin:    'Administration',
   nav_dashboard:     'Tableau de bord',
   nav_map:           'Carte en direct',
   nav_reports:       'Signalements',
@@ -59,6 +62,17 @@ const FR = {
   btn_logout:        'Se déconnecter',
   // Dashboard
   dash_export:       'Exporter',
+  dash_greeting:     'Bonjour',
+  dash_attention_title: 'Ce qui nécessite votre attention',
+  dash_attention_all_clear: 'Tout est à jour, aucune action urgente pour le moment.',
+  attn_new:          'Nouveaux signalements',
+  attn_new_desc:     "en attente d'une première évaluation",
+  attn_review:       "En cours d'examen",
+  attn_review_desc:  'à valider ou à assigner',
+  attn_progress:     'Interventions en cours',
+  attn_progress_desc:'à suivre jusqu’à résolution',
+  dash_details_title:   'Statistiques détaillées',
+  dash_details_subtitle:'Aperçu complet des indicateurs et tendances',
   kpi_total:         'Total signalements',
   kpi_today:         "aujourd'hui",
   kpi_new:           'nouveaux',
@@ -317,6 +331,9 @@ const FR = {
 }
 
 const AR: typeof FR = {
+  nav_group_overview: 'نظرة عامة',
+  nav_group_reports:  'التقارير والتدخلات',
+  nav_group_admin:    'الإدارة',
   nav_dashboard:     'لوحة القيادة',
   nav_map:           'الخريطة المباشرة',
   nav_reports:       'التقارير',
@@ -363,6 +380,17 @@ const AR: typeof FR = {
   notif_view:        '← عرض البلاغ',
   btn_logout:        'تسجيل الخروج',
   dash_export:       'تصدير',
+  dash_greeting:     'مرحباً',
+  dash_attention_title: 'ما يتطلب اهتمامك',
+  dash_attention_all_clear: 'كل شيء محدّث، لا حاجة لأي إجراء عاجل الآن.',
+  attn_new:          'بلاغات جديدة',
+  attn_new_desc:     'بانتظار التقييم الأول',
+  attn_review:       'قيد المراجعة',
+  attn_review_desc:  'بحاجة إلى التحقق أو التكليف',
+  attn_progress:     'تدخلات جارية',
+  attn_progress_desc:'تحتاج إلى متابعة حتى الحل',
+  dash_details_title:   'إحصائيات مفصلة',
+  dash_details_subtitle:'نظرة شاملة على المؤشرات والاتجاهات',
   kpi_total:         'إجمالي البلاغات',
   kpi_today:         'اليوم',
   kpi_new:           'جديدة',

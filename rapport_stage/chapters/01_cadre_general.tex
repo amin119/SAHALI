@@ -1,0 +1,74 @@
+\chapter{General Context}
+\label{chap:cadre-general}
+
+\section{General Context}
+
+Nadas Group hosted this summer internship to build \textbf{Sahali} (\textarabic{سهلي}, ``easy'' / ``made simple'' in Tunisian Arabic), a civic technology platform aimed at Tunisian municipalities. The name reflects the product goal directly: reporting a civic problem should be as easy as taking a photo.
+
+Civic reporting --- the practice of letting residents flag non-emergency infrastructure problems to their local government --- is a well-established category internationally (Section~\ref{sec:etat-art} reviews existing solutions such as FixMyStreet and 311-style systems). What is comparatively underserved is a solution designed around Tunisia's specific constraints: trilingual usage (Arabic, French, and increasingly English among younger users), a fragmented municipal landscape where many communes have limited IT budgets, and address data (via OpenStreetMap) that is frequently incomplete or only partially translated between French and Arabic.
+
+\section{Motivation and Problem Statement}
+
+Before Sahali, a citizen who noticed a pothole, a broken streetlight, or an overflowing waste container had no structured way to report it. In practice, reports happened through phone calls that were not logged, in-person visits during limited office hours, or informal social media posts --- none of which were tracked, routed to the correct department, or followed up on. From the municipality's side, this meant no aggregate, geolocated view of what was failing across the territory, no service-level accountability, and no way to measure resolution performance over time.
+
+This translates into three concrete problems that motivated the project:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{For the citizen}: no single, traceable channel to report an issue and follow its resolution.
+  \item \textbf{For the municipality}: no centralized tool to triage, assign, and track field interventions.
+  \item \textbf{For the citizen--municipality relationship}: no transparency, which erodes trust over time.
+\end{enumerate}
+
+\section{Project Objectives}
+
+The internship's objective was to design and build a working, secure, end-to-end platform addressing the three problems above. Concretely, this meant:
+
+\begin{itemize}[leftmargin=*]
+  \item A mobile application that lets a citizen submit a categorized, geolocated, photographed report in under two minutes, in their language of choice (Arabic, French, or English).
+  \item An automatic routing mechanism that assigns each report to the nearest municipality without manual sorting.
+  \item A web dashboard that gives municipal staff (administrators, supervisors, field agents, analysts) a live, filterable view of reports and a way to assign and track field interventions.
+  \item A resolution feedback loop: the citizen is notified at each status change and can see the full history of their own report.
+  \item A backend built to a production-grade security standard --- not an afterthought bolted on at the end, but audited and hardened as a dedicated phase of the internship.
+  \item An automated testing and deployment pipeline, so that regressions are caught before they reach production rather than discovered by users.
+\end{itemize}
+
+Deliberately out of scope for this internship (documented as future work in Chapter~\ref{chap:conclusion}): a dedicated AI microservice for automatic report classification and duplicate detection, and formal load testing under realistic concurrent traffic.
+
+\section{Methodology}
+
+The project followed an \textbf{iterative, feedback-driven methodology} rather than a rigid upfront specification. Work was organized in short cycles, each producing a working increment that was immediately exercised end-to-end (via the running application, or via direct API calls) before moving to the next increment --- a lightweight, Kanban-like flow rather than fixed-length Scrum sprints, which suited a one-person internship team better than ceremony-heavy Scrum.
+
+A distinguishing feature of the methodology was its \textbf{audit-driven hardening phase}: once the functional platform was working, a dedicated pass was run specifically to find and fix security issues, structured as:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Audit} --- a systematic review of the codebase across the backend, mobile app, and dashboard, producing a severity-ranked list of findings (critical / high / medium / low).
+  \item \textbf{Fix} --- addressing findings in severity order, critical first.
+  \item \textbf{Verify} --- for every fix, a direct, reproducible test (a scripted API call sequence, or an automated test) confirming the fix actually changes behavior, not just that the code compiles.
+  \item \textbf{Review} --- an independent automated code-review pass (CodeRabbit, integrated with the project's GitHub pull requests) that caught several issues the manual audit had missed, most notably race conditions in concurrent token handling (Section~\ref{sec:difficultes}).
+\end{enumerate}
+
+This audit/fix/verify/review loop was then repeated for the continuous integration and deployment (CI/CD) work described in Chapter~\ref{chap:realisation}, and again surfaced real, previously-undetected issues (a broken mobile smoke test, several outdated dependencies with known CVEs), reinforcing the value of treating verification as a first-class part of the methodology rather than a final checkbox.
+
+\section{Project Planning}
+
+Table~\ref{tab:planning} summarizes the internship's timeline, reconstructed retrospectively from the project's development history rather than fixed in advance --- consistent with the iterative methodology described above.
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Phase} & \textbf{Approx.\ duration} & \textbf{Focus} \\
+\midrule
+1 --- Core platform      & Weeks 1--4   & Backend API foundation, database schema, mobile app skeleton, dashboard skeleton, authentication. \\
+2 --- Feature build-out  & Weeks 5--7   & Report submission flow, geocoding and municipality routing, dashboard modules (map, teams, statistics), field-agent mobile mode, multi-media resolution reports. \\
+3 --- Security audit \& hardening & Weeks 8--10 & Three-phase severity-ranked remediation: critical (key rotation, auth gating, session revocation), high (rate limiting, headers, CORS), medium/low (dependency hygiene, dead-code cleanup). \\
+4 --- CI/CD pipeline     & Weeks 11--12 & Automated test suite, GitHub Actions workflows (lint, dependency audit, Docker build check, mobile release automation), dependency vulnerability remediation. \\
+\bottomrule
+\end{tabularx}
+\caption{Internship timeline by phase}
+\label{tab:planning}
+\end{table}
+
+\section{Report Plan}
+
+The remainder of this report is organized as follows. \textbf{Chapter~\ref{chap:etude}} covers the study and specification phase: a review of related civic-reporting solutions, the core technical concepts the project relies on, and the functional and non-functional requirements. \textbf{Chapter~\ref{chap:architecture}} details the system architecture and design, first at a technology-agnostic level and then with the concrete technology stack. \textbf{Chapter~\ref{chap:realisation}} describes the implementation: the development environment, key algorithms, and the difficulties encountered along with how they were resolved. \textbf{Chapter~\ref{chap:tests}} presents the testing methodology and results. \textbf{Chapter~\ref{chap:conclusion}} concludes with a project assessment and future perspectives.

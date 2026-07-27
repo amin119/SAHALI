@@ -1,5 +1,7 @@
-import type { ReportStatus } from '../../types/api'
+import type { Priority, ReportStatus } from '../../types/api'
 import { useLang } from '../../context/LangContext'
+import { PRIORITY_COLORS, PRIORITY_LABELS } from '../../data/mockData'
+import Badge from './Badge'
 
 const STATUS_COLORS: Record<ReportStatus, string> = {
   submitted:    '#8B5CF6',
@@ -21,14 +23,9 @@ export default function StatusBadge({ status }: { status: ReportStatus | string 
     resolved:     t('status_resolved'),
     rejected:     t('status_rejected'),
   }
-  const label = labelMap[status] ?? status
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
-      style={{ backgroundColor: `${color}18`, color }}
-    >
-      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
-      {label}
-    </span>
-  )
+  return <Badge label={labelMap[status] ?? status} color={color} dot />
+}
+
+export function PriorityBadge({ priority }: { priority: Priority }) {
+  return <Badge label={PRIORITY_LABELS[priority]} color={PRIORITY_COLORS[priority]} />
 }

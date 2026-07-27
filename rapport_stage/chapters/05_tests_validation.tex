@@ -1,0 +1,71 @@
+\chapter{Testing and Validation}
+\label{chap:tests}
+
+\section{Testing Methodology}
+
+Two complementary layers of testing were used throughout the project.
+
+\textbf{Manual, scripted verification} was used continuously during the security-hardening phase: for every fix, a direct sequence of API calls (via \texttt{curl}) was run against a live local instance of the backend to confirm the exact before/after behavior change --- for example, sending the same login request eleven times in under a minute to confirm the twelfth was rejected with \texttt{429 Too Many Requests}, or reusing a refresh token twice to confirm the second use was rejected. This caught issues an automated test alone would not have surfaced as quickly, since it exercised the real HTTP layer, the real Redis instance, and the real rate-limiter middleware together.
+
+\textbf{Automated regression testing} was added once the platform's behavior stabilized, as part of the CI/CD pipeline (Section~\ref{sec:cicd}). The backend test suite runs against real PostgreSQL and Redis service containers in CI (not mocks), on the reasoning that mocking the exact services being tested for atomicity and timing behavior would test the mock, not the system. Concurrency-sensitive behavior (Section~\ref{sec:difficultes}) is tested with a \texttt{threading.Barrier} that forces two consumer threads to race at the same instant, rather than a plain thread pool that does not guarantee the two calls actually overlap.
+
+\section{Test Cases and Results}
+
+Table~\ref{tab:testcases} lists the automated backend test suite, all of which pass in the CI pipeline.
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{Xl}
+\toprule
+\textbf{Test case} & \textbf{Result} \\
+\midrule
+OTP verification locks out after five wrong attempts, rejecting even the correct code afterward & Pass \\
+A fresh OTP request resets the attempt lockout & Pass \\
+A refresh token can be used exactly once; a second use is rejected & Pass \\
+Logout immediately revokes both the access and refresh token & Pass \\
+The login endpoint's rate limit rejects the 11th request within a minute & Pass \\
+SSE event-stream ticket issuance requires a staff role (a citizen is rejected) & Pass \\
+An SSE ticket can be consumed exactly once & Pass \\
+Two threads racing to consume the same SSE ticket --- exactly one succeeds & Pass \\
+An invalid/unknown SSE ticket is rejected & Pass \\
+\bottomrule
+\end{tabularx}
+\caption{Automated backend test cases and results}
+\label{tab:testcases}
+\end{table}
+
+Beyond this automated suite, the manual verification pass covered: end-to-end registration and login (including real email validation), the full report submission and geocoding flow, Android release build signing under both success and failure conditions (Section~\ref{sec:difficultes}), and a from-scratch dependency install (a disposable virtual environment populated only from the pinned requirements file) to confirm the pinned dependency set is self-consistent and not merely working by accident of an already-populated development environment.
+
+\section{Performance Analysis}
+
+Formal load testing under realistic concurrent traffic was \textbf{not performed} during this internship and is recorded here as a limitation rather than omitted silently. What was measured directly:
+
+\begin{itemize}[leftmargin=*]
+  \item Individual API response times observed during manual testing were consistently under the 2-second target for all tested endpoints on local infrastructure.
+  \item The rate limiter was confirmed to enforce its configured limit correctly \emph{across} requests sharing Redis-backed storage (as opposed to per-process in-memory counters, which would under-enforce the limit across multiple backend worker processes) --- itself a performance-adjacent correctness issue caught during the audit, not a raw throughput measurement.
+\end{itemize}
+
+Load testing against the deployed environment (concurrent report submissions, dashboard SSE connections under load) is listed as future work in Chapter~\ref{chap:conclusion}.
+
+\section{Comparison with the Original Non-Functional Objectives}
+
+Table~\ref{tab:nfr-status} revisits the non-functional requirements from Section~\ref{sec:etat-art} and states, honestly, which were verified, which were partially addressed, and which remain open.
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Requirement} & \textbf{Status} & \textbf{Note} \\
+\midrule
+Multilingual         & Achieved & Mobile: AR/FR/EN with RTL. Dashboard: FR/AR. \\
+Offline capability   & Achieved & Local SQLite queue on the mobile app, flushed on reconnect. \\
+Security             & Achieved & Three-phase audit, independently re-verified by automated code review. \\
+Performance ($<$2s)  & Partially verified & Confirmed manually; not load-tested (see above). \\
+Compatibility        & Partially verified & Verified for the primary target versions; not tested across the full device/browser matrix. \\
+Maintainability / evolution & Achieved & Automated test suite + CI pipeline in place. \\
+Responsive dashboard & Not formally verified & No dedicated cross-device layout testing was performed. \\
+\bottomrule
+\end{tabularx}
+\caption{Non-functional requirement verification status}
+\label{tab:nfr-status}
+\end{table}

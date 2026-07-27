@@ -1,0 +1,249 @@
+% ============================================================
+%  RAPPORT DE STAGE D'ÉTÉ — SAHALI
+%  Institut National des Sciences Appliquées et de Technologie (INSAT)
+%  Compile with: xelatex main.tex  (run twice for the table of contents)
+%  Requires an Arabic font installed — this file uses "Amiri" (a free,
+%  installed on your system, replace \newfontfamily\arabicfont{Amiri}
+%  below with any Arabic font you have (e.g. "Noto Naskh Arabic",
+%  "Scheherazade New").
+% ============================================================
+\documentclass[12pt, a4paper]{report}
+
+% ---- Fonts and languages (XeLaTeX) ----
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{english}
+\setotherlanguage{french}
+\setotherlanguage{arabic}
+\newfontfamily\arabicfont[Script=Arabic]{Amiri}
+
+% ---- Layout ----
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=3cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% ---- Graphics and colour ----
+\usepackage[dvipsnames]{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+
+% ---- Tables ----
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+
+% ---- Lists ----
+\usepackage{enumitem}
+
+% ---- Code listings ----
+\usepackage{listings}
+\definecolor{codebg}{HTML}{F5F7FF}
+\definecolor{codekw}{HTML}{0038AF}
+\definecolor{codestr}{HTML}{15803D}
+\definecolor{codecomment}{HTML}{64748B}
+\lstdefinestyle{code}{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecomment}\itshape,
+  breaklines=true,
+  frame=single,
+  framerule=0.3pt,
+  rulecolor=\color{gray!40},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  tabsize=2,
+  showstringspaces=false,
+}
+\lstset{style=code}
+
+% ---- Headers/footers ----
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{gray}{Sahali --- Summer Internship Report}}
+\fancyhead[R]{\small\textcolor{gray}{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---- Captions ----
+\usepackage[font=small, labelfont=bf, labelsep=colon]{caption}
+
+% ---- Hyperlinks (load last) ----
+\usepackage[colorlinks=true, linkcolor=NavyBlue, citecolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
+
+% ---- Custom colours ----
+\definecolor{primary}{HTML}{0038AF}
+\definecolor{amber}{HTML}{F59E0B}
+\definecolor{dark}{HTML}{0D1B35}
+\definecolor{muted}{HTML}{64748B}
+
+\begin{document}
+
+% ============================================================
+% PAGE DE GARDE
+% ============================================================
+\begin{titlepage}
+  \centering
+  \begin{french}
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    RÉPUBLIQUE TUNISIENNE\\
+    Ministère de l'Enseignement Supérieur\\
+    et de la Recherche Scientifique
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \textit{[Emplacement du logo INSAT]}\\[2pt]
+    Université de Carthage
+  \end{minipage}
+
+  \vspace{0.6cm}
+  {\Large\bfseries Institut National des Sciences Appliquées et de Technologie}\\[2pt]
+  \color{primary}\rule{\textwidth}{1.5pt}
+  \end{french}
+
+  \vspace{2cm}
+
+  {\color{muted}\large Rapport de Stage d'Été}
+
+  \vspace{0.8cm}
+  {\Huge\bfseries\color{dark} Sahali}
+
+  \vspace{0.3cm}
+  {\large\itshape\color{muted} A Civic Reporting Platform for Tunisian Municipalities}
+
+  \vspace{0.5cm}
+  {\color{amber}\rule{0.6\textwidth}{1pt}}
+
+  \vspace{2cm}
+
+  \begin{minipage}{0.45\textwidth}
+    \begin{flushleft}
+      \large
+      \textbf{Prepared by:}\\
+      [NOM DE L'ÉTUDIANT]
+    \end{flushleft}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.45\textwidth}
+    \begin{flushright}
+      \large
+      \textbf{Supervised by:}\\
+      [NOM DE L'ENCADRANTE]
+    \end{flushright}
+  \end{minipage}
+
+  \vspace{1cm}
+  {\large Host organization: \textbf{Nadas Group}}
+
+  \vfill
+
+  {\large\bfseries Academic Year 2025 -- 2026}
+
+  \vspace{0.5cm}
+  {\color{primary}\rule{\textwidth}{1.5pt}}
+\end{titlepage}
+
+% ============================================================
+% REMERCIEMENTS
+% ============================================================
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{Acknowledgements}
+
+I would like to express my sincere gratitude to everyone who supported me throughout this summer internship.
+
+First, my thanks go to my supervisor, [NOM DE L'ENCADRANTE], for her guidance, availability, and constructive feedback at every stage of this project, from the initial architectural decisions to the final security hardening pass.
+
+I would also like to thank Nadas Group for hosting this internship and providing the environment and trust needed to take the Sahali project from an early prototype to a working, tested, and continuously-integrated platform.
+
+My gratitude extends to the faculty of the Institut National des Sciences Appliquées et de Technologie (INSAT), whose teaching in software engineering, databases, and system architecture provided the foundation this project was built on.
+
+Finally, I thank my family and friends for their patience and encouragement throughout this internship.
+
+% ============================================================
+% RÉSUMÉ (FR / EN / AR)
+% ============================================================
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+\begin{french}
+\section*{Résumé (Français)}
+Les problèmes d'infrastructure urbaine en Tunisie --- nids-de-poule, éclairage public défaillant, fuites d'eau, dépôts sauvages --- sont aujourd'hui signalés par des canaux fragmentés (appels téléphoniques, visites en personne, réseaux sociaux) qui ne sont ni suivis, ni tracés, ni routés vers le bon service municipal. Ce rapport présente \textbf{Sahali}, une plateforme civique complète développée durant un stage d'été chez Nadas Group, qui structure ce processus en un pipeline unique : signalement, routage automatique vers la municipalité la plus proche, affectation à une équipe terrain, résolution, et retour au citoyen.
+
+La plateforme se compose d'une application mobile Flutter trilingue (arabe, français, anglais) destinée aux citoyens, d'un tableau de bord web React/TypeScript destiné aux équipes municipales, et d'une API backend FastAPI qui orchestre l'authentification, la géolocalisation, les notifications multi-canal et le stockage des données. Une part importante du stage a été consacrée à un audit de sécurité complet (rotation de clés compromises, durcissement de l'authentification, limitation de débit, gestion atomique des jetons) et à la mise en place d'un pipeline d'intégration et de déploiement continus (CI/CD) avec une suite de tests automatisés.
+
+Ce rapport détaille la démarche méthodologique, l'architecture retenue, les choix techniques, les difficultés rencontrées et leurs solutions, ainsi que les résultats des tests de validation.
+
+\textbf{Mots-clés :} plateforme civique, FastAPI, Flutter, PostgreSQL/PostGIS, sécurité applicative, CI/CD, signalement citoyen.
+\end{french}
+
+\bigskip
+
+\section*{Abstract (English)}
+Urban infrastructure issues in Tunisia --- potholes, faulty streetlights, water leaks, illegal waste dumping --- are today reported through fragmented channels (phone calls, in-person visits, social media posts) that are neither tracked nor routed to the right municipal department. This report presents \textbf{Sahali}, a full civic reporting platform built during a summer internship at Nadas Group, which structures this process into a single pipeline: report, automatic routing to the nearest municipality, assignment to a field team, resolution, and feedback to the citizen.
+
+The platform consists of a trilingual (Arabic, French, English) Flutter mobile application for citizens, a React/TypeScript web dashboard for municipal staff, and a FastAPI backend that orchestrates authentication, geolocation, multi-channel notifications, and data storage. A significant part of the internship was dedicated to a full security audit (rotating a compromised signing key, hardening authentication, rate limiting, atomic token handling) and to building a continuous integration/continuous deployment (CI/CD) pipeline with an automated test suite.
+
+This report details the methodology followed, the chosen architecture, the technical decisions made, the difficulties encountered and how they were resolved, and the results of the validation tests.
+
+\textbf{Keywords:} civic platform, FastAPI, Flutter, PostgreSQL/PostGIS, application security, CI/CD, citizen reporting.
+
+\bigskip
+
+\begin{arabic}
+\section*{ملخص (بالعربية)}
+اليوم، يتمّ الإبلاغ عن مشاكل البنية التحتية الحضرية في تونس -- مثل الحفر في الطرقات، وأعطال الإنارة العمومية، وتسرّبات المياه، والنفايات العشوائية -- عبر قنوات مبعثرة (مكالمات هاتفية، زيارات شخصية، منشورات على وسائل التواصل الاجتماعي) لا تُتابَع ولا توجَّه إلى المصلحة البلدية المختصة. يقدّم هذا التقرير منصّة \textbf{سهلي}، وهي منصّة مدنية متكاملة تم تطويرها خلال تربّص صيفي لدى مجموعة Nadas Group، تنظّم هذه العملية ضمن مسار واحد: الإبلاغ، ثمّ التوجيه الآلي إلى أقرب بلدية، ثمّ الإسناد إلى فريق ميداني، فالمعالجة، وأخيرًا إعلام المواطن بالنتيجة.
+
+تتكوّن المنصّة من تطبيق هاتفي بلغة فلَتَر (Flutter) ثلاثي اللغة (عربية، فرنسية، إنڤليزية) موجّه للمواطنين، ولوحة تحكّم على الويب بلغتَي React وTypeScript موجّهة لأعوان البلديات، وواجهة برمجية خلفية بإطار FastAPI تتولّى المصادقة، وتحديد الموقع الجغرافي، والإشعارات متعدّدة القنوات، وتخزين البيانات. خُصِّص جزء مهمّ من التربّص لمراجعة أمنية شاملة (تجديد مفتاح توقيع مُخترَق، تعزيز آليات المصادقة، تحديد معدّل الطلبات، معالجة ذرّية للرموز المميّزة) ولبناء سلسلة تكامل ونشر مستمرّين (CI/CD) مع مجموعة اختبارات آلية.
+
+يعرض هذا التقرير المنهجية المتّبعة، والهندسة المعتمدة، والخيارات التقنية، والصعوبات التي ووجهت وكيفية تجاوزها، ونتائج اختبارات التحقّق.
+
+\textbf{الكلمات المفتاحية:} منصّة مدنية، FastAPI، Flutter، PostgreSQL/PostGIS، أمن التطبيقات، CI/CD، الإبلاغ المواطني.
+\end{arabic}
+
+% ============================================================
+% TABLE DES MATIÈRES
+% ============================================================
+\newpage
+\tableofcontents
+\listoffigures
+\listoftables
+\newpage
+
+% ============================================================
+% INTRODUCTION GÉNÉRALE
+% ============================================================
+\chapter*{General Introduction}
+\addcontentsline{toc}{chapter}{General Introduction}
+
+Local governments are, in practice, judged less by policy documents than by whether a broken streetlight gets fixed. In Tunisia, as in many countries, the channel between a citizen who notices a problem and the municipal department able to fix it is informal and lossy: a phone call that nobody logs, a Facebook post that nobody routes, a visit to a counter during limited opening hours. The citizen rarely learns what happened to their report, and the municipality has no aggregate view of what is failing across its territory.
+
+This report documents the design and development of \textbf{Sahali}, a civic reporting platform built to close that loop, carried out as a summer internship at Nadas Group. The work spanned the full stack of a modern web/mobile product: a trilingual citizen-facing mobile application, a municipal staff dashboard, a REST API backend with a geospatial database, and --- once the functional core was working --- a full security audit and the construction of a continuous integration and deployment pipeline. The report plan is detailed at the end of Chapter 1.
+
+% ============================================================
+% CHAPITRES
+% ============================================================
+\input{chapters/01_cadre_general}
+\input{chapters/02_etude_specification}
+\input{chapters/03_architecture_conception}
+\input{chapters/04_realisation}
+\input{chapters/05_tests_validation}
+\input{chapters/06_conclusion}
+
+% ============================================================
+% ANNEXES
+% ============================================================
+\appendix
+\input{chapters/annexes}
+
+% ============================================================
+% BIBLIOGRAPHIE
+% ============================================================
+\input{chapters/bibliographie}
+
+\end{document}

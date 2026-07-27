@@ -1,0 +1,224 @@
+\chapter{Architecture and Design}
+\label{chap:architecture}
+
+\section{General Architecture (Technology-Agnostic)}
+
+At the highest level, Sahali is a \textbf{client--server web and mobile application}: two independent clients (a mobile app and a web dashboard) communicate with a single backend over a REST API, which in turn is the only component with direct access to the database. Figure~\ref{fig:arch-generic} shows this at a technology-agnostic level.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw=primary, thick, rounded corners=4pt, minimum width=3.6cm, minimum height=1cm, align=center, font=\small\bfseries, fill=primary!5},
+  arrow/.style={-Latex, thick, color=primary},
+]
+  \node[box] (mobile) at (-3,3) {Mobile Client\\\footnotesize (Citizens)};
+  \node[box] (web) at (3,3) {Web Client\\\footnotesize (Municipal Staff)};
+  \node[box, minimum width=5cm] (api) at (0,1) {Backend API};
+  \node[box] (db) at (-2.2,-1.2) {Database\\\footnotesize (Geospatial)};
+  \node[box] (storage) at (2.2,-1.2) {File Storage\\\footnotesize (Photos, video, audio)};
+  \node[box, minimum width=5cm] (ext) at (0,-3.2) {External Services\\\footnotesize (Push, SMS, Email, Geocoding)};
+
+  \draw[arrow] (mobile) -- (api);
+  \draw[arrow] (web) -- (api);
+  \draw[arrow] (api) -- (db);
+  \draw[arrow] (api) -- (storage);
+  \draw[arrow] (api) -- (ext);
+\end{tikzpicture}
+\caption{Technology-agnostic high-level architecture}
+\label{fig:arch-generic}
+\end{figure}
+
+\textbf{Type of architecture}: layered client--server, not microservices. A single backend process serves both clients; there is no service mesh or independent deployable services beyond the one API (the AI classification component discussed in Chapter~\ref{chap:etude} is architected as a separate microservice but was not implemented during this internship). Background work (notification dispatch, geocoding, municipality matching) runs as in-process asynchronous tasks within the same API process rather than a separate worker fleet.
+
+\textbf{Type of database}: relational, with a geospatial extension. The core entities (users, reports, municipalities, categories) have well-defined relationships that map naturally to a relational schema; the geospatial extension is what specifically distinguishes this from a generic CRUD application, since report locations and municipality boundaries are first-class spatial data, not just latitude/longitude numbers.
+
+\section{Architecture with Technologies}
+
+Figure~\ref{fig:arch-tech} refines the diagram above with the concrete technology choices.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw=primary, thick, rounded corners=4pt, minimum width=4.2cm, minimum height=1.1cm, align=center, font=\footnotesize, fill=primary!5},
+  arrow/.style={-Latex, thick, color=primary},
+]
+  \node[box] (mobile) at (-3.2,3.4) {\textbf{Flutter} (Dart)\\GoRouter, Provider (MVVM)};
+  \node[box] (web) at (3.2,3.4) {\textbf{React + TypeScript}\\Vite, Tailwind CSS};
+  \node[box, minimum width=6cm] (api) at (0,1.4) {\textbf{FastAPI} (Python 3.12)\\SQLAlchemy 2.0, Alembic, Pydantic v2};
+  \node[box] (db) at (-2.6,-1) {\textbf{PostgreSQL 15}\\+ PostGIS};
+  \node[box] (redis) at (0.3,-1) {\textbf{Redis}\\OTP, rate limits, SSE pub/sub};
+  \node[box] (storage) at (3,-1) {\textbf{Supabase Storage}\\/ MinIO (S3-compatible)};
+  \node[box, minimum width=6.5cm] (ext) at (0,-3.4) {\textbf{Firebase FCM} · \textbf{Twilio} · \textbf{SendGrid} · \textbf{OpenStreetMap Nominatim}};
+
+  \draw[arrow] (mobile) -- (api);
+  \draw[arrow] (web) -- (api);
+  \draw[arrow] (api) -- (db);
+  \draw[arrow] (api) -- (redis);
+  \draw[arrow] (api) -- (storage);
+  \draw[arrow] (api) -- (ext);
+\end{tikzpicture}
+\caption{Architecture with the selected technology stack}
+\label{fig:arch-tech}
+\end{figure}
+
+Deployment-wise, the dashboard is a static single-page application hosted on \textbf{Vercel} (deployed on every push to the main branch), the backend runs as a Docker container on \textbf{Render} (running Alembic migrations on startup, then Uvicorn), and \textbf{Supabase} provides the managed production PostgreSQL instance and object storage. Local development uses Docker Compose to run PostgreSQL/PostGIS, Redis, and MinIO.
+
+This stack combines FastAPI~\cite{fastapi} and SQLAlchemy~\cite{sqlalchemy} on the backend, Flutter~\cite{flutter} on mobile, React~\cite{react} on the dashboard, PostGIS~\cite{postgis} for geospatial storage, and Redis~\cite{redis} for caching, rate-limit counters, and pub/sub.
+
+\section{Design}
+
+\subsection{Class Diagram}
+\label{sec:class-diagram}
+
+Figure~\ref{fig:class} shows the core domain entities and their relationships, simplified from the full SQLAlchemy schema for readability (junction/audit fields such as timestamps are omitted).
+
+\begin{figure}[h!]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  cls/.style={draw=primary, thick, rectangle, align=left, font=\footnotesize, fill=primary!5, inner sep=6pt},
+  rel/.style={-Latex, thick},
+]
+  \node[cls] (user) at (0,6) {
+    \begin{tabular}{@{}l@{}}
+      \textbf{User} \\ \midrule
+      id: UUID \\
+      role: citizen\,\textbar\,field\_agent\,\textbar\,analyst\,\textbar\,supervisor\,\textbar\,admin \\
+      fullName, phone, email \\
+      municipalityId (staff only) \\
+      preferredLanguage
+    \end{tabular}
+  };
+  \node[cls] (report) at (7,6) {
+    \begin{tabular}{@{}l@{}}
+      \textbf{Report} \\ \midrule
+      id: UUID, trackingCode \\
+      citizenId, categoryId, municipalityId \\
+      location: Point (PostGIS) \\
+      address, addressAr, city, cityAr \\
+      status, priority \\
+      aiCategoryId, aiConfidence, isDuplicate
+    \end{tabular}
+  };
+  \node[cls] (municipality) at (0,2.8) {
+    \begin{tabular}{@{}l@{}}
+      \textbf{Municipality} \\ \midrule
+      id, name \\
+      location: Point (centroid) \\
+      subscriptionTier
+    \end{tabular}
+  };
+  \node[cls] (category) at (7,2.8) {
+    \begin{tabular}{@{}l@{}}
+      \textbf{Category} \\ \midrule
+      id, parentId (self-ref.) \\
+      labelAr, labelFr, labelEn \\
+      slaHours, isActive
+    \end{tabular}
+  };
+  \node[cls] (assignment) at (0,-0.3) {
+    \begin{tabular}{@{}l@{}}
+      \textbf{Assignment} \\ \midrule
+      id, reportId, agentId \\
+      assignedBy, isActive
+    \end{tabular}
+  };
+  \node[cls] (resolution) at (7,-0.3) {
+    \begin{tabular}{@{}l@{}}
+      \textbf{ResolutionReport} \\ \midrule
+      id, reportId, resolvedBy \\
+      comment, materials \\
+      photoUrls[], videoUrl, voiceNoteUrl
+    \end{tabular}
+  };
+  \node[cls] (history) at (3.5,-3.2) {
+    \begin{tabular}{@{}l@{}}
+      \textbf{ReportStatusHistory} \\ \midrule
+      id, reportId \\
+      fromStatus, toStatus, changedBy, note
+    \end{tabular}
+  };
+
+  \draw[rel] (user) -- node[above, font=\tiny]{1 -- 0..*} (report);
+  \draw[rel] (report) -- node[right, font=\tiny]{0..*} (municipality);
+  \draw[rel] (report) -- node[left, font=\tiny]{1} (category);
+  \draw[rel] (report) -- node[left, font=\tiny]{1 -- 0..*} (assignment);
+  \draw[rel] (assignment) -- node[below, font=\tiny]{0..* -- 1} (user);
+  \draw[rel] (report) -- node[right, font=\tiny]{1 -- 0..1} (resolution);
+  \draw[rel] (report) -- node[below, font=\tiny]{1 -- 0..*} (history);
+  \draw[rel] (municipality) -- node[left, font=\tiny]{1 -- 0..*} (user);
+\end{tikzpicture}%
+}
+\caption{Simplified class diagram of the core domain model}
+\label{fig:class}
+\end{figure}
+
+\subsection{Sequence Diagram --- Report Submission}
+
+Figure~\ref{fig:sequence} traces the full submission flow for a new report, from the mobile client to the background tasks it triggers.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+  lifeline/.style={dashed, thick, color=muted},
+  actor/.style={font=\footnotesize\bfseries, align=center},
+  msg/.style={-Latex, thick, color=primary, font=\scriptsize},
+]
+  \def\ya{9} \def\yb{-6.5}
+  \foreach \x/\name in {0/Mobile App, 3/Backend API, 6/PostgreSQL, 9/Nominatim, 12/Notification Services} {
+    \node[actor] at (\x,\ya+0.4) {\name};
+    \draw[lifeline] (\x,\ya) -- (\x,\yb);
+  }
+
+  \draw[msg] (0,8.2) -- (3,8.2) node[midway, above]{POST /reports};
+  \draw[msg] (3,7.4) -- (6,7.4) node[midway, above]{INSERT report (status=submitted)};
+  \draw[msg] (6,6.6) -- (3,6.6) node[midway, above]{OK};
+  \draw[msg] (3,5.8) -- (0,5.8) node[midway, above]{201 Created + tracking code};
+
+  \node[font=\scriptsize\itshape, color=muted] at (6,4.9) {\textit{background tasks, non-blocking}};
+
+  \draw[msg] (3,4.2) -- (6,4.2) node[midway, above]{nearest-municipality query (PostGIS KNN)};
+  \draw[msg] (6,3.4) -- (3,3.4) node[midway, above]{municipality\_id};
+  \draw[msg] (3,2.6) -- (9,2.6) node[midway, above]{reverse geocode (lat, lng), FR + AR};
+  \draw[msg] (9,1.8) -- (3,1.8) node[midway, above]{address, city (FR + AR)};
+  \draw[msg] (3,1.0) -- (6,1.0) node[midway, above]{UPDATE report (municipality, address)};
+  \draw[msg] (3,0.2) -- (12,0.2) node[midway, above]{notify citizen (push/SMS) + notify staff};
+\end{tikzpicture}
+\caption{Sequence diagram: report submission and asynchronous enrichment}
+\label{fig:sequence}
+\end{figure}
+
+Two design decisions are visible in this diagram. First, municipality matching and address geocoding both happen \emph{after} the report is already persisted and acknowledged to the client --- the citizen is never made to wait on an external geocoding API call. Second, geocoding is deliberately queried twice (French, then Arabic) since OpenStreetMap frequently only tags a given point in one language.
+
+\subsection{Package Diagram}
+
+Figure~\ref{fig:package} shows the top-level module organization on both the mobile and backend codebases.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+  pkg/.style={draw=primary, thick, rectangle, minimum width=3.4cm, minimum height=0.9cm, align=center, font=\footnotesize, fill=primary!5},
+  group/.style={draw=muted, thick, rounded corners=4pt, inner sep=10pt},
+]
+  \begin{scope}
+    \node[pkg] (m1) at (0,2) {core\\\footnotesize router, theme, l10n, network};
+    \node[pkg] (m2) at (0,0.6) {features\\\footnotesize auth, report, agent, notifications};
+    \node[pkg] (m3) at (0,-0.8) {shared\\\footnotesize widgets, models};
+    \node[above=0.3cm of m1, font=\bfseries] {Mobile (Flutter)};
+  \end{scope}
+
+  \begin{scope}[xshift=6.5cm]
+    \node[pkg] (b1) at (0,2) {routers\\\footnotesize auth, reports, admin, events\ldots};
+    \node[pkg] (b2) at (0,0.6) {services\\\footnotesize geocoding, storage, otp, notification};
+    \node[pkg] (b3) at (0,-0.8) {models / schemas / utils};
+    \node[above=0.3cm of b1, font=\bfseries] {Backend (FastAPI)};
+  \end{scope}
+
+  \draw[-Latex, thick] (m1) -- (m2);
+  \draw[-Latex, thick] (m2) -- (m3);
+  \draw[-Latex, thick] (b1) -- (b2);
+  \draw[-Latex, thick] (b2) -- (b3);
+\end{tikzpicture}
+\caption{Package diagram: mobile and backend module organization}
+\label{fig:package}
+\end{figure}

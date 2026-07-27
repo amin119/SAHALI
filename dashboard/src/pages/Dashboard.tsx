@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
 import type { AdminStats, Report } from '../types/api'
 import StatusBadge from '../components/ui/StatusBadge'
+import ActionCard from '../components/ui/ActionCard'
 import { useReportEvents } from '../hooks/useReportEvents'
 import { useLang } from '../context/LangContext'
 
@@ -28,6 +30,7 @@ function KpiSkeleton() {
 
 export default function Dashboard() {
   const { t, locale } = useLang()
+  const navigate = useNavigate()
   const [rangeTab, setRangeTab] = useState('7j')
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [recentReports, setRecentReports] = useState<Report[]>([])
@@ -91,6 +94,37 @@ export default function Dashboard() {
       ]
     : null
 
+  const attentionCards = stats
+    ? [
+        {
+          key: 'submitted' as const,
+          icon: 'fiber_new',
+          color: '#0038AF',
+          count: stats.by_status.submitted ?? 0,
+          label: t('attn_new'),
+          description: t('attn_new_desc'),
+        },
+        {
+          key: 'under_review' as const,
+          icon: 'search',
+          color: '#F59E0B',
+          count: stats.by_status.under_review ?? 0,
+          label: t('attn_review'),
+          description: t('attn_review_desc'),
+        },
+        {
+          key: 'in_progress' as const,
+          icon: 'engineering',
+          color: '#0EA5E9',
+          count: stats.by_status.in_progress ?? 0,
+          label: t('attn_progress'),
+          description: t('attn_progress_desc'),
+        },
+      ]
+    : []
+
+  const attentionTotal = attentionCards.reduce((s, c) => s + c.count, 0)
+
   const statusDistribution = stats
     ? [
         { label: t('dist_submitted'), count: stats.by_status.submitted ?? 0, color: '#0038AF' },
@@ -138,6 +172,51 @@ export default function Dashboard() {
             {t('dash_export')}
           </button>
         </div>
+      </div>
+
+      {/* Attention — the first thing a non-expert user should see: what needs action, not charts */}
+      <div className="mb-8">
+        <h3 className="text-[#181c20] font-semibold text-base mb-3">{t('dash_attention_title')}</h3>
+        {stats ? (
+          attentionTotal > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {attentionCards.map(c => (
+                <ActionCard
+                  key={c.key}
+                  icon={c.icon}
+                  color={c.color}
+                  count={c.count}
+                  label={c.label}
+                  description={c.description}
+                  onClick={c.count > 0 ? () => navigate(`/reports?status=${c.key}`) : undefined}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 bg-white rounded-xl p-5 shadow-sm border border-[#E2E8F0]">
+              <span className="material-symbols-outlined text-[#22C55E]" style={{ fontSize: 24 }}>task_alt</span>
+              <p className="text-sm text-[#181c20]">{t('dash_attention_all_clear')}</p>
+            </div>
+          )
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-xl p-5 shadow-sm border border-[#E2E8F0] animate-pulse flex items-center gap-4">
+                <div className="w-12 h-12 bg-[#E2E8F0] rounded-lg flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="h-6 bg-[#E2E8F0] rounded w-10 mb-2" />
+                  <div className="h-3 bg-[#E2E8F0] rounded w-28" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Detailed stats — the deep dive, kept below the fold since it's not what most users need first */}
+      <div className="mb-5">
+        <h3 className="text-[#181c20] font-semibold text-base">{t('dash_details_title')}</h3>
+        <p className="text-[#94A3B8] text-xs mt-0.5">{t('dash_details_subtitle')}</p>
       </div>
 
       {/* KPI Cards */}

@@ -1,0 +1,189 @@
+\chapter{Study and Specification Phase}
+\label{chap:etude}
+
+\section{State of the Art and Study of Existing Solutions}
+\label{sec:etat-art}
+
+\subsection{Existing Solutions}
+
+Civic issue-reporting platforms are an established category internationally, and reviewing them clarified which patterns to reuse and which gaps to fill for a Tunisia-specific product.
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{FixMyStreet}~\cite{fixmystreet} (UK, mySociety) --- open-source, one of the earliest and most widely deployed civic reporting platforms. Strong on report-to-map visualization and category-based routing; weaker on native mobile experience and not designed for multilingual/RTL usage.
+  \item \textbf{311 systems}~\cite{nyc311} (United States --- e.g.\ NYC 311, SeeClickFix) --- large-scale municipal service-request platforms, typically covering more than just infrastructure (they also handle service requests such as noise complaints). They demonstrate the value of a unified tracking code and public status API, both of which Sahali adopts.
+  \item \textbf{E-government municipal portals in the MENA region} --- generally administrative-form-oriented (permits, certificates) rather than reactive infrastructure reporting, and rarely offer a native mobile app with offline support.
+\end{itemize}
+
+\subsection{Technologies, Methods, and Tools in the Domain}
+
+Across the solutions above, a common technical pattern emerges: a mobile or web front end for citizens, a relational or geospatial database for report storage, a staff-facing dashboard for triage, and a notification layer (SMS/email/push) for status updates. Increasingly, platforms in this space add a machine-learning layer for automatic category classification and duplicate detection --- a pattern Sahali's design anticipates (see the \texttt{ai\_category\_id} and \texttt{is\_duplicate} fields in the data model, Section~\ref{sec:class-diagram}) even though the model itself is future work.
+
+\subsection{Limitations of Existing Solutions}
+
+None of the reviewed solutions fully addresses the constraints this project needed to satisfy:
+
+\begin{itemize}[leftmargin=*]
+  \item Limited or no Arabic/RTL support, which is essential for a Tunisian citizen-facing product.
+  \item Not designed around Tunisia's municipal structure (multi-tenant by commune, each with its own staff and service-level targets).
+  \item Address data in the region is frequently incomplete on OpenStreetMap and available only in one of French or Arabic per point, which existing platforms do not handle explicitly.
+  \item Several are either closed-source with licensing costs unsuited to a pilot-stage municipal budget, or open-source but architected for a single large deployment rather than a multi-tenant one.
+
+\end{itemize}
+
+\section{Core Concepts}
+
+This section defines three concepts referenced throughout the report.
+
+\subsection{CI/CD}
+
+\textbf{Continuous Integration (CI)} is the practice of automatically building and testing every code change --- in this project, on every push, via GitHub Actions --- so that regressions are caught within minutes rather than discovered later in production. \textbf{Continuous Deployment/Delivery (CD)} extends this to automating the release process itself: in this project, a signed Android release build is produced automatically from a version tag rather than built by hand on a developer's machine. Together, CI/CD replace manual, error-prone release steps with a repeatable, auditable pipeline (detailed in Section~\ref{sec:cicd}).
+
+\subsection{Cloud Hosting}
+
+\textbf{Cloud hosting} means running infrastructure (servers, databases, storage) on a third-party provider's platform rather than on physical hardware the team owns. Sahali uses three managed cloud services rather than self-hosted infrastructure: \textbf{Render} for the backend API (Docker-based deployment), \textbf{Vercel} for the dashboard (static site hosting with automatic deployment from Git), and \textbf{Supabase} for the production database and file storage (managed PostgreSQL with the PostGIS extension, plus an S3-compatible storage API). This choice removed the need to provision or maintain servers during the internship, at the cost of some platform-specific configuration (e.g.\ passing cryptographic keys as base64-encoded environment variables rather than files).
+
+\subsection{LLM-Assisted Development}
+
+A \textbf{Large Language Model (LLM)} is a machine learning model trained to understand and generate text (and, in coding-assistant contexts, source code) from natural-language prompts. This project was developed with substantial assistance from an LLM-based coding agent (Claude Code), used interactively throughout: for writing and reviewing code, for running and interpreting test suites, for diagnosing build and deployment failures, and for the systematic security audit described in Chapter~\ref{chap:realisation}. This is disclosed here both for transparency and because it directly shaped the iterative, verify-every-step methodology described in Section~\ref{chap:cadre-general} --- an LLM agent can make changes quickly, which raises rather than lowers the importance of verifying each change actually works before moving to the next one.
+
+\section{Specification}
+
+\subsection{Identification of Actors}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Actor} & \textbf{Role} \\
+\midrule
+Citizen        & Submits reports (registered or anonymous), tracks their status, receives notifications. \\
+Field Agent    & Municipal staff assigned to specific reports; updates status and files a resolution report on completion. \\
+Analyst        & Reviews and reclassifies incoming reports, monitors statistics; no administrative rights. \\
+Supervisor     & Assigns reports to one or more field agents; manages teams for their municipality. \\
+Admin          & Full platform control: municipalities, staff accounts, category/SLA configuration, cross-municipality visibility. \\
+\bottomrule
+\end{tabularx}
+\caption{System actors}
+\label{tab:actors}
+\end{table}
+
+\subsection{Functional Requirements}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Authenticate users} --- registration and login by phone (OTP) or email/password, for both citizens and staff, with role-based access control.
+  \item \textbf{Submit a report} --- category, photo, GPS location (with manual correction), optional description; works for both registered and anonymous citizens.
+  \item \textbf{Automatic routing} --- match each report to the nearest municipality by geographic distance, with no manual sorting step.
+  \item \textbf{Track a report} --- citizens see their own reports' full status history; a public tracking-code lookup works without an account.
+  \item \textbf{Triage and assign} --- municipal staff can reclassify a report's category and assign it to one or more field agents.
+  \item \textbf{Update report status} --- along the state machine \texttt{submitted → received → under\_review → in\_progress → resolved} (or \texttt{rejected} at any point), enforced server-side.
+  \item \textbf{File a resolution report} --- field agents attach up to five photos, an optional video, an optional voice note, and a mandatory written comment when closing a report.
+  \item \textbf{Notify} --- push, SMS, and email notifications dispatched on every status change, plus a live in-dashboard event stream for staff.
+  \item \textbf{View statistics} --- aggregate counts, resolution-time averages, and per-municipality performance figures on the dashboard.
+  \item \textbf{Manage staff and municipalities} --- administrators can create/update/deactivate staff accounts and municipality records.
+\end{itemize}
+
+\subsection{Non-Functional Requirements}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Requirement} & \textbf{Target} \\
+\midrule
+Multilingual        & Mobile app: Arabic (RTL), French, English. Dashboard: French, Arabic. \\
+Responsive           & Dashboard usable on both desktop and tablet widths. \\
+Offline capability   & Mobile app queues a submitted report locally (SQLite) and sends it once connectivity returns. \\
+Performance          & Report submission end-to-end in under 2 minutes; individual API responses target under 2 seconds. \\
+Security             & See the dedicated security requirements below --- treated as a first-class, independently-audited concern rather than folded into general performance targets. \\
+Compatibility        & iOS 14+, Android 8.0 (API 26)+; modern evergreen browsers for the dashboard. \\
+Maintainability / evolution & Automated test suite and CI pipeline (Chapter~\ref{chap:realisation}) so the codebase can evolve without manual regression testing. \\
+\bottomrule
+\end{tabularx}
+\caption{Non-functional requirements}
+\label{tab:nfr}
+\end{table}
+
+\textbf{Security requirements} deserve their own enumeration, since they were the subject of a dedicated audit phase (Chapter~\ref{chap:realisation}):
+\begin{itemize}[leftmargin=*]
+  \item All cryptographic signing keys must be rotatable and never retrievable from source control.
+  \item Every endpoint that reads or modifies user data must be authenticated and authorized by role.
+  \item Sensitive endpoints (login, OTP, password reset) must be rate-limited independently of the platform-wide default.
+  \item Sessions must be revocable server-side (logout must have an immediate effect, not just a client-side token discard).
+  \item Concurrent requests against the same security-sensitive resource (a refresh token, a one-time ticket) must not both succeed.
+
+\end{itemize}
+
+\subsection{Constraints}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Technical}: the stack was fixed early (Flutter, FastAPI, React/TypeScript, PostgreSQL+PostGIS) based on team familiarity and the need for a geospatial-capable relational database; changing any of these mid-internship was not considered.
+  \item \textbf{Temporal}: a summer internship is time-boxed to a few months, which shaped the decision to prioritize a working, secure core platform over building the (larger, higher-risk) AI classification microservice.
+  \item \textbf{Material}: no dedicated server budget was available at the start, which drove the choice of managed platforms with usable free/low-cost tiers (Render, Vercel, Supabase) over self-hosted infrastructure.
+  \item \textbf{Regulatory}: personal data handling needed to be mindful of Tunisian data protection law~\cite{law632004} (Law 63-2004), which informed decisions such as supporting anonymous report submission.
+\end{itemize}
+
+\subsection{General Use Case Diagram}
+
+Figure~\ref{fig:usecase} summarizes the main actor--use-case relationships described above.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+  actor/.style={minimum height=1.6cm},
+  usecase/.style={draw=primary, thick, ellipse, minimum width=3.1cm, minimum height=0.9cm, align=center, font=\small},
+  boundary/.style={draw=muted, thick, rounded corners=6pt},
+]
+
+  % --- actor drawing macro ---
+  \newcommand{\stickfigure}[3]{%
+    \begin{scope}[shift={(#1,#2)}]
+      \draw[thick] (0,0.85) circle (0.18);
+      \draw[thick] (0,0.67) -- (0,0);
+      \draw[thick] (-0.28,0.4) -- (0.28,0.4);
+      \draw[thick] (0,0) -- (-0.22,-0.45);
+      \draw[thick] (0,0) -- (0.22,-0.45);
+      \node[font=\small\bfseries, below=0.15cm] at (0,-0.45) {#3};
+    \end{scope}
+  }
+
+  % Actors (left side)
+  \stickfigure{-6.3}{2.6}{Citizen}
+  \stickfigure{-6.3}{0.6}{Field Agent}
+  \stickfigure{-6.3}{-1.4}{Supervisor}
+
+  % Actors (right side)
+  \stickfigure{6.3}{2.0}{Analyst}
+  \stickfigure{6.3}{-0.6}{Admin}
+
+  % System boundary
+  \node[boundary, minimum width=8.6cm, minimum height=6.4cm] (sys) at (0,0.6) {};
+  \node[above, font=\bfseries] at (sys.north) {Sahali Platform};
+
+  % Use cases
+  \node[usecase] (uc1) at (-2.6,2.6) {Submit Report};
+  \node[usecase] (uc2) at (0,2.6)    {Track Report};
+  \node[usecase] (uc3) at (2.6,2.6)  {View Statistics};
+  \node[usecase] (uc4) at (-2.6,0.6) {Update Status};
+  \node[usecase] (uc5) at (0,0.6)    {File Resolution Report};
+  \node[usecase] (uc6) at (2.6,0.6)  {Reclassify Report};
+  \node[usecase] (uc7) at (-2.6,-1.4){Assign Report};
+  \node[usecase] (uc8) at (0,-1.4)   {Manage Team};
+  \node[usecase] (uc9) at (2.6,-1.4) {Manage Staff \& Municipalities};
+
+  % Connections
+  \draw (-5.5,2.6) -- (uc1.west);
+  \draw (-5.5,2.6) -- (uc2.west);
+  \draw (-5.5,0.6) -- (uc4.west);
+  \draw (-5.5,0.6) -- (uc5.west);
+  \draw (-5.5,-1.4) -- (uc7.west);
+  \draw (-5.5,-1.4) -- (uc8.west);
+
+  \draw (5.5,2.0) -- (uc3.east);
+  \draw (5.5,2.0) -- (uc6.east);
+  \draw (5.5,-0.6) -- (uc9.east);
+  \draw (5.5,-0.6) -- (uc7.east);
+
+\end{tikzpicture}
+\caption{General use case diagram of the Sahali platform}
+\label{fig:usecase}
+\end{figure}

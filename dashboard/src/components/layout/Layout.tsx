@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
@@ -36,6 +37,7 @@ export default function Layout() {
   const { user } = useAuth()
   const { t, lang } = useLang()
   const firstName = user?.full_name.split(' ')[0] ?? ''
+  const [navOpen, setNavOpen] = useState(false)
 
   const titleKey = TITLE_KEYS[location.pathname]
   const title = titleKey ? t(titleKey) : 'Sahali'
@@ -52,10 +54,10 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: '#f7f9fe' }}>
-      <Sidebar />
-      <div style={{ marginLeft: 260, flex: 1, minWidth: 0 }}>
-        <TopBar title={title} subtitle={subtitle} />
-        <main className="p-8">
+      <Sidebar open={navOpen} onClose={() => setNavOpen(false)} />
+      <div className="flex-1 min-w-0 lg:ml-[260px]">
+        <TopBar title={title} subtitle={subtitle} onMenuClick={() => setNavOpen(true)} />
+        <main className="p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>
