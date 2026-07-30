@@ -1,3 +1,4 @@
+import re
 import uuid
 import httpx
 import boto3
@@ -6,6 +7,15 @@ from botocore.client import Config
 from app.config import get_settings
 
 settings = get_settings()
+
+
+def _sanitize_filename(filename: str) -> str:
+    """Keeps only the basename and strips anything but safe characters, so a
+    crafted filename (e.g. containing `../` or a full path) can't influence
+    the storage key beyond its own segment."""
+    base = filename.replace("\\", "/").rsplit("/", 1)[-1]
+    base = re.sub(r"[^A-Za-z0-9._-]", "_", base).lstrip(".")
+    return base[:200] or "file"
 
 
 # ── Supabase Storage REST (preferred on Render) ──────────────────────────────
@@ -57,7 +67,7 @@ def _s3_upload(data: bytes, key: str, content_type: str) -> str:
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def upload_photo(data: bytes, filename: str, content_type: str) -> dict:
-    key = f"reports/{uuid.uuid4()}/{filename}"
+    key = f"reports/{uuid.uuid4()}/{_sanitize_filename(filename)}"
     if settings.SUPABASE_URL and settings.SUPABASE_SERVICE_KEY:
         photo_url = _supabase_upload(data, key, content_type)
     else:
@@ -67,8 +77,9 @@ def upload_photo(data: bytes, filename: str, content_type: str) -> dict:
 
 def generate_presigned_upload(filename: str, content_type: str) -> dict:
     client = _s3_client()
-    key = f"reports/{uuid.uuid4()}/{filename}"
-    thumb_key = f"thumbnails/{uuid.uuid4()}/{filename}"
+    safe_filename = _sanitize_filename(filename)
+    key = f"reports/{uuid.uuid4()}/{safe_filename}"
+    thumb_key = f"thumbnails/{uuid.uuid4()}/{safe_filename}"
 
     upload_url = client.generate_presigned_url(
         "put_object",

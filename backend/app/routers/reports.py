@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Query, UploadFile, File, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks, Query, UploadFile, File, Response
 from fastapi.responses import StreamingResponse
 import io
 from sqlalchemy import func, text
@@ -26,8 +26,19 @@ from app.services.geocoding import reverse_geocode
 from app.services.municipality_matching import closest_municipality_id
 from app.services.event_bus import publish_report_event
 from app.utils.retry import with_retries
+from app.rate_limit import limiter
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+# /reports/photo is a generic media upload used for photos, resolution videos,
+# and voice notes alike (see mobile ReportService.uploadFile) — the cap and
+# whitelist below have to cover all three, not just still images.
+MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+_ALLOWED_UPLOAD_CONTENT_TYPES = {
+    "image/jpeg", "image/png", "image/webp", "image/heic",
+    "video/mp4", "video/quicktime", "video/3gpp",
+    "audio/mp4", "audio/aac", "audio/mpeg",
+}
 
 # Allowed forward status transitions
 _TRANSITIONS: dict[ReportStatus, list[ReportStatus]] = {
@@ -113,7 +124,15 @@ def get_presigned_url(
 @router.get("/photo/{file_path:path}")
 def proxy_photo(file_path: str):
     """Public proxy that streams a photo from MinIO. Used by mobile clients
-    that cannot reach localhost:9000 directly."""
+    that cannot reach localhost:9000 directly.
+
+    Deliberately not auth-gated: mobile (Image.network) and the dashboard
+    (<img src>) both render these URLs directly with no Authorization header,
+    so gating this would break photo display rather than secure it. The key
+    itself is an unguessable UUID-prefixed path (see upload_photo) handed out
+    only inside already access-controlled report responses — treat it as a
+    capability URL, not a public listing. Revisit if that assumption changes
+    (e.g. if keys are ever derived from something guessable)."""
     try:
         data, content_type = storage_get_photo(file_path)
         return StreamingResponse(io.BytesIO(data), media_type=content_type,
@@ -125,14 +144,21 @@ def proxy_photo(file_path: str):
 @router.post("/photo", response_model=PhotoUploadResponse)
 async def upload_report_photo(
     file: UploadFile = File(...),
+    _: User = Depends(get_current_user),
 ):
+    content_type = file.content_type or "application/octet-stream"
+    if content_type not in _ALLOWED_UPLOAD_CONTENT_TYPES:
+        raise HTTPException(status_code=415, detail="Unsupported file type")
+
     data = await file.read()
-    filename = file.filename or "photo.jpg"
-    content_type = file.content_type or "image/jpeg"
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File too large (max 25MB)")
+
+    filename = file.filename or "upload"
     try:
         result = storage_upload_photo(data, filename, content_type)
         return PhotoUploadResponse(**result)
-    except Exception as exc:
+    except Exception:
         raise HTTPException(
             status_code=503,
             detail="Photo storage unavailable. Submit without photo.",
@@ -140,7 +166,9 @@ async def upload_report_photo(
 
 
 @router.post("", response_model=ReportOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 def submit_report(
+    request: Request,
     body: ReportCreate,
     background: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -222,7 +250,9 @@ def _get_or_create_anon_user(db: Session) -> User:
 
 
 @router.post("/anonymous", response_model=ReportOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 def submit_anonymous_report(
+    request: Request,
     body: ReportCreate,
     background: BackgroundTasks,
     db: Session = Depends(get_db),

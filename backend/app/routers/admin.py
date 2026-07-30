@@ -84,10 +84,14 @@ def _municipality_stats_by_id(db: Session, municipality_id: int) -> dict | None:
 
 
 @router.get("/storage/test")
-def test_storage():
-    """Public endpoint — checks storage connectivity without uploading anything."""
+def test_storage(_: User = Depends(require_super_admin)):
+    """Checks storage connectivity without uploading anything — gated to
+    super-admin; failures go to server logs, not the response, so the bucket
+    name and internal error text can't leak to a caller."""
     import httpx
+    import structlog
     from app.config import get_settings
+    log = structlog.get_logger()
     s = get_settings()
 
     if s.SUPABASE_URL and s.SUPABASE_SERVICE_KEY:
@@ -97,17 +101,20 @@ def test_storage():
             url = f"{s.SUPABASE_URL}/storage/v1/bucket/{bucket}"
             resp = httpx.get(url, headers={"Authorization": f"Bearer {s.SUPABASE_SERVICE_KEY}"}, timeout=10)
             if resp.status_code == 200:
-                return {"status": "ok", "method": "supabase-rest", "bucket": s.AWS_S3_BUCKET}
-            return {"status": "error", "method": "supabase-rest", "http": resp.status_code, "detail": resp.text}
+                return {"status": "ok", "method": "supabase-rest"}
+            log.warning("storage_test_failed", method="supabase-rest", http_status=resp.status_code)
+            return {"status": "error", "method": "supabase-rest"}
         except Exception as e:
-            return {"status": "error", "method": "supabase-rest", "detail": str(e)}
+            log.warning("storage_test_failed", method="supabase-rest", error=str(e))
+            return {"status": "error", "method": "supabase-rest"}
 
     from app.services.storage import _s3_client
     try:
         _s3_client().list_objects_v2(Bucket=s.AWS_S3_BUCKET, MaxKeys=1)
-        return {"status": "ok", "method": "s3", "bucket": s.AWS_S3_BUCKET}
+        return {"status": "ok", "method": "s3"}
     except Exception as e:
-        return {"status": "error", "method": "s3", "detail": str(e)}
+        log.warning("storage_test_failed", method="s3", error=str(e))
+        return {"status": "error", "method": "s3"}
 
 
 @router.get("/stats/public")

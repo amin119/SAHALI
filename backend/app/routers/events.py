@@ -1,14 +1,15 @@
 import asyncio
 import json
 import redis.asyncio as aioredis
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import StreamingResponse, JSONResponse
 
 from app.config import get_settings
 from app.database import SessionLocal
 from app.models.user import User, UserRole
 from app.services.event_bus import CHANNEL
-from app.utils.security import decode_token
+from app.services.sse_ticket import issue_ticket, consume_ticket
+from app.utils.deps import require_staff
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -47,19 +48,26 @@ async def _stream(request: Request, municipality_id: int | None):
         await r.aclose()
 
 
+@router.post("/ticket")
+def create_sse_ticket(current_user: User = Depends(require_staff)):
+    """Issues a 60-second, single-use ticket for opening the SSE stream below.
+    Exists because EventSource can't set an Authorization header, so a real
+    access token would otherwise have to sit in the URL (and therefore in
+    server logs / browser history) for its full lifetime — a one-time ticket
+    that dies in a minute is a much smaller thing to leak."""
+    return {"ticket": issue_ticket(str(current_user.id))}
+
+
 @router.get("/reports")
-async def report_events(request: Request, token: str = Query(...)):
-    """
-    SSE stream of report lifecycle events for dashboard clients.
-    Token is passed as a query param because EventSource cannot set custom headers.
-    Only staff roles (admin, supervisor, field_agent, analyst) are admitted.
-    """
+async def report_events(request: Request, ticket: str = Query(...)):
+    """SSE stream of report lifecycle events for dashboard clients, gated by
+    a ticket minted via POST /events/ticket (see docstring there)."""
     try:
-        payload = decode_token(token)
-        if payload.get("type") != "access":
-            raise ValueError("wrong token type")
+        user_id = consume_ticket(ticket)
+        if not user_id:
+            raise ValueError("invalid or expired ticket")
         with SessionLocal() as db:
-            user = db.get(User, payload["sub"])
+            user = db.get(User, user_id)
         if not user or not user.is_active or user.role == UserRole.citizen:
             raise ValueError("not staff")
     except Exception:

@@ -5,7 +5,6 @@ from typing import Literal
 
 class Settings(BaseSettings):
     APP_ENV: Literal["development", "staging", "production"] = "development"
-    SECRET_KEY: str = "change-me-in-production"
     DEBUG: bool = True
 
     # JWT — file paths for local dev, base64 env vars for production (Render)
@@ -58,10 +57,13 @@ class Settings(BaseSettings):
 
     # CORS — "*" for dev, comma-separated origins for production
     CORS_ORIGINS: str = "*"
+    # Scope this to your actual Vercel project once you know its domain
+    # (e.g. r"https://sahali-dashboard(-[a-z0-9-]+)?\.vercel\.app") — the
+    # default below matches any *.vercel.app app, not just this project's.
+    CORS_VERCEL_ORIGIN_REGEX: str = r"https://.*\.vercel\.app"
 
     # Rate limiting
     RATE_LIMIT_PER_MINUTE: int = 100
-    USER_RATE_LIMIT_PER_MINUTE: int = 20
 
     class Config:
         env_file = ".env"

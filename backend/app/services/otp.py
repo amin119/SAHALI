@@ -1,3 +1,4 @@
+import hmac
 import redis as redis_lib
 from app.config import get_settings
 from app.utils.security import generate_otp
@@ -6,18 +7,31 @@ settings = get_settings()
 _redis = redis_lib.from_url(settings.REDIS_URL, decode_responses=True)
 
 OTP_TTL = 300  # 5 minutes
+MAX_VERIFY_ATTEMPTS = 5  # per OTP lifetime — resets when a fresh code is requested
+
+
+def _attempts_exhausted(attempts_key: str) -> bool:
+    attempts = int(_redis.get(attempts_key) or 0)
+    if attempts >= MAX_VERIFY_ATTEMPTS:
+        return True
+    _redis.setex(attempts_key, OTP_TTL, attempts + 1)
+    return False
 
 
 # ── Phone OTP ──────────────────────────────────────────────────────────────────
 
 def store_otp(phone: str, code: str) -> None:
     _redis.setex(f"otp:{phone}", OTP_TTL, code)
+    _redis.delete(f"otp_attempts:{phone}")
 
 
 def verify_otp(phone: str, code: str) -> bool:
+    if _attempts_exhausted(f"otp_attempts:{phone}"):
+        return False
     stored = _redis.get(f"otp:{phone}")
-    if stored and stored == code:
+    if stored and hmac.compare_digest(stored, code):
         _redis.delete(f"otp:{phone}")
+        _redis.delete(f"otp_attempts:{phone}")
         return True
     return False
 
@@ -42,13 +56,17 @@ def _dispatch_sms(phone: str, message: str) -> None:
 
 def store_email_otp(email: str, purpose: str, code: str) -> None:
     _redis.setex(f"email_otp:{purpose}:{email}", OTP_TTL, code)
+    _redis.delete(f"email_otp_attempts:{purpose}:{email}")
 
 
 def verify_email_otp(email: str, code: str, purpose: str) -> bool:
     key = f"email_otp:{purpose}:{email}"
+    if _attempts_exhausted(f"email_otp_attempts:{purpose}:{email}"):
+        return False
     stored = _redis.get(key)
-    if stored and stored == code:
+    if stored and hmac.compare_digest(stored, code):
         _redis.delete(key)
+        _redis.delete(f"email_otp_attempts:{purpose}:{email}")
         return True
     return False
 
