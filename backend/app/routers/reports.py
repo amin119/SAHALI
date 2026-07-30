@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status, Backgrou
 from fastapi.responses import StreamingResponse
 import io
 from sqlalchemy.orm import Session, joinedload
-from geoalchemy2.functions import ST_DWithin, ST_MakePoint, ST_SetSRID
+from geoalchemy2.functions import ST_DWithin, ST_MakePoint, ST_SetSRID, ST_X, ST_Y
 from typing import Annotated
 import asyncio
 
@@ -13,7 +13,7 @@ from app.schemas.report import (
     ReportCreate, ReportOut, ReportListOut, StatusUpdate,
     PresignedUrlRequest, PresignedUrlResponse, PhotoUploadResponse,
     AssignCreate, AssignmentOut, ResolutionReportCreate, ResolutionReportOut,
-    UserBrief,
+    UserBrief, ReportMapOut, ReportMapListOut,
 )
 from app.utils.deps import get_current_user, require_staff, require_supervisor
 from app.utils.pagination import PaginationParams
@@ -95,6 +95,27 @@ def _assignment_to_out(a: Assignment) -> AssignmentOut:
         is_active=a.is_active,
         created_at=a.created_at,
     )
+
+
+def _scope_reports_by_role(query, current_user: User, agent_id: str | None = None):
+    """Shared per-role visibility rules, used by both the full report list and
+    the lightweight map feed so the two can never drift out of sync."""
+    if current_user.role == UserRole.citizen:
+        query = query.filter(Report.citizen_id == current_user.id)
+    elif current_user.role == UserRole.field_agent:
+        # Field agents see reports assigned to them
+        query = query.join(Assignment, Assignment.report_id == Report.id)\
+                     .filter(Assignment.agent_id == current_user.id, Assignment.is_active)\
+                     .filter(Report.status != ReportStatus.SUBMITTED)
+    else:
+        # Admin / supervisor / analyst see ALL reports including submitted,
+        # unless scoped to a single municipality (municipal admin/supervisor/analyst)
+        if current_user.municipality_id is not None:
+            query = query.filter(Report.municipality_id == current_user.municipality_id)
+        if agent_id:
+            query = query.join(Assignment, Assignment.report_id == Report.id)\
+                         .filter(Assignment.agent_id == agent_id, Assignment.is_active)
+    return query
 
 
 def _resolution_to_out(rr: ResolutionReport) -> ResolutionReportOut:
@@ -388,22 +409,7 @@ def list_reports(
     agent_id: str | None = Query(None),
 ):
     query = db.query(Report)
-
-    if current_user.role == UserRole.citizen:
-        query = query.filter(Report.citizen_id == current_user.id)
-    elif current_user.role == UserRole.field_agent:
-        # Field agents see reports assigned to them
-        query = query.join(Assignment, Assignment.report_id == Report.id)\
-                     .filter(Assignment.agent_id == current_user.id, Assignment.is_active)\
-                     .filter(Report.status != ReportStatus.SUBMITTED)
-    else:
-        # Admin / supervisor / analyst see ALL reports including submitted,
-        # unless scoped to a single municipality (municipal admin/supervisor/analyst)
-        if current_user.municipality_id is not None:
-            query = query.filter(Report.municipality_id == current_user.municipality_id)
-        if agent_id:
-            query = query.join(Assignment, Assignment.report_id == Report.id)\
-                         .filter(Assignment.agent_id == agent_id, Assignment.is_active)
+    query = _scope_reports_by_role(query, current_user, agent_id)
 
     if status:
         query = query.filter(Report.status == status)
@@ -421,6 +427,41 @@ def list_reports(
         page=pagination.page,
         page_size=pagination.page_size,
     )
+
+
+@router.get("/map", response_model=ReportMapListOut)
+def list_reports_for_map(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    status: ReportStatus | None = Query(None),
+):
+    """Marker feed for the dashboard map. Selects only the columns a pin/popup
+    needs and extracts lat/lng in SQL, instead of loading full report rows
+    (description, photos, AI metadata, ...) and converting PostGIS geometry to
+    a shapely point in Python for every row — the map doesn't use any of that.
+    Defaults to active reports only (resolved/rejected are done, not something
+    the map needs to plot) unless a specific status is requested.
+    """
+    query = db.query(
+        Report.id, Report.tracking_code, Report.title, Report.status, Report.priority,
+        Report.city, Report.city_ar,
+        ST_Y(Report.location).label("lat"), ST_X(Report.location).label("lng"),
+    )
+    query = _scope_reports_by_role(query, current_user)
+
+    if status:
+        query = query.filter(Report.status == status)
+    else:
+        query = query.filter(Report.status.notin_([ReportStatus.RESOLVED, ReportStatus.REJECTED]))
+
+    rows = query.order_by(Report.created_at.desc()).limit(1000).all()
+    return ReportMapListOut(items=[
+        ReportMapOut(
+            id=r.id, tracking_code=r.tracking_code, title=r.title, status=r.status,
+            priority=r.priority, city=r.city, city_ar=r.city_ar, lat=r.lat, lng=r.lng,
+        )
+        for r in rows
+    ])
 
 
 @router.get("/nearby", response_model=list[ReportOut])

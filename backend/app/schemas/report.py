@@ -138,6 +138,25 @@ class ReportListOut(BaseModel):
     page_size: int
 
 
+# Deliberately narrow — the map only ever renders a pin + popup from these
+# fields, so it skips description/photos/AI metadata/etc. that ReportOut
+# carries but a marker never needs.
+class ReportMapOut(BaseModel):
+    id: UUID
+    tracking_code: str
+    title: str
+    status: ReportStatus
+    priority: ReportPriority
+    city: str | None = None
+    city_ar: str | None = None
+    lat: float
+    lng: float
+
+
+class ReportMapListOut(BaseModel):
+    items: list[ReportMapOut]
+
+
 class PresignedUrlRequest(BaseModel):
     filename: str
     content_type: str

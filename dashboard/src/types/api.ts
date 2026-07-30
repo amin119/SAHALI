@@ -63,6 +63,23 @@ export interface ReportListOut {
   page_size: number
 }
 
+// Matches the lightweight GET /reports/map response — just what a map pin/popup needs.
+export interface ReportMapItem {
+  id: string
+  tracking_code: string
+  title: string
+  status: ReportStatus
+  priority: Priority
+  city: string | null
+  city_ar: string | null
+  lat: number
+  lng: number
+}
+
+export interface ReportMapListOut {
+  items: ReportMapItem[]
+}
+
 export interface Assignment {
   id: string
   agent: UserBrief
