@@ -7,9 +7,8 @@ interface NavItem {
   path: string
   icon: string
   labelKey: TranslationKey
-  /** Omitted = visible to every staff role. Present = only these roles see it —
-   * this is the actual fix for "too many things on screen": a supervisor or
-   * analyst no longer sees admin-only configuration screens they never use. */
+  /** Omitted = visible to every dashboard role. Present = only these roles see
+   * it — an analyst no longer sees admin-only configuration screens they never use. */
   roles?: UserRole[]
 }
 
@@ -23,22 +22,22 @@ const NAV_GROUPS: NavGroup[] = [
     labelKey: 'nav_group_overview',
     items: [
       { path: '/dashboard',  icon: 'dashboard',     labelKey: 'nav_dashboard' },
-      { path: '/map',        icon: 'map',           labelKey: 'nav_map',        roles: ['admin', 'supervisor'] },
-      { path: '/statistics', icon: 'insert_chart',  labelKey: 'nav_statistics', roles: ['admin', 'supervisor', 'analyst'] },
+      { path: '/map',        icon: 'map',           labelKey: 'nav_map',        roles: ['admin'] },
+      { path: '/statistics', icon: 'insert_chart',  labelKey: 'nav_statistics', roles: ['admin', 'analyst'] },
     ],
   },
   {
     labelKey: 'nav_group_reports',
     items: [
       { path: '/reports',       icon: 'report_problem', labelKey: 'nav_reports' },
-      { path: '/interventions', icon: 'engineering',     labelKey: 'nav_interventions', roles: ['admin', 'supervisor'] },
-      { path: '/calendar',      icon: 'calendar_today',  labelKey: 'nav_calendar',      roles: ['admin', 'supervisor'] },
+      { path: '/interventions', icon: 'engineering',     labelKey: 'nav_interventions', roles: ['admin'] },
+      { path: '/calendar',      icon: 'calendar_today',  labelKey: 'nav_calendar',      roles: ['admin'] },
     ],
   },
   {
     labelKey: 'nav_group_admin',
     items: [
-      { path: '/teams',         icon: 'groups',        labelKey: 'nav_teams',         roles: ['admin', 'supervisor'] },
+      { path: '/teams',         icon: 'groups',        labelKey: 'nav_teams',         roles: ['admin'] },
       { path: '/municipalities',icon: 'location_city', labelKey: 'nav_municipalities',roles: ['admin'] },
       { path: '/categories',    icon: 'category',       labelKey: 'nav_categories',    roles: ['admin'] },
     ],

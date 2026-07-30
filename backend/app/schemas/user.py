@@ -1,6 +1,6 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, time
 from app.models.user import UserRole
 
 
@@ -46,3 +46,44 @@ class UserListOut(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class ScheduleSlotIn(BaseModel):
+    day_of_week: int  # 0=Monday .. 6=Sunday
+    start_time: time
+    end_time: time
+
+    @field_validator("day_of_week")
+    @classmethod
+    def valid_day(cls, v):
+        if not 0 <= v <= 6:
+            raise ValueError("day_of_week must be between 0 (Monday) and 6 (Sunday)")
+        return v
+
+    @field_validator("end_time")
+    @classmethod
+    def end_after_start(cls, v, info):
+        start = info.data.get("start_time")
+        if start is not None and v <= start:
+            raise ValueError("end_time must be after start_time")
+        return v
+
+
+class ScheduleSlotOut(BaseModel):
+    id: int
+    day_of_week: int
+    start_time: time
+    end_time: time
+
+    model_config = {"from_attributes": True}
+
+
+class AgentStatsOut(BaseModel):
+    agent_id: str
+    assigned: int
+    resolved: int
+    in_progress: int
+
+
+class AgentStatsListOut(BaseModel):
+    items: list[AgentStatsOut]

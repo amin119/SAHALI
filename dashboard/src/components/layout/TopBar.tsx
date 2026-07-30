@@ -41,7 +41,6 @@ export default function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
 
   const roleLabel = user ? t(
     user.role === 'admin' ? 'role_admin' :
-    user.role === 'supervisor' ? 'role_supervisor' :
     user.role === 'analyst' ? 'role_analyst' :
     user.role === 'field_agent' ? 'role_field_agent' :
     user.role === 'citizen' ? 'role_citizen' : 'role_field_agent'

@@ -1,15 +1,17 @@
 from app.models.user import User, UserRole
 from app.models.municipality import Municipality
 from app.models.department import Department
-from app.models.category import Category
+from app.models.category import Category, MunicipalityCategory
 from app.models.report import Report, ReportStatus, ReportPriority, ReportStatusHistory, Assignment, ResolutionReport
 from app.models.notification import Notification
+from app.models.agent_schedule import AgentSchedule
 
 __all__ = [
     "User", "UserRole",
     "Municipality",
     "Department",
-    "Category",
+    "Category", "MunicipalityCategory",
     "Report", "ReportStatus", "ReportPriority", "ReportStatusHistory", "Assignment", "ResolutionReport",
     "Notification",
+    "AgentSchedule",
 ]

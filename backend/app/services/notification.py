@@ -54,10 +54,10 @@ def notify_citizen(db: Session, report: Report, event: str) -> None:
 
 
 def notify_staff(db: Session, report: Report) -> None:
-    """Create in-app notifications and send emails to all active supervisors and admins."""
+    """Create in-app notifications and send emails to all active admins."""
     staff = (
         db.query(User)
-        .filter(User.role.in_([UserRole.supervisor, UserRole.admin]))
+        .filter(User.role == UserRole.admin)
         .filter(User.is_active == True)  # noqa: E712
         .all()
     )

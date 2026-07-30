@@ -33,6 +33,9 @@ export default function ReportDetail() {
   const [selectedAgents, setSelectedAgents] = useState<string[]>([])
   const [assignNote, setAssignNote] = useState('')
   const [assigning, setAssigning] = useState(false)
+  const [agentSearch, setAgentSearch] = useState('')
+  const [debouncedAgentSearch, setDebouncedAgentSearch] = useState('')
+  const [showAllAgents, setShowAllAgents] = useState(false)
 
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [statusNote, setStatusNote] = useState('')
@@ -61,10 +64,25 @@ export default function ReportDetail() {
         setCategories(map)
       })
       .catch(() => {})
-    api.get<UserListOut>('/admin/users', { page_size: 200 })
-      .then(data => setStaffUsers((data.items ?? []).filter(u => ['field_agent', 'analyst', 'supervisor'].includes(u.role))))
-      .catch(() => {})
   }, [])
+
+  // Debounce the agent search box before it hits the server
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedAgentSearch(agentSearch), 300)
+    return () => clearTimeout(id)
+  }, [agentSearch])
+
+  // Default to only agents currently on shift, so the picker doesn't offer
+  // someone who isn't actually working right now — searching or the "show
+  // all" toggle both widen it back out to the full roster for exceptions.
+  useEffect(() => {
+    const params: Record<string, string | number | undefined> = { page_size: 200 }
+    if (debouncedAgentSearch.trim()) params.search = debouncedAgentSearch.trim()
+    else if (!showAllAgents) params.on_shift_now = 'true'
+    api.get<UserListOut>('/admin/users', params)
+      .then(data => setStaffUsers((data.items ?? []).filter(u => ['field_agent', 'analyst'].includes(u.role))))
+      .catch(() => setStaffUsers([]))
+  }, [debouncedAgentSearch, showAllAgents])
 
   useEffect(() => {
     if (!report) return
@@ -288,9 +306,34 @@ export default function ReportDetail() {
 
         {report.status !== 'resolved' && report.status !== 'rejected' && (
           <div className={activeAssignments.length > 0 ? 'pt-3 border-t border-[#E2E8F0]' : ''}>
-            <p className="text-[#94A3B8] text-xs font-medium mb-2">
-              {activeAssignments.length > 0 ? t('reassign') : t('assign_agents')}
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[#94A3B8] text-xs font-medium">
+                {activeAssignments.length > 0 ? t('reassign') : t('assign_agents')}
+              </p>
+              <label className="flex items-center gap-1.5 text-[11px] text-[#94A3B8] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showAllAgents}
+                  onChange={e => setShowAllAgents(e.target.checked)}
+                  className="rounded"
+                />
+                {t('show_all_agents')}
+              </label>
+            </div>
+            <div className="mb-2">
+              <TextField
+                icon="search"
+                value={agentSearch}
+                onChange={e => setAgentSearch(e.target.value)}
+                placeholder={t('agent_search_placeholder')}
+              />
+            </div>
+            {!agentSearch.trim() && !showAllAgents && (
+              <p className="text-[10px] text-[#94A3B8] mb-2 flex items-center gap-1">
+                <span className="material-symbols-outlined" style={{ fontSize: 12 }}>schedule</span>
+                {t('showing_on_shift_only')}
+              </p>
+            )}
             <div className="max-h-56 overflow-y-auto border border-[#E2E8F0] rounded-lg divide-y divide-[#E2E8F0] mb-2">
               {staffUsers.length === 0 ? (
                 <EmptyState icon="group_off" message={t('no_agents')} size="sm" />

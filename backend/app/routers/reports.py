@@ -15,7 +15,7 @@ from app.schemas.report import (
     AssignCreate, AssignmentOut, ResolutionReportCreate, ResolutionReportOut,
     UserBrief, ReportMapOut, ReportMapListOut,
 )
-from app.utils.deps import get_current_user, require_staff, require_supervisor
+from app.utils.deps import get_current_user, require_staff, require_admin
 from app.utils.pagination import PaginationParams
 from app.utils.security import generate_tracking_code
 from app.services.storage import generate_presigned_upload, upload_photo as storage_upload_photo, get_photo as storage_get_photo
@@ -51,7 +51,7 @@ _TRANSITIONS: dict[ReportStatus, list[ReportStatus]] = {
 
 
 def _check_municipality_access(report: Report, current_user: User, db: Session) -> None:
-    """Municipality-scoped admin/supervisor/analyst can only reach reports
+    """Municipality-scoped admin/analyst can only reach reports
     belonging to their own municipality. 404, not 403, so existence in
     another municipality isn't revealed. No-op for super-admins
     (municipality_id is None).
@@ -108,8 +108,8 @@ def _scope_reports_by_role(query, current_user: User, agent_id: str | None = Non
                      .filter(Assignment.agent_id == current_user.id, Assignment.is_active)\
                      .filter(Report.status != ReportStatus.SUBMITTED)
     else:
-        # Admin / supervisor / analyst see ALL reports including submitted,
-        # unless scoped to a single municipality (municipal admin/supervisor/analyst)
+        # Admin / analyst see ALL reports including submitted,
+        # unless scoped to a single municipality (municipal admin/analyst)
         if current_user.municipality_id is not None:
             query = query.filter(Report.municipality_id == current_user.municipality_id)
         if agent_id:
@@ -573,7 +573,7 @@ def assign_report(
     report_id: str,
     body: AssignCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_supervisor),
+    current_user: User = Depends(require_admin),
 ):
     report = db.get(Report, report_id)
     if not report:

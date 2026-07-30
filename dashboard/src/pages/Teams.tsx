@@ -1,10 +1,18 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/api'
-import type { User, Report, UserListOut, Municipality, MunicipalityListOut } from '../types/api'
+import type { User, Report, UserListOut, Municipality, MunicipalityListOut, ScheduleSlot } from '../types/api'
 import { useLang } from '../context/LangContext'
 import { useAuth } from '../context/AuthContext'
 
 const PAGE_SIZE = 20
+
+interface DayDraft { enabled: boolean; start: string; end: string }
+
+function emptyWeekDraft(): Record<number, DayDraft> {
+  const draft: Record<number, DayDraft> = {}
+  for (let d = 0; d < 7; d++) draft[d] = { enabled: false, start: '08:00', end: '16:00' }
+  return draft
+}
 
 interface AgentStats { assigned: number; resolved: number; inProgress: number; performance: number }
 
@@ -79,6 +87,11 @@ export default function Teams() {
 
   const [togglingId, setTogglingId] = useState<string | null>(null)
 
+  const [weekDraft, setWeekDraft] = useState<Record<number, DayDraft>>(emptyWeekDraft())
+  const [scheduleLoading, setScheduleLoading] = useState(false)
+  const [savingSchedule, setSavingSchedule] = useState(false)
+  const [scheduleError, setScheduleError] = useState<string | null>(null)
+
   // Debounce the search box before it hits the server
   useEffect(() => {
     const id = setTimeout(() => { setDebouncedSearch(search); setPage(1) }, 350)
@@ -87,7 +100,6 @@ export default function Teams() {
 
   const roleLabel = (role: string) => t(
     role === 'admin' ? 'role_admin' :
-    role === 'supervisor' ? 'role_supervisor' :
     role === 'analyst' ? 'role_analyst' :
     role === 'field_agent' ? 'role_field_agent' :
     role === 'citizen' ? 'role_citizen' : 'role_field_agent'
@@ -103,7 +115,7 @@ export default function Teams() {
     received: '#0EA5E9', under_review: '#F59E0B', in_progress: '#F97316',
   }
 
-  const [allReports, setAllReports] = useState<Report[]>([])
+  const [agentStats, setAgentStats] = useState<Record<string, { assigned: number; resolved: number; in_progress: number }>>({})
 
   // Municipality list for the add/edit dropdowns — fetched once, large page
   // so it covers the full list regardless of the staff table's own paging.
@@ -116,12 +128,16 @@ export default function Teams() {
       .catch(() => setMunicipalities([]))
   }, [isSuperAdminUser])
 
-  // Reports (for the per-agent stats) — fetched once, independent of the
-  // staff table's own pagination/search/role filter.
+  // Per-agent counts, aggregated server-side — this used to fetch up to 500
+  // full report rows just to compute three numbers per agent in the browser.
   useEffect(() => {
-    api.get<{ items: Report[]; total: number }>('/reports', { page_size: 500 })
-      .then(data => setAllReports(data.items ?? []))
-      .catch(() => setAllReports([]))
+    api.get<{ items: { agent_id: string; assigned: number; resolved: number; in_progress: number }[] }>('/admin/agents/stats')
+      .then(data => {
+        const map: Record<string, { assigned: number; resolved: number; in_progress: number }> = {}
+        data.items.forEach(x => { map[x.agent_id] = x })
+        setAgentStats(map)
+      })
+      .catch(() => setAgentStats({}))
   }, [])
 
   const fetchStaff = useCallback(() => {
@@ -138,23 +154,21 @@ export default function Teams() {
 
   useEffect(() => { fetchStaff() }, [fetchStaff])
 
-  // Recompute per-agent stats whenever the current staff page or the report
-  // set changes.
+  // Recompute per-agent stats whenever the current staff page or the
+  // aggregate stats change.
   useEffect(() => {
     const map: Record<string, AgentStats> = {}
     staff.forEach(u => {
-      const mine = allReports.filter(r => r.assigned_to === u.id)
-      const res = mine.filter(r => r.status === 'resolved').length
-      const inp = mine.filter(r => r.status === 'in_progress').length
+      const s = agentStats[u.id] ?? { assigned: 0, resolved: 0, in_progress: 0 }
       map[u.id] = {
-        assigned: mine.length,
-        resolved: res,
-        inProgress: inp,
-        performance: mine.length > 0 ? Math.round((res / mine.length) * 100) : 0
+        assigned: s.assigned,
+        resolved: s.resolved,
+        inProgress: s.in_progress,
+        performance: s.assigned > 0 ? Math.round((s.resolved / s.assigned) * 100) : 0,
       }
     })
     setStatsMap(map)
-  }, [staff, allReports])
+  }, [staff, agentStats])
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -166,6 +180,38 @@ export default function Teams() {
       .catch(() => setMissions([]))
       .finally(() => setMissionsLoading(false))
   }, [selectedId])
+
+  useEffect(() => {
+    if (!selectedId) { setWeekDraft(emptyWeekDraft()); return }
+    setScheduleLoading(true)
+    setScheduleError(null)
+    api.get<ScheduleSlot[]>(`/admin/users/${selectedId}/schedule`)
+      .then(slots => {
+        const draft = emptyWeekDraft()
+        slots.forEach(s => {
+          draft[s.day_of_week] = { enabled: true, start: s.start_time.slice(0, 5), end: s.end_time.slice(0, 5) }
+        })
+        setWeekDraft(draft)
+      })
+      .catch(() => setWeekDraft(emptyWeekDraft()))
+      .finally(() => setScheduleLoading(false))
+  }, [selectedId])
+
+  async function saveSchedule() {
+    if (!selectedId) return
+    setSavingSchedule(true)
+    setScheduleError(null)
+    try {
+      const body = Object.entries(weekDraft)
+        .filter(([, d]) => d.enabled)
+        .map(([day, d]) => ({ day_of_week: Number(day), start_time: `${d.start}:00`, end_time: `${d.end}:00` }))
+      await api.put(`/admin/users/${selectedId}/schedule`, body)
+    } catch (e: unknown) {
+      setScheduleError(e instanceof Error ? e.message : t('err_creation'))
+    } finally {
+      setSavingSchedule(false)
+    }
+  }
 
   async function submitAdd() {
     const municipalityRequired = !(isSuperAdminUser && form.role === 'admin')
@@ -261,7 +307,6 @@ export default function Teams() {
   const roleOptions = [
     { value: 'field_agent', label: t('role_field_agent') },
     { value: 'analyst',     label: t('role_analyst') },
-    { value: 'supervisor',  label: t('role_supervisor') },
     ...(isSuperAdminUser ? [{ value: 'admin', label: t('role_admin') }] : []),
   ]
 
@@ -614,6 +659,63 @@ export default function Teams() {
                           </div>
                         )
                       })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-[#E2E8F0] px-5 py-4">
+                  <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-1">{t('schedule_title')}</p>
+                  <p className="text-[10px] text-[#94A3B8] mb-3">{t('schedule_subtitle')}</p>
+                  {scheduleError && (
+                    <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-3">
+                      <span className="text-xs text-red-600">{scheduleError}</span>
+                    </div>
+                  )}
+                  {scheduleLoading ? (
+                    <div className="space-y-1.5">
+                      {[1, 2, 3].map(i => <div key={i} className="h-9 bg-[#f1f4f9] rounded-lg animate-pulse" />)}
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {[0, 1, 2, 3, 4, 5, 6].map(day => {
+                        const dayKey = (['day_mon', 'day_tue', 'day_wed', 'day_thu', 'day_fri', 'day_sat', 'day_sun'] as const)[day]
+                        const d = weekDraft[day]
+                        return (
+                          <div key={day} className="flex items-center gap-2">
+                            <label className="flex items-center gap-1.5 w-16 flex-shrink-0 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={d.enabled}
+                                onChange={e => setWeekDraft(prev => ({ ...prev, [day]: { ...prev[day], enabled: e.target.checked } }))}
+                                className="rounded"
+                              />
+                              <span className="text-xs text-[#181c20]">{t(dayKey)}</span>
+                            </label>
+                            <input
+                              type="time"
+                              value={d.start}
+                              disabled={!d.enabled}
+                              onChange={e => setWeekDraft(prev => ({ ...prev, [day]: { ...prev[day], start: e.target.value } }))}
+                              className="flex-1 min-w-0 bg-[#f7f9fe] border border-[#E2E8F0] rounded-lg px-2 py-1 text-xs outline-none disabled:opacity-40 disabled:cursor-not-allowed focus:border-[#0038AF]"
+                            />
+                            <span className="text-[#94A3B8] text-xs">–</span>
+                            <input
+                              type="time"
+                              value={d.end}
+                              disabled={!d.enabled}
+                              onChange={e => setWeekDraft(prev => ({ ...prev, [day]: { ...prev[day], end: e.target.value } }))}
+                              className="flex-1 min-w-0 bg-[#f7f9fe] border border-[#E2E8F0] rounded-lg px-2 py-1 text-xs outline-none disabled:opacity-40 disabled:cursor-not-allowed focus:border-[#0038AF]"
+                            />
+                          </div>
+                        )
+                      })}
+                      <button
+                        onClick={saveSchedule}
+                        disabled={savingSchedule}
+                        className="w-full mt-2 py-2 rounded-xl text-xs font-semibold bg-[#0038AF] text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                      >
+                        {savingSchedule ? t('saving') : t('btn_save')}
+                      </button>
                     </div>
                   )}
                 </div>

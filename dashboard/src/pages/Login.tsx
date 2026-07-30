@@ -1,14 +1,17 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(
+    searchParams.get('blocked') ? "Ce compte n'a pas accès au tableau de bord web — utilisez l'application mobile." : null
+  )
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
