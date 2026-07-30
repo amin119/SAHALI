@@ -27,7 +27,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: Lint (ruff)
         run: |
-          pip install ruff
+          pip install ruff==0.16.0
           ruff check app/
       - name: Dependency vulnerability scan (pip-audit)
         run: |
@@ -132,7 +132,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Dependency vulnerability scan (npm audit)
-        run: npm audit
+        run: npx audit-ci --config audit-ci.jsonc
 
   mobile:
     runs-on: ubuntu-latest

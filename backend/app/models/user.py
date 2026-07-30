@@ -1,12 +1,14 @@
-import uuid
 import enum
-from sqlalchemy import Column, String, Boolean, Enum, ForeignKey, DateTime, func
+import uuid
+
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+
 from app.database import Base
 
 
-class UserRole(str, enum.Enum):
+class UserRole(enum.StrEnum):
     citizen = "citizen"
     field_agent = "field_agent"
     analyst = "analyst"

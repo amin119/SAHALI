@@ -1,10 +1,12 @@
 import random
 import string
 import uuid
+from datetime import UTC, datetime, timedelta
 from functools import lru_cache
+
+from jose import JWTError, jwt
 from passlib.context import CryptContext
-from datetime import datetime, timedelta, timezone
-from jose import jwt, JWTError
+
 from app.config import get_settings
 
 settings = get_settings()
@@ -20,7 +22,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def _load_key(path: str) -> str:
-    with open(path, "r") as f:
+    with open(path) as f:
         return f.read()
 
 
@@ -41,13 +43,13 @@ def _get_public_key() -> str:
 
 
 def create_access_token(subject: str, role: str) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(UTC) + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {"sub": subject, "role": role, "exp": expire, "type": "access", "jti": str(uuid.uuid4())}
     return jwt.encode(payload, _get_private_key(), algorithm="RS256")
 
 
 def create_refresh_token(subject: str) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
+    expire = datetime.now(UTC) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
     payload = {"sub": subject, "exp": expire, "type": "refresh", "jti": str(uuid.uuid4())}
     return jwt.encode(payload, _get_private_key(), algorithm="RS256")
 

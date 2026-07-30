@@ -1,5 +1,7 @@
 import hmac
+
 import redis as redis_lib
+
 from app.config import get_settings
 from app.utils.security import generate_otp
 

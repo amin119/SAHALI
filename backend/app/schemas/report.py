@@ -1,7 +1,9 @@
-from pydantic import BaseModel, field_validator
-from uuid import UUID
 from datetime import datetime
-from app.models.report import ReportStatus, ReportPriority
+from uuid import UUID
+
+from pydantic import BaseModel, field_validator
+
+from app.models.report import ReportPriority, ReportStatus
 
 
 class LocationIn(BaseModel):

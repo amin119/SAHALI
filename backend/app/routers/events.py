@@ -1,14 +1,15 @@
 import asyncio
 import json
+
 import redis.asyncio as aioredis
 from fastapi import APIRouter, Depends, Query, Request
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.config import get_settings
 from app.database import SessionLocal
 from app.models.user import User, UserRole
 from app.services.event_bus import CHANNEL
-from app.services.sse_ticket import issue_ticket, consume_ticket
+from app.services.sse_ticket import consume_ticket, issue_ticket
 from app.utils.deps import require_staff
 
 router = APIRouter(prefix="/events", tags=["events"])

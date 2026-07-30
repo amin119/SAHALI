@@ -1,10 +1,12 @@
 from __future__ import annotations
+
 import structlog
 from sqlalchemy.orm import Session
-from app.models.notification import Notification
-from app.models.user import User, UserRole
-from app.models.report import Report
+
 from app.config import get_settings
+from app.models.notification import Notification
+from app.models.report import Report
+from app.models.user import User, UserRole
 
 settings = get_settings()
 log = structlog.get_logger()
@@ -118,7 +120,7 @@ def _send_push(fcm_token: str | None, title: str, body: str) -> None:
         return
     try:
         import firebase_admin
-        from firebase_admin import messaging, credentials
+        from firebase_admin import credentials, messaging
         if not firebase_admin._apps:
             cred = credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
             firebase_admin.initialize_app(cred)

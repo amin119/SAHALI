@@ -1,5 +1,7 @@
 import json
+
 import redis
+
 from app.config import get_settings
 
 CHANNEL = "sahali:report_events"

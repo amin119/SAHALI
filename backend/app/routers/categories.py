@@ -1,12 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+
 from app.database import get_db
 from app.models.category import Category, MunicipalityCategory
 from app.models.municipality import Municipality
 from app.models.user import User
-from app.schemas.category import CategoryOut, CategoryUpdate, MunicipalityCategoryOut, MunicipalityCategoryToggle
-from app.utils.deps import require_staff, require_super_admin, require_admin
+from app.schemas.category import (
+    CategoryOut,
+    CategoryUpdate,
+    MunicipalityCategoryOut,
+    MunicipalityCategoryToggle,
+)
 from app.services.municipality_matching import closest_municipality_id
+from app.utils.deps import require_admin, require_staff, require_super_admin
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 

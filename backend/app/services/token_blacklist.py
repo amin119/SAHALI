@@ -1,6 +1,8 @@
 import math
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 import redis as redis_lib
+
 from app.config import get_settings
 
 settings = get_settings()
@@ -14,7 +16,7 @@ def _ttl_seconds(expires_at: datetime) -> int:
     ~1s shorter than the token's real remaining life, letting the denylist
     entry (or a single-use claim) expire slightly before the token itself
     does."""
-    remaining = (expires_at - datetime.now(timezone.utc)).total_seconds()
+    remaining = (expires_at - datetime.now(UTC)).total_seconds()
     return math.ceil(remaining) if remaining > 0 else 0
 
 

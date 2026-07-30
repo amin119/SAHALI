@@ -1,31 +1,61 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks, Query, UploadFile, File
-from fastapi.responses import StreamingResponse
-import io
-from sqlalchemy.orm import Session, joinedload
-from geoalchemy2.functions import ST_DWithin, ST_MakePoint, ST_SetSRID, ST_X, ST_Y
-from typing import Annotated
 import asyncio
+import io
+from datetime import UTC
+from typing import Annotated
+
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+    status,
+)
+from fastapi.responses import StreamingResponse
+from geoalchemy2.functions import ST_X, ST_Y, ST_DWithin, ST_MakePoint, ST_SetSRID
+from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
-from app.models.report import Report, ReportStatus, ReportStatusHistory, Assignment, ResolutionReport
-from app.models.user import User, UserRole
-from app.schemas.report import (
-    ReportCreate, ReportOut, ReportListOut, StatusUpdate,
-    PresignedUrlRequest, PresignedUrlResponse, PhotoUploadResponse,
-    AssignCreate, AssignmentOut, ResolutionReportCreate, ResolutionReportOut,
-    UserBrief, ReportMapOut, ReportMapListOut,
+from app.models.report import (
+    Assignment,
+    Report,
+    ReportStatus,
+    ReportStatusHistory,
+    ResolutionReport,
 )
-from app.utils.deps import get_current_user, require_staff, require_admin
-from app.utils.pagination import PaginationParams
-from app.utils.security import generate_tracking_code
-from app.services.storage import generate_presigned_upload, upload_photo as storage_upload_photo, get_photo as storage_get_photo
-from app.services.notification import notify_citizen, notify_staff
+from app.models.user import User, UserRole
+from app.rate_limit import limiter
+from app.schemas.report import (
+    AssignCreate,
+    AssignmentOut,
+    PhotoUploadResponse,
+    PresignedUrlRequest,
+    PresignedUrlResponse,
+    ReportCreate,
+    ReportListOut,
+    ReportMapListOut,
+    ReportMapOut,
+    ReportOut,
+    ResolutionReportCreate,
+    ResolutionReportOut,
+    StatusUpdate,
+    UserBrief,
+)
 from app.services.ai_client import analyze_report
+from app.services.event_bus import publish_report_event
 from app.services.geocoding import reverse_geocode
 from app.services.municipality_matching import closest_municipality_id
-from app.services.event_bus import publish_report_event
+from app.services.notification import notify_citizen, notify_staff
+from app.services.storage import generate_presigned_upload
+from app.services.storage import get_photo as storage_get_photo
+from app.services.storage import upload_photo as storage_upload_photo
+from app.utils.deps import get_current_user, require_admin, require_staff
+from app.utils.pagination import PaginationParams
 from app.utils.retry import with_retries
-from app.rate_limit import limiter
+from app.utils.security import generate_tracking_code
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -549,8 +579,8 @@ def update_status(
         report.analyzed_by = current_user.id
 
     if body.status == ReportStatus.RESOLVED:
-        from datetime import datetime, timezone
-        report.resolved_at = datetime.now(timezone.utc)
+        from datetime import datetime
+        report.resolved_at = datetime.now(UTC)
 
     db.commit()
     db.refresh(report)

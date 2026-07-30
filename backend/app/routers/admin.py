@@ -1,28 +1,38 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from fastapi.responses import StreamingResponse
-from sqlalchemy import func, text, or_
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
-from typing import Annotated
 import csv
 import io
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import Annotated
 from zoneinfo import ZoneInfo
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from geoalchemy2.functions import ST_MakePoint, ST_SetSRID
+from sqlalchemy import func, or_, text
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.models.agent_schedule import AgentSchedule
+from app.models.municipality import Municipality
 from app.models.report import Report, ReportStatus
 from app.models.user import User, UserRole
-from app.models.municipality import Municipality
-from app.models.agent_schedule import AgentSchedule
-from app.schemas.user import (
-    StaffUserCreate, StaffUserUpdate, UserOut, UserListOut, ScheduleSlotIn, ScheduleSlotOut,
-    AgentStatsOut, AgentStatsListOut,
-)
 from app.schemas.municipality import (
-    MunicipalityOut, MunicipalityListOut, MunicipalityCreate, MunicipalityUpdate,
+    MunicipalityCreate,
+    MunicipalityListOut,
+    MunicipalityOut,
+    MunicipalityUpdate,
 )
 from app.schemas.notification import BroadcastRequest
+from app.schemas.user import (
+    AgentStatsListOut,
+    AgentStatsOut,
+    ScheduleSlotIn,
+    ScheduleSlotOut,
+    StaffUserCreate,
+    StaffUserUpdate,
+    UserListOut,
+    UserOut,
+)
 from app.services import backfill as backfill_service
 from app.utils.deps import require_admin, require_staff, require_super_admin
 from app.utils.pagination import PaginationParams
@@ -102,6 +112,7 @@ def test_storage(_: User = Depends(require_super_admin)):
     name and internal error text can't leak to a caller."""
     import httpx
     import structlog
+
     from app.config import get_settings
     log = structlog.get_logger()
     s = get_settings()
@@ -146,7 +157,7 @@ def dashboard_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_staff),
 ):
-    today = datetime.now(timezone.utc).date()
+    today = datetime.now(UTC).date()
     base = db.query(Report)
     if current_user.municipality_id is not None:
         base = base.filter(Report.municipality_id == current_user.municipality_id)

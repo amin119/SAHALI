@@ -1,13 +1,13 @@
-import structlog
 import sentry_sdk
-from fastapi import FastAPI, Request, Depends
+import structlog
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.config import get_settings
 from app.rate_limit import limiter
-from app.routers import auth, users, reports, notifications, admin, categories, events
+from app.routers import admin, auth, categories, events, notifications, reports, users
 from app.utils.deps import require_super_admin
 
 settings = get_settings()
@@ -79,8 +79,9 @@ def health_db(_=Depends(require_super_admin)):
     """Ops diagnostic — gated to super-admin. Reports ok/error only, never
     raw exception text or which specific account exists, so it can't be used
     for unauthenticated reconnaissance."""
-    from app.database import engine, SessionLocal
     from sqlalchemy import text
+
+    from app.database import SessionLocal, engine
     from app.models.user import User, UserRole
     from app.utils.security import _get_private_key, _get_public_key
     result: dict = {}

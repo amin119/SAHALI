@@ -1,9 +1,11 @@
 import re
 import uuid
-import httpx
-import boto3
 from urllib.parse import quote
+
+import boto3
+import httpx
 from botocore.client import Config
+
 from app.config import get_settings
 
 settings = get_settings()
@@ -37,11 +39,11 @@ def _supabase_upload(data: bytes, key: str, content_type: str) -> str:
 # ── S3 / MinIO (local dev fallback) ──────────────────────────────────────────
 
 def _s3_client():
-    kwargs = dict(
-        region_name=settings.AWS_REGION,
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-    )
+    kwargs = {
+        "region_name": settings.AWS_REGION,
+        "aws_access_key_id": settings.AWS_ACCESS_KEY_ID,
+        "aws_secret_access_key": settings.AWS_SECRET_ACCESS_KEY,
+    }
     if settings.AWS_S3_ENDPOINT_URL:
         kwargs["endpoint_url"] = settings.AWS_S3_ENDPOINT_URL
         kwargs["config"] = Config(

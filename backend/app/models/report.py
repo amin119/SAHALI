@@ -1,16 +1,15 @@
-import uuid
 import enum
-from sqlalchemy import (
-    Column, String, Boolean, Enum, ForeignKey,
-    DateTime, Float, Text, func
-)
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import relationship
+import uuid
+
 from geoalchemy2 import Geometry
+from sqlalchemy import Boolean, Column, DateTime, Enum, Float, ForeignKey, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import relationship
+
 from app.database import Base
 
 
-class ReportStatus(str, enum.Enum):
+class ReportStatus(enum.StrEnum):
     SUBMITTED   = "submitted"
     RECEIVED    = "received"
     UNDER_REVIEW = "under_review"
@@ -19,7 +18,7 @@ class ReportStatus(str, enum.Enum):
     REJECTED    = "rejected"
 
 
-class ReportPriority(str, enum.Enum):
+class ReportPriority(enum.StrEnum):
     low      = "low"
     medium   = "medium"
     high     = "high"
