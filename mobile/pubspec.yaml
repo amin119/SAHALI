@@ -51,7 +51,7 @@ dependencies:
   geolocator: ^13.0.2
 
   # Camera / Gallery (also used for video capture/selection via pickVideo)
-  image_picker: ^1.1.2
+  image_picker: ^1.2.3
 
   # Voice-note recording (agent resolve flow)
   record: ^6.0.0
