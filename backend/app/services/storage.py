@@ -1,9 +1,11 @@
 import re
 import uuid
-import httpx
-import boto3
 from urllib.parse import quote
+
+import boto3
+import httpx
 from botocore.client import Config
+
 from app.config import get_settings
 
 settings = get_settings()
@@ -37,11 +39,11 @@ def _supabase_upload(data: bytes, key: str, content_type: str) -> str:
 # ── S3 / MinIO (local dev fallback) ──────────────────────────────────────────
 
 def _s3_client():
-    kwargs = dict(
-        region_name=settings.AWS_REGION,
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-    )
+    kwargs = {
+        "region_name": settings.AWS_REGION,
+        "aws_access_key_id": settings.AWS_ACCESS_KEY_ID,
+        "aws_secret_access_key": settings.AWS_SECRET_ACCESS_KEY,
+    }
     if settings.AWS_S3_ENDPOINT_URL:
         kwargs["endpoint_url"] = settings.AWS_S3_ENDPOINT_URL
         kwargs["config"] = Config(
@@ -87,13 +89,26 @@ def generate_presigned_upload(filename: str, content_type: str) -> dict:
         ExpiresIn=600,
     )
 
-    internal_base = settings.AWS_S3_ENDPOINT_URL or f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com"
-    public_base = settings.AWS_S3_PUBLIC_URL or internal_base
     if settings.AWS_S3_PUBLIC_URL and settings.AWS_S3_ENDPOINT_URL:
         upload_url = upload_url.replace(settings.AWS_S3_ENDPOINT_URL, settings.AWS_S3_PUBLIC_URL, 1)
 
-    photo_url = f"{internal_base}/{settings.AWS_S3_BUCKET}/{key}"
-    thumbnail_url = f"{internal_base}/{settings.AWS_S3_BUCKET}/{thumb_key}"
+    # The object URL's shape depends on which of these is actually set: a
+    # public base URL is used as-is, a custom endpoint (MinIO) needs the
+    # bucket appended, and plain AWS S3 needs neither the endpoint fallback
+    # nor a duplicated bucket segment.
+    if settings.AWS_S3_PUBLIC_BASE_URL:
+        object_base = settings.AWS_S3_PUBLIC_BASE_URL.rstrip("/")
+        photo_url = f"{object_base}/{key}"
+        thumbnail_url = f"{object_base}/{thumb_key}"
+    elif settings.AWS_S3_ENDPOINT_URL:
+        endpoint = (settings.AWS_S3_PUBLIC_URL or settings.AWS_S3_ENDPOINT_URL).rstrip("/")
+        photo_url = f"{endpoint}/{settings.AWS_S3_BUCKET}/{key}"
+        thumbnail_url = f"{endpoint}/{settings.AWS_S3_BUCKET}/{thumb_key}"
+    else:
+        object_base = f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com"
+        photo_url = f"{object_base}/{key}"
+        thumbnail_url = f"{object_base}/{thumb_key}"
+
     return {"upload_url": upload_url, "photo_url": photo_url, "thumbnail_url": thumbnail_url}
 
 

@@ -1,0 +1,29 @@
+\chapter{Conclusion and Perspectives}
+\label{chap:conclusion}
+
+\section{Project Assessment}
+
+This internship set out to build a working, secure civic reporting platform for Tunisian municipalities, and delivered exactly that: a trilingual mobile application, a municipal staff dashboard, and a backend API, all communicating over a REST interface backed by a geospatial relational database. Beyond the functional core, two additional outcomes turned out to be at least as significant as the original scope: a full, severity-ranked security audit that found and fixed a genuinely exploitable set of issues (a retrievable signing key, unauthenticated sensitive endpoints, non-revocable sessions), and a continuous integration/deployment pipeline that itself surfaced real, previously-undetected defects --- a mobile smoke test that had silently never passed, and several dependencies with known vulnerabilities that had drifted unnoticed.
+
+If there is one overall lesson from the internship, it is that \textbf{verification changes outcomes, not just confidence}: more than one fix in Chapter~\ref{chap:realisation} was incomplete on its first attempt and was only caught by a subsequent, independent check. Treating audit, fix, and verification as separate, repeated steps --- rather than folding verification into ``I fixed it, moving on'' --- was the single methodological choice that mattered most.
+
+\section{Personal and Technical Contributions}
+
+On the technical side, this internship required working across the full stack of a real product: a Flutter mobile application with offline support and trilingual RTL-aware UI, a React/TypeScript dashboard, a FastAPI backend with a PostGIS-backed geospatial data model, and a GitHub Actions CI/CD pipeline with real service-container-based integration tests. It also required a security-specific skill set distinct from feature development: reasoning about attacker-visible attack surface (what can an unauthenticated request reach?), about race conditions in concurrent request handling, and about the operational side of key rotation and credential hygiene in a deployed system, not just a textbook description of them.
+
+On the personal side, working with an LLM-assisted development workflow (Section~\ref{chap:etude}) required developing a specific discipline: treating the agent's output as a proposal to verify, not a finished answer to trust, and building that verification into the workflow itself (a curl-based regression check, an automated test, an independent review pass) rather than relying on visual code inspection alone.
+
+\section{Possible Improvements and Perspectives}
+
+The following items were identified during the internship as genuine next steps, not filler:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Municipality-scoped staff visibility} --- reports now auto-populate their nearest municipality, but non-admin staff roles still see every report platform-wide rather than only their own municipality's. This is the most immediately impactful next feature.
+  \item \textbf{AI classification microservice} --- the data model already reserves fields for AI-suggested category, confidence score, and duplicate detection; the model itself was out of scope for this internship and remains to be built.
+  \item \textbf{Load testing} --- formal concurrent-load testing against the deployed environment, to validate the sub-2-second response target under realistic traffic rather than only during manual single-user testing.
+  \item \textbf{Git history remediation} --- purging the historical commit containing the now-rotated signing key from the repository's history entirely, deferred as a lower-urgency hygiene task once the key itself was rotated and the repository was made private.
+  \item \textbf{Upload content validation} --- the current upload path validates a file's declared content type; validating the actual file signature (``magic bytes'') server-side would close a narrow gap where a client could mislabel an upload's type.
+  \item \textbf{Email verification persistence} --- the email-verification endpoint currently confirms a one-time code but does not yet persist a verified/unverified state on the account, since nothing in the current product gates behavior on it; this is a product decision to make before it becomes a schema change.
+\end{itemize}
+
+Taken together, these are consistent with a platform that reached a genuinely working, secure, and continuously-tested state within the internship's timeframe, with a clear and specific --- rather than vague --- list of what comes next.

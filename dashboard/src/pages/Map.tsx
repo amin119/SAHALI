@@ -2,17 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { api } from '../lib/api'
-import type { Report, ReportStatus } from '../types/api'
+import type { ReportMapItem, ReportStatus } from '../types/api'
 import StatusBadge from '../components/ui/StatusBadge'
 import { useLang } from '../context/LangContext'
-
-// Fix Leaflet default icon path broken by Vite bundling
-delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-})
 
 const STATUS_COLOR: Record<ReportStatus, string> = {
   submitted:    '#94A3B8',
@@ -45,11 +37,11 @@ export default function Map() {
   const markersRef = useRef<L.Marker[]>([])
   const mapContainerRef = useRef<HTMLDivElement>(null)
 
-  const [reports, setReports] = useState<Report[]>([])
+  const [reports, setReports] = useState<ReportMapItem[]>([])
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selected, setSelected] = useState<Report | null>(null)
+  const [selected, setSelected] = useState<ReportMapItem | null>(null)
   const [filterStatus, setFilterStatus] = useState<ReportStatus | 'all'>('all')
 
   const STATUS_LABELS: Record<ReportStatus, string> = {
@@ -60,6 +52,10 @@ export default function Map() {
     resolved:     t('status_resolved'),
     rejected:     t('status_rejected'),
   }
+
+  // The map is for what's still active on the ground — resolved and rejected
+  // reports are done, so they'd just be clutter on a live map.
+  const MAP_STATUSES: ReportStatus[] = ['submitted', 'received', 'under_review', 'in_progress']
 
   // Init Leaflet map once
   useEffect(() => {
@@ -84,10 +80,12 @@ export default function Map() {
     }
   }, [])
 
-  // Load data
+  // Load data — the map's own lightweight endpoint (id/title/status/lat/lng only,
+  // active reports only) instead of paging through the full report list and
+  // discarding most of what it returns.
   useEffect(() => {
     Promise.all([
-      api.get<{ items: Report[]; total: number }>('/reports', { page_size: '500' }),
+      api.get<{ items: ReportMapItem[] }>('/reports/map'),
       api.get<AdminStats>('/admin/stats'),
     ])
       .then(([rData, sData]) => {
@@ -107,12 +105,9 @@ export default function Map() {
     markersRef.current.forEach(m => m.remove())
     markersRef.current = []
 
-    const toShow = filterStatus === 'all'
-      ? reports
-      : reports.filter(r => r.status === filterStatus)
+    const toShow = filterStatus === 'all' ? reports : reports.filter(r => r.status === filterStatus)
 
     toShow.forEach(r => {
-      if (r.lat == null || r.lng == null) return
       const city = lang === 'ar' ? (r.city_ar || r.city) : (r.city || r.city_ar)
       const marker = L.marker([r.lat, r.lng], { icon: makeCircleIcon(STATUS_COLOR[r.status]) })
       marker.bindPopup(`
@@ -128,7 +123,7 @@ export default function Map() {
     })
   }, [reports, filterStatus, lang])
 
-  const displayed = filterStatus === 'all' ? reports.filter(r => r.lat != null) : reports.filter(r => r.status === filterStatus && r.lat != null)
+  const displayed = filterStatus === 'all' ? reports : reports.filter(r => r.status === filterStatus)
   const byStatus = stats?.by_status ?? {}
 
   return (
@@ -146,7 +141,7 @@ export default function Map() {
           className="px-3 py-2 text-sm bg-white border border-[#E2E8F0] rounded-xl text-[#181c20] focus:outline-none focus:border-[#0038AF]"
         >
           <option value="all">{t('map_all_statuses')}</option>
-          {(Object.keys(STATUS_LABELS) as ReportStatus[]).map(s => (
+          {MAP_STATUSES.map(s => (
             <option key={s} value={s}>{STATUS_LABELS[s]}</option>
           ))}
         </select>
@@ -173,7 +168,7 @@ export default function Map() {
 
           {/* Legend */}
           <div className="mt-4 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4 flex flex-wrap gap-4">
-            {(Object.keys(STATUS_LABELS) as ReportStatus[]).map(s => (
+            {MAP_STATUSES.map(s => (
               <button
                 key={s}
                 onClick={() => setFilterStatus(filterStatus === s ? 'all' : s)}
@@ -215,7 +210,7 @@ export default function Map() {
           <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4">
             <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-3">{t('map_by_status')}</p>
             <div className="space-y-2">
-              {(Object.keys(STATUS_LABELS) as ReportStatus[])
+              {MAP_STATUSES
                 .filter(s => (byStatus[s] ?? 0) > 0)
                 .map(s => (
                   <div key={s} className="flex items-center justify-between">

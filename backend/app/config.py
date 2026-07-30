@@ -1,6 +1,7 @@
-from pydantic_settings import BaseSettings
 from functools import lru_cache
 from typing import Literal
+
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -57,10 +58,12 @@ class Settings(BaseSettings):
 
     # CORS — "*" for dev, comma-separated origins for production
     CORS_ORIGINS: str = "*"
-    # Scope this to your actual Vercel project once you know its domain
-    # (e.g. r"https://sahali-dashboard(-[a-z0-9-]+)?\.vercel\.app") — the
-    # default below matches any *.vercel.app app, not just this project's.
-    CORS_VERCEL_ORIGIN_REGEX: str = r"https://.*\.vercel\.app"
+    # Unset by default — a wildcard here would authorize every *.vercel.app
+    # app, not just yours. Set it only once you know your project's domain
+    # (e.g. r"https://sahali-dashboard(-[a-z0-9-]+)?\.vercel\.app" to also
+    # cover preview deploys). The stable production URL doesn't need this at
+    # all — just add it to CORS_ORIGINS directly.
+    CORS_VERCEL_ORIGIN_REGEX: str | None = None
 
     # Rate limiting
     RATE_LIMIT_PER_MINUTE: int = 100

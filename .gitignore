@@ -2,3 +2,8 @@
 key.properties
 *.jks
 *.keystore
+.env
+.env.*
+!.env.example
+firebase-credentials.json
+.claude/settings.local.json

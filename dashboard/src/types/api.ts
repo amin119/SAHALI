@@ -1,4 +1,4 @@
-export type UserRole = 'citizen' | 'field_agent' | 'analyst' | 'supervisor' | 'admin'
+export type UserRole = 'citizen' | 'field_agent' | 'analyst' | 'admin'
 
 export interface User {
   id: string
@@ -10,6 +10,14 @@ export interface User {
   preferred_language: string
   is_active: boolean
   created_at: string
+}
+
+// One recurring weekly working-hours block, e.g. Monday 08:00-16:00.
+export interface ScheduleSlot {
+  id: number
+  day_of_week: number // 0=Monday .. 6=Sunday
+  start_time: string  // "HH:MM:SS"
+  end_time: string
 }
 
 export interface UserBrief {
@@ -61,6 +69,23 @@ export interface ReportListOut {
   total: number
   page: number
   page_size: number
+}
+
+// Matches the lightweight GET /reports/map response — just what a map pin/popup needs.
+export interface ReportMapItem {
+  id: string
+  tracking_code: string
+  title: string
+  status: ReportStatus
+  priority: Priority
+  city: string | null
+  city_ar: string | null
+  lat: number
+  lng: number
+}
+
+export interface ReportMapListOut {
+  items: ReportMapItem[]
 }
 
 export interface Assignment {
@@ -140,6 +165,8 @@ export interface Municipality {
   open_reports: number
   agent_count: number
   resolution_rate: number
+  lat: number | null
+  lng: number | null
 }
 
 export type UserListOut = PaginatedResponse<User>

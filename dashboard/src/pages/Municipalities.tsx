@@ -1,7 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense, lazy } from 'react'
 import { api } from '../lib/api'
-import type { Municipality, MunicipalityListOut } from '../types/api'
+import type { Municipality, MunicipalityListOut, User } from '../types/api'
 import { useLang } from '../context/LangContext'
+
+// Leaflet is heavy — only load it when the add/edit modal with the location
+// picker is actually opened, not on every visit to this page.
+const LocationPicker = lazy(() => import('../components/ui/LocationPicker'))
 
 const PAGE_SIZE = 20
 
@@ -31,9 +35,11 @@ interface MuniForm {
   name: string
   subscription_tier: string
   logo_url: string
+  lat: number | null
+  lng: number | null
 }
 
-const EMPTY_FORM: MuniForm = { name: '', subscription_tier: '', logo_url: '' }
+const EMPTY_FORM: MuniForm = { name: '', subscription_tier: '', logo_url: '', lat: null, lng: null }
 
 export default function Municipalities() {
   const { t } = useLang()
@@ -58,6 +64,10 @@ export default function Municipalities() {
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
+  // Agents working in the selected municipality
+  const [agents, setAgents] = useState<User[]>([])
+  const [agentsLoading, setAgentsLoading] = useState(false)
+
   // Debounce the search box before it hits the server
   useEffect(() => {
     const id = setTimeout(() => { setDebouncedSearch(search); setPage(1) }, 350)
@@ -76,6 +86,15 @@ export default function Municipalities() {
   }, [page, debouncedSearch])
 
   useEffect(() => { fetchMunicipalities() }, [fetchMunicipalities])
+
+  useEffect(() => {
+    if (selectedId == null) { setAgents([]); return }
+    setAgentsLoading(true)
+    api.get<User[]>(`/admin/municipalities/${selectedId}/agents`)
+      .then(setAgents)
+      .catch(() => setAgents([]))
+      .finally(() => setAgentsLoading(false))
+  }, [selectedId])
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const totalReports = municipalities.reduce((s, m) => s + m.total_reports, 0)
@@ -99,7 +118,7 @@ export default function Municipalities() {
 
   function openEdit(m: Municipality) {
     setEditingId(m.id)
-    setForm({ name: m.name, subscription_tier: m.subscription_tier ?? '', logo_url: '' })
+    setForm({ name: m.name, subscription_tier: m.subscription_tier ?? '', logo_url: '', lat: m.lat, lng: m.lng })
     setFormError(null)
     setShowForm(true)
   }
@@ -113,6 +132,8 @@ export default function Municipalities() {
         name: form.name.trim(),
         subscription_tier: form.subscription_tier || null,
         logo_url: form.logo_url.trim() || null,
+        lat: form.lat,
+        lng: form.lng,
       }
       if (editingId != null) {
         await api.patch(`/admin/municipalities/${editingId}`, body)
@@ -340,6 +361,42 @@ export default function Municipalities() {
                   </div>
                 </div>
 
+                {detail.lat != null && detail.lng != null && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-[#64748B] mb-1.5">{t('muni_location')}</p>
+                    <a
+                      href={`https://www.google.com/maps?q=${detail.lat},${detail.lng}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#f0f4ff] border border-[#0038AF]/20 hover:bg-[#e0e9ff] transition-colors group w-full"
+                    >
+                      <span className="material-symbols-outlined text-[#0038AF]" style={{ fontSize: 16 }}>location_on</span>
+                      <span className="text-xs font-mono text-[#0038AF] flex-1">{detail.lat.toFixed(4)}, {detail.lng.toFixed(4)}</span>
+                      <span className="material-symbols-outlined text-[#0038AF] opacity-60 group-hover:opacity-100 transition-opacity" style={{ fontSize: 13 }}>open_in_new</span>
+                    </a>
+                  </div>
+                )}
+
+                <div className="mb-4">
+                  <p className="text-xs font-semibold text-[#64748B] mb-1.5">{t('muni_agents_list')}</p>
+                  {agentsLoading ? (
+                    <div className="space-y-1.5">
+                      {[1, 2].map(i => <div key={i} className="h-8 bg-[#f1f4f9] rounded-lg animate-pulse" />)}
+                    </div>
+                  ) : agents.length === 0 ? (
+                    <p className="text-xs text-[#94A3B8] text-center py-2">{t('muni_no_agents')}</p>
+                  ) : (
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                      {agents.map(a => (
+                        <div key={a.id} className="flex items-center gap-2 px-2.5 py-1.5 bg-[#f7f9fe] rounded-lg">
+                          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${a.is_active ? 'bg-[#22C55E]' : 'bg-[#94A3B8]'}`} />
+                          <span className="text-xs font-medium text-[#181c20] truncate flex-1">{a.full_name}</span>
+                          <span className="text-[10px] text-[#94A3B8] capitalize flex-shrink-0">{a.role.replace('_', ' ')}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex gap-2">
                   <button onClick={() => openEdit(detail)}
                     className="flex-1 py-2 rounded-xl text-sm font-medium bg-[#f1f4f9] text-[#181c20] hover:bg-[#e2e8f0] transition-colors">
@@ -403,6 +460,22 @@ export default function Municipalities() {
                 <input value={form.logo_url} onChange={e => setForm(f => ({ ...f, logo_url: e.target.value }))}
                   placeholder="https://..."
                   className="w-full bg-[#f7f9fe] border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0038AF]/20 focus:border-[#0038AF]" />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-[#64748B] uppercase tracking-wider">{t('lbl_location')}</label>
+                  <span className="text-[10px] font-mono text-[#94A3B8]">
+                    {form.lat != null && form.lng != null ? `${form.lat.toFixed(4)}, ${form.lng.toFixed(4)}` : t('muni_location_unset')}
+                  </span>
+                </div>
+                <p className="text-[10px] text-[#94A3B8] mb-2">{t('lbl_location_hint')}</p>
+                <Suspense fallback={<div className="h-[220px] bg-[#f1f4f9] rounded-xl animate-pulse" />}>
+                  <LocationPicker
+                    lat={form.lat}
+                    lng={form.lng}
+                    onChange={(lat, lng) => setForm(f => ({ ...f, lat, lng }))}
+                  />
+                </Suspense>
               </div>
             </div>
             <div className="px-6 pb-6 flex gap-3">

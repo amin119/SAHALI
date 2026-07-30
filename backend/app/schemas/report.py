@@ -1,8 +1,9 @@
-from pydantic import BaseModel, field_validator
-from uuid import UUID
 from datetime import datetime
-from typing import Any
-from app.models.report import ReportStatus, ReportPriority
+from uuid import UUID
+
+from pydantic import BaseModel, field_validator
+
+from app.models.report import ReportPriority, ReportStatus
 
 
 class LocationIn(BaseModel):
@@ -137,6 +138,25 @@ class ReportListOut(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+# Deliberately narrow — the map only ever renders a pin + popup from these
+# fields, so it skips description/photos/AI metadata/etc. that ReportOut
+# carries but a marker never needs.
+class ReportMapOut(BaseModel):
+    id: UUID
+    tracking_code: str
+    title: str
+    status: ReportStatus
+    priority: ReportPriority
+    city: str | None = None
+    city_ar: str | None = None
+    lat: float
+    lng: float
+
+
+class ReportMapListOut(BaseModel):
+    items: list[ReportMapOut]
 
 
 class PresignedUrlRequest(BaseModel):

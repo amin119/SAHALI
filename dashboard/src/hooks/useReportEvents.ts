@@ -43,16 +43,22 @@ export function useReportEvents(onEvent: (event: ReportEvent) => void): void {
       }
       if (cancelled) return
 
-      es = new EventSource(`${BASE}/v1/events/reports?ticket=${encodeURIComponent(ticket)}`)
-      es.onmessage = (e) => {
+      // Bind handlers to this specific source, not the shared `es` variable —
+      // otherwise a delayed error from a source a previous reconnect already
+      // replaced could close the new connection and double-schedule retries.
+      const source = new EventSource(`${BASE}/v1/events/reports?ticket=${encodeURIComponent(ticket)}`)
+      es = source
+      source.onmessage = (e) => {
         try {
           callbackRef.current(JSON.parse(e.data) as ReportEvent)
         } catch {
           // ignore malformed frames
         }
       }
-      es.onerror = () => {
-        es?.close()
+      source.onerror = () => {
+        source.close()
+        if (es !== source) return
+        es = null
         if (!cancelled) retryTimer = setTimeout(connect, RETRY_DELAY_MS)
       }
     }

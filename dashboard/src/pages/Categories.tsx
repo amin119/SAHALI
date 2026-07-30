@@ -8,10 +8,14 @@ interface Category {
   id: number
   slug: string
   label_fr: string
+  label_ar?: string
   icon: string | null
-  sla_hours: number | null
+  sla_hours?: number | null
   parent_id: number | null
   children: Category[]
+  is_active?: boolean             // present on /categories/all (super-admin, platform-wide)
+  globally_active?: boolean       // present on /categories/municipality/{id} (the super-admin's setting)
+  active_for_municipality?: boolean // present on /categories/municipality/{id} (this municipality's own override)
 }
 
 const CAT_COLORS: Record<string, string> = {
@@ -53,16 +57,24 @@ export default function Categories() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Fetch all categories including inactive ones for management view
-    api.get<Category[]>('/categories/all')
-      .catch(() => api.get<Category[]>('/categories'))
+    setLoading(true)
+    setError(null)
+    const request = isMunicipalAdmin && user?.municipality_id != null
+      ? api.get<Category[]>(`/categories/municipality/${user.municipality_id}`)
+      : api.get<Category[]>('/categories/all').catch(() => api.get<Category[]>('/categories'))
+    request
       .then(data => {
         setCategories(data)
-        setEnabled(new Set(data.filter((c: Category & { is_active?: boolean }) => c.is_active !== false).map(c => c.id)))
+        // Flatten first — children carry their own active state, and only
+        // considering roots here would leave every child looking disabled.
+        const flat: Category[] = []
+        data.forEach(parent => { flat.push(parent); parent.children?.forEach(child => flat.push(child)) })
+        const isOn = (c: Category) => isMunicipalAdmin ? c.active_for_municipality !== false : c.is_active !== false
+        setEnabled(new Set(flat.filter(isOn).map(c => c.id)))
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
-  }, [])
+  }, [isMunicipalAdmin, user?.municipality_id])
 
   // flatten tree into display list: show parents and their children
   const displayCats: Category[] = []
@@ -71,7 +83,8 @@ export default function Categories() {
     parent.children?.forEach(child => displayCats.push(child))
   })
 
-  async function toggleEnabled(id: number) {
+  async function toggleEnabled(cat: Category) {
+    const id = cat.id
     // Optimistic update
     setEnabled(prev => {
       const next = new Set(prev)
@@ -80,7 +93,11 @@ export default function Categories() {
       return next
     })
     try {
-      await api.patch(`/categories/${id}/toggle`)
+      if (isMunicipalAdmin && user?.municipality_id != null) {
+        await api.put(`/categories/municipality/${user.municipality_id}/${id}`, { is_active: !enabled.has(id) })
+      } else {
+        await api.patch(`/categories/${id}/toggle`)
+      }
     } catch {
       // Revert on failure
       setEnabled(prev => {
@@ -155,8 +172,9 @@ export default function Categories() {
           : displayCats.map(cat => {
               const color = rootColor(cat.slug)
               const isEnabled = enabled.has(cat.id)
-              const slaMeta = slaColor(cat.sla_hours)
+              const slaMeta = slaColor(cat.sla_hours ?? null)
               const isChild = cat.parent_id !== null
+              const lockedByPlatform = isMunicipalAdmin && cat.globally_active === false
 
               return (
                 <div key={cat.id}
@@ -175,22 +193,25 @@ export default function Categories() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-[#181c20]">
-                          {lang === 'ar' ? (cat as Category & { label_ar?: string }).label_ar ?? cat.label_fr : cat.label_fr}
+                          {lang === 'ar' ? cat.label_ar ?? cat.label_fr : cat.label_fr}
                         </p>
                         <p className="text-xs text-[#94A3B8] font-mono">{cat.slug}</p>
                       </div>
                     </div>
                     <button
-                      onClick={isMunicipalAdmin ? undefined : () => toggleEnabled(cat.id)}
-                      disabled={isMunicipalAdmin}
-                      title={isMunicipalAdmin ? 'Réservé au super-admin' : undefined}
+                      onClick={lockedByPlatform ? undefined : () => toggleEnabled(cat)}
+                      disabled={lockedByPlatform}
+                      title={lockedByPlatform ? t('cat_locked_by_platform') : undefined}
                       className={`w-10 h-5 rounded-full relative transition-colors flex-shrink-0
-                        ${isMunicipalAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        ${lockedByPlatform ? 'opacity-50 cursor-not-allowed' : ''}`}
                       style={{ backgroundColor: isEnabled ? color : '#E2E8F0' }}>
                       <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all
                         ${isEnabled ? 'left-5' : 'left-0.5'}`} />
                     </button>
                   </div>
+                  {lockedByPlatform && (
+                    <p className="text-[10px] text-[#94A3B8] -mt-2 mb-3">{t('cat_locked_by_platform')}</p>
+                  )}
 
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex-1 text-center p-2.5 rounded-lg bg-[#f1f4f9]">
@@ -210,7 +231,7 @@ export default function Categories() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                       style={{ backgroundColor: slaMeta.bg, color: slaMeta.text }}>
-                      {t('priority_label')} {slaLabel(cat.sla_hours)}
+                      {t('priority_label')} {slaLabel(cat.sla_hours ?? null)}
                     </span>
                     <span className="text-xs text-[#94A3B8]">
                       {cat.parent_id ? t('cat_sub_label') : t('root_category')}

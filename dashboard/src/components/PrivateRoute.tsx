@@ -1,8 +1,18 @@
+import { useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
+// Citizens and field agents do their work in the mobile app — the web
+// dashboard has nothing for them, so they never get past this gate.
+const DASHBOARD_ROLES = ['admin', 'analyst']
+
 export default function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, loading, logout } = useAuth()
+  const authorized = user != null && DASHBOARD_ROLES.includes(user.role)
+
+  useEffect(() => {
+    if (user && !authorized) logout()
+  }, [user, authorized, logout])
 
   if (loading) {
     return (
@@ -16,5 +26,6 @@ export default function PrivateRoute({ children }: { children: React.ReactNode }
   }
 
   if (!user) return <Navigate to="/login" replace />
+  if (!authorized) return <Navigate to="/login?blocked=1" replace />
   return <>{children}</>
 }

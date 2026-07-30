@@ -9,9 +9,10 @@ import { useLang } from '../../context/LangContext'
 interface TopBarProps {
   title: string
   subtitle?: string
+  onMenuClick: () => void
 }
 
-export default function TopBar({ title, subtitle }: TopBarProps) {
+export default function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const { t } = useLang()
@@ -40,7 +41,6 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
 
   const roleLabel = user ? t(
     user.role === 'admin' ? 'role_admin' :
-    user.role === 'supervisor' ? 'role_supervisor' :
     user.role === 'analyst' ? 'role_analyst' :
     user.role === 'field_agent' ? 'role_field_agent' :
     user.role === 'citizen' ? 'role_citizen' : 'role_field_agent'
@@ -57,12 +57,18 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
 
   return (
     <header
-      className="sticky top-0 z-40 flex items-center justify-between px-8 bg-white border-b border-[#E2E8F0]"
-      style={{ height: 64, marginLeft: 260 }}
+      className="sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 lg:px-8 bg-white border-b border-[#E2E8F0] lg:ml-0"
+      style={{ height: 64 }}
     >
-      {/* Left: search */}
-      <div className="flex items-center gap-6">
-        <div className="relative w-80">
+      {/* Left: menu (mobile/tablet) + search */}
+      <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+        <button
+          onClick={onMenuClick}
+          className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-[#f1f4f9] transition-colors lg:hidden"
+        >
+          <span className="material-symbols-outlined text-[#64748B]" style={{ fontSize: 22 }}>menu</span>
+        </button>
+        <div className="relative w-32 sm:w-56 lg:w-80">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#747686]" style={{ fontSize: 18 }}>search</span>
           <input
             value={search}
@@ -81,8 +87,8 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
       </div>
 
       {/* Right: actions + user */}
-      <div className="flex items-center gap-2">
-        <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#f1f4f9] transition-colors">
+      <div className="flex items-center gap-1 sm:gap-2">
+        <button className="hidden sm:flex w-9 h-9 items-center justify-center rounded-full hover:bg-[#f1f4f9] transition-colors">
           <span className="material-symbols-outlined text-[#64748B]" style={{ fontSize: 20 }}>language</span>
         </button>
 
@@ -139,13 +145,13 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
           )}
         </div>
 
-        <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#f1f4f9] transition-colors">
+        <button className="hidden sm:flex w-9 h-9 items-center justify-center rounded-full hover:bg-[#f1f4f9] transition-colors">
           <span className="material-symbols-outlined text-[#64748B]" style={{ fontSize: 20 }}>help</span>
         </button>
 
         {/* User + logout */}
-        <div className="flex items-center gap-3 pl-4 border-l border-[#E2E8F0]">
-          <div className="text-right">
+        <div className="flex items-center gap-3 pl-2 sm:pl-4 sm:border-l border-[#E2E8F0]">
+          <div className="hidden md:block text-right">
             <p className="text-[#181c20] text-sm font-bold leading-none">{user?.full_name ?? '—'}</p>
             <p className="text-[#64748B] text-[10px] uppercase tracking-wider mt-0.5">{roleLabel}</p>
           </div>

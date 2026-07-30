@@ -1,32 +1,61 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks, Query, UploadFile, File, Response
-from fastapi.responses import StreamingResponse
-import io
-from sqlalchemy import func, text
-from sqlalchemy.orm import Session, joinedload
-from geoalchemy2.functions import ST_DWithin, ST_MakePoint, ST_SetSRID
-from typing import Annotated
 import asyncio
+import io
+from datetime import UTC
+from typing import Annotated
+
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+    status,
+)
+from fastapi.responses import StreamingResponse
+from geoalchemy2.functions import ST_X, ST_Y, ST_DWithin, ST_MakePoint, ST_SetSRID
+from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
-from app.models.report import Report, ReportStatus, ReportStatusHistory, Assignment, ResolutionReport
+from app.models.report import (
+    Assignment,
+    Report,
+    ReportStatus,
+    ReportStatusHistory,
+    ResolutionReport,
+)
 from app.models.user import User, UserRole
+from app.rate_limit import limiter
 from app.schemas.report import (
-    ReportCreate, ReportOut, ReportListOut, StatusUpdate,
-    CommentCreate, PresignedUrlRequest, PresignedUrlResponse, PhotoUploadResponse,
-    AssignCreate, AssignmentOut, ResolutionReportCreate, ResolutionReportOut,
+    AssignCreate,
+    AssignmentOut,
+    PhotoUploadResponse,
+    PresignedUrlRequest,
+    PresignedUrlResponse,
+    ReportCreate,
+    ReportListOut,
+    ReportMapListOut,
+    ReportMapOut,
+    ReportOut,
+    ResolutionReportCreate,
+    ResolutionReportOut,
+    StatusUpdate,
     UserBrief,
 )
-from app.utils.deps import get_current_user, require_staff, require_supervisor
-from app.utils.pagination import PaginationParams
-from app.utils.security import generate_tracking_code
-from app.services.storage import generate_presigned_upload, upload_photo as storage_upload_photo, get_photo as storage_get_photo
-from app.services.notification import notify_citizen, notify_staff
 from app.services.ai_client import analyze_report
+from app.services.event_bus import publish_report_event
 from app.services.geocoding import reverse_geocode
 from app.services.municipality_matching import closest_municipality_id
-from app.services.event_bus import publish_report_event
+from app.services.notification import notify_citizen, notify_staff
+from app.services.storage import generate_presigned_upload
+from app.services.storage import get_photo as storage_get_photo
+from app.services.storage import upload_photo as storage_upload_photo
+from app.utils.deps import get_current_user, require_admin, require_staff
+from app.utils.pagination import PaginationParams
 from app.utils.retry import with_retries
-from app.rate_limit import limiter
+from app.utils.security import generate_tracking_code
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -52,7 +81,7 @@ _TRANSITIONS: dict[ReportStatus, list[ReportStatus]] = {
 
 
 def _check_municipality_access(report: Report, current_user: User, db: Session) -> None:
-    """Municipality-scoped admin/supervisor/analyst can only reach reports
+    """Municipality-scoped admin/analyst can only reach reports
     belonging to their own municipality. 404, not 403, so existence in
     another municipality isn't revealed. No-op for super-admins
     (municipality_id is None).
@@ -66,7 +95,7 @@ def _check_municipality_access(report: Report, current_user: User, db: Session) 
         assigned = db.query(Assignment).filter(
             Assignment.report_id == report.id,
             Assignment.agent_id == current_user.id,
-            Assignment.is_active == True,
+            Assignment.is_active,
         ).first()
         if not assigned:
             raise HTTPException(status_code=404, detail="Report not found")
@@ -98,6 +127,27 @@ def _assignment_to_out(a: Assignment) -> AssignmentOut:
     )
 
 
+def _scope_reports_by_role(query, current_user: User, agent_id: str | None = None):
+    """Shared per-role visibility rules, used by both the full report list and
+    the lightweight map feed so the two can never drift out of sync."""
+    if current_user.role == UserRole.citizen:
+        query = query.filter(Report.citizen_id == current_user.id)
+    elif current_user.role == UserRole.field_agent:
+        # Field agents see reports assigned to them
+        query = query.join(Assignment, Assignment.report_id == Report.id)\
+                     .filter(Assignment.agent_id == current_user.id, Assignment.is_active)\
+                     .filter(Report.status != ReportStatus.SUBMITTED)
+    else:
+        # Admin / analyst see ALL reports including submitted,
+        # unless scoped to a single municipality (municipal admin/analyst)
+        if current_user.municipality_id is not None:
+            query = query.filter(Report.municipality_id == current_user.municipality_id)
+        if agent_id:
+            query = query.join(Assignment, Assignment.report_id == Report.id)\
+                         .filter(Assignment.agent_id == agent_id, Assignment.is_active)
+    return query
+
+
 def _resolution_to_out(rr: ResolutionReport) -> ResolutionReportOut:
     return ResolutionReportOut(
         id=rr.id,
@@ -117,6 +167,8 @@ def get_presigned_url(
     body: PresignedUrlRequest,
     _: User = Depends(get_current_user),
 ):
+    if body.content_type not in _ALLOWED_UPLOAD_CONTENT_TYPES:
+        raise HTTPException(status_code=415, detail="Unsupported file type")
     result = generate_presigned_upload(body.filename, body.content_type)
     return PresignedUrlResponse(**result)
 
@@ -150,7 +202,9 @@ async def upload_report_photo(
     if content_type not in _ALLOWED_UPLOAD_CONTENT_TYPES:
         raise HTTPException(status_code=415, detail="Unsupported file type")
 
-    data = await file.read()
+    # Bounded read: never buffer more than the cap allows, even for a client
+    # that ignores it and sends a much larger file.
+    data = await file.read(MAX_UPLOAD_BYTES + 1)
     if len(data) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="File too large (max 25MB)")
 
@@ -385,22 +439,7 @@ def list_reports(
     agent_id: str | None = Query(None),
 ):
     query = db.query(Report)
-
-    if current_user.role == UserRole.citizen:
-        query = query.filter(Report.citizen_id == current_user.id)
-    elif current_user.role == UserRole.field_agent:
-        # Field agents see reports assigned to them
-        query = query.join(Assignment, Assignment.report_id == Report.id)\
-                     .filter(Assignment.agent_id == current_user.id, Assignment.is_active == True)\
-                     .filter(Report.status != ReportStatus.SUBMITTED)
-    else:
-        # Admin / supervisor / analyst see ALL reports including submitted,
-        # unless scoped to a single municipality (municipal admin/supervisor/analyst)
-        if current_user.municipality_id is not None:
-            query = query.filter(Report.municipality_id == current_user.municipality_id)
-        if agent_id:
-            query = query.join(Assignment, Assignment.report_id == Report.id)\
-                         .filter(Assignment.agent_id == agent_id, Assignment.is_active == True)
+    query = _scope_reports_by_role(query, current_user, agent_id)
 
     if status:
         query = query.filter(Report.status == status)
@@ -418,6 +457,41 @@ def list_reports(
         page=pagination.page,
         page_size=pagination.page_size,
     )
+
+
+@router.get("/map", response_model=ReportMapListOut)
+def list_reports_for_map(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    status: ReportStatus | None = Query(None),
+):
+    """Marker feed for the dashboard map. Selects only the columns a pin/popup
+    needs and extracts lat/lng in SQL, instead of loading full report rows
+    (description, photos, AI metadata, ...) and converting PostGIS geometry to
+    a shapely point in Python for every row — the map doesn't use any of that.
+    Defaults to active reports only (resolved/rejected are done, not something
+    the map needs to plot) unless a specific status is requested.
+    """
+    query = db.query(
+        Report.id, Report.tracking_code, Report.title, Report.status, Report.priority,
+        Report.city, Report.city_ar,
+        ST_Y(Report.location).label("lat"), ST_X(Report.location).label("lng"),
+    )
+    query = _scope_reports_by_role(query, current_user)
+
+    if status:
+        query = query.filter(Report.status == status)
+    else:
+        query = query.filter(Report.status.notin_([ReportStatus.RESOLVED, ReportStatus.REJECTED]))
+
+    rows = query.order_by(Report.created_at.desc()).limit(1000).all()
+    return ReportMapListOut(items=[
+        ReportMapOut(
+            id=r.id, tracking_code=r.tracking_code, title=r.title, status=r.status,
+            priority=r.priority, city=r.city, city_ar=r.city_ar, lat=r.lat, lng=r.lng,
+        )
+        for r in rows
+    ])
 
 
 @router.get("/nearby", response_model=list[ReportOut])
@@ -505,8 +579,8 @@ def update_status(
         report.analyzed_by = current_user.id
 
     if body.status == ReportStatus.RESOLVED:
-        from datetime import datetime, timezone
-        report.resolved_at = datetime.now(timezone.utc)
+        from datetime import datetime
+        report.resolved_at = datetime.now(UTC)
 
     db.commit()
     db.refresh(report)
@@ -529,7 +603,7 @@ def assign_report(
     report_id: str,
     body: AssignCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_supervisor),
+    current_user: User = Depends(require_admin),
 ):
     report = db.get(Report, report_id)
     if not report:
@@ -542,7 +616,7 @@ def assign_report(
     # Deactivate all previous assignments for this report
     db.query(Assignment).filter(
         Assignment.report_id == report.id,
-        Assignment.is_active == True,
+        Assignment.is_active,
     ).update({"is_active": False})
 
     agent_query = db.query(User).filter(User.id.in_(body.agent_ids))

@@ -39,6 +39,12 @@ export default function Interventions() {
   const [transitioning, setTransitioning] = useState(false)
   const [note, setNote] = useState('')
 
+  // Drag-and-drop between columns
+  const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [dragOverCol, setDragOverCol] = useState<string | null>(null)
+  const [pendingDrop, setPendingDrop] = useState<{ report: Report; newStatus: ReportStatus } | null>(null)
+  const [dropNote, setDropNote] = useState('')
+
   const columns = [
     { id: 'reception',  label: t('int_reception'),       statuses: ['received'] as ReportStatus[],    color: '#0EA5E9' },
     { id: 'examen',     label: t('status_under_review'),  statuses: ['under_review'] as ReportStatus[], color: '#F59E0B' },
@@ -86,6 +92,40 @@ export default function Interventions() {
     }
   }
 
+  function handleDrop(targetStatus: ReportStatus) {
+    setDragOverCol(null)
+    const id = draggedId
+    setDraggedId(null)
+    if (!id) return
+    const report = reports.find(r => r.id === id)
+    if (!report || report.status === targetStatus) return
+    const legal = (NEXT_STATUSES[report.status] ?? []).includes(targetStatus)
+    if (!legal) {
+      setError(t('int_illegal_move'))
+      return
+    }
+    setPendingDrop({ report, newStatus: targetStatus })
+    setDropNote('')
+  }
+
+  async function confirmDrop() {
+    if (!pendingDrop) return
+    setTransitioning(true)
+    try {
+      const updated = await api.patch<Report>(`/reports/${pendingDrop.report.id}/status`, {
+        status: pendingDrop.newStatus,
+        note: dropNote || undefined,
+      })
+      setReports(prev => prev.map(r => r.id === updated.id ? updated : r))
+      setPendingDrop(null)
+      setDropNote('')
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erreur')
+    } finally {
+      setTransitioning(false)
+    }
+  }
+
   const groupedByColumn = columns.map(col => ({
     ...col,
     cards: reports.filter(r => (col.statuses as string[]).includes(r.status)),
@@ -119,8 +159,17 @@ export default function Interventions() {
       )}
 
       <div className="flex gap-4 flex-1 overflow-x-auto pb-4">
-        {groupedByColumn.map(col => (
-          <div key={col.id} className="flex-shrink-0 w-72">
+        {groupedByColumn.map(col => {
+          const isDragTarget = draggedId != null
+          const isOver = dragOverCol === col.id
+          return (
+          <div
+            key={col.id}
+            className="flex-shrink-0 w-72"
+            onDragOver={e => { e.preventDefault(); if (dragOverCol !== col.id) setDragOverCol(col.id) }}
+            onDragLeave={() => setDragOverCol(prev => (prev === col.id ? null : prev))}
+            onDrop={() => handleDrop(col.statuses[0])}
+          >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: col.color }} />
@@ -131,16 +180,32 @@ export default function Interventions() {
                 {loading ? '…' : col.cards.length}
               </span>
             </div>
-            <div className="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
+            <div
+              className={`space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1 rounded-xl transition-colors ${
+                isDragTarget ? (isOver ? 'ring-2 ring-offset-2' : 'ring-1 ring-dashed') : ''
+              }`}
+              style={isDragTarget ? { ['--tw-ring-color' as string]: col.color } : undefined}
+            >
               {loading
                 ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
+                : col.cards.length === 0 && isDragTarget ? (
+                    <div className="h-16 flex items-center justify-center text-xs text-[#CBD5E1] border border-dashed border-[#E2E8F0] rounded-xl">
+                      {t('int_drop_here')}
+                    </div>
+                  )
                 : col.cards.map(r => {
                     const pm = { label: priorityLabel(r.priority), color: PRIORITY_COLORS[r.priority] ?? '#F59E0B' }
                     const isSelected = selected?.id === r.id
                     return (
-                      <div key={r.id} onClick={() => setSelected(isSelected ? null : r)}
-                        className={`bg-white rounded-xl border shadow-sm p-4 cursor-pointer transition-all hover:shadow-md
-                          ${isSelected ? 'border-[#0038AF] ring-1 ring-[#0038AF]' : 'border-[#E2E8F0]'}`}>
+                      <div
+                        key={r.id}
+                        draggable
+                        onDragStart={() => setDraggedId(r.id)}
+                        onDragEnd={() => { setDraggedId(null); setDragOverCol(null) }}
+                        onClick={() => setSelected(isSelected ? null : r)}
+                        className={`bg-white rounded-xl border shadow-sm p-4 cursor-grab active:cursor-grabbing transition-all hover:shadow-md
+                          ${isSelected ? 'border-[#0038AF] ring-1 ring-[#0038AF]' : 'border-[#E2E8F0]'}
+                          ${draggedId === r.id ? 'opacity-40' : ''}`}>
                         <div className="flex items-start justify-between mb-1.5">
                           <p className="text-xs font-mono text-[#94A3B8]">{r.tracking_code}</p>
                           <span className="text-xs font-bold px-1.5 py-0.5 rounded"
@@ -156,7 +221,8 @@ export default function Interventions() {
                   })}
             </div>
           </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Transition panel */}
@@ -215,6 +281,39 @@ export default function Interventions() {
                   {t('int_final_state')}
                 </p>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Drag-drop confirm — the note is genuinely optional, so both buttons submit the move */}
+      {pendingDrop && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30"
+          onClick={e => { if (e.target === e.currentTarget) setPendingDrop(null) }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <StatusBadge status={pendingDrop.report.status} />
+              <span className="material-symbols-outlined text-[#94A3B8]" style={{ fontSize: 16 }}>arrow_forward</span>
+              <StatusBadge status={pendingDrop.newStatus} />
+            </div>
+            <p className="text-sm font-semibold text-[#181c20] mt-2 mb-3 line-clamp-2">{pendingDrop.report.title}</p>
+            <textarea
+              value={dropNote}
+              onChange={e => setDropNote(e.target.value)}
+              placeholder={t('note_optional_int')}
+              className="w-full text-sm border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#181c20] placeholder-[#94A3B8] resize-none focus:outline-none focus:border-[#0038AF] mb-4"
+              rows={2}
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setPendingDrop(null)} disabled={transitioning}
+                className="flex-1 py-2.5 border border-[#E2E8F0] text-[#64748B] rounded-xl text-sm font-medium hover:bg-[#f7f9fe] transition-colors disabled:opacity-50">
+                {t('btn_cancel')}
+              </button>
+              <button onClick={confirmDrop} disabled={transitioning}
+                className="flex-1 py-2.5 bg-[#0038AF] text-white rounded-xl text-sm font-semibold shadow-md hover:opacity-90 transition-opacity disabled:opacity-50">
+                {transitioning ? t('loading') : t('btn_confirm')}
+              </button>
             </div>
           </div>
         </div>

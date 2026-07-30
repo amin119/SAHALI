@@ -1,0 +1,10 @@
+{
+  // GHSA-qwww-vcr4-c8h2 — "React Router RSC Mode CSRF Bypass". Only reachable
+  // through React Router's RSC/framework mode, which this app never uses —
+  // it's a plain Vite SPA on <BrowserRouter>. No release within the 7.x line
+  // fixes it (the fix landed only in the 8.x major, a separate migration);
+  // accepted, not ignorable by upgrading in place.
+  "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
+  "high": true,
+  "allowlist": ["GHSA-qwww-vcr4-c8h2"]
+}

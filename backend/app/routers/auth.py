@@ -1,27 +1,40 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.schemas.auth import (
-    RegisterRequest, LoginRequest, OTPRequest, OTPVerify,
-    TokenResponse, RefreshRequest,
-    EmailVerifyRequest, EmailVerifyConfirm,
-    ForgotPasswordRequest, ResetPasswordRequest,
-)
-from app.models.user import User, UserRole
-from app.utils.security import (
-    hash_password, verify_password,
-    create_access_token, create_refresh_token, decode_token,
-)
-from app.utils.deps import get_current_user, bearer_scheme
-from app.services.otp import (
-    send_otp, verify_otp,
-    send_email_otp, verify_email_otp,
-)
-from app.services.token_blacklist import revoke, is_revoked
-from app.rate_limit import limiter
+
 from app.config import get_settings
+from app.database import get_db
+from app.models.user import User, UserRole
+from app.rate_limit import limiter
+from app.schemas.auth import (
+    EmailVerifyConfirm,
+    EmailVerifyRequest,
+    ForgotPasswordRequest,
+    LoginRequest,
+    OTPRequest,
+    OTPVerify,
+    RefreshRequest,
+    RegisterRequest,
+    ResetPasswordRequest,
+    TokenResponse,
+)
+from app.services.otp import (
+    send_email_otp,
+    send_otp,
+    verify_email_otp,
+    verify_otp,
+)
+from app.services.token_blacklist import consume_once, revoke
+from app.utils.deps import bearer_scheme, get_current_user
+from app.utils.security import (
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    hash_password,
+    verify_password,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 settings = get_settings()
@@ -188,8 +201,13 @@ def refresh_token(body: RefreshRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     if payload.get("type") != "refresh":
         raise HTTPException(status_code=401, detail="Wrong token type")
-    jti = payload.get("jti")
-    if jti and is_revoked(jti):
+
+    # Rotate: consume_once atomically claims the jti, so two concurrent
+    # refresh calls with the same token can't both succeed — whichever loses
+    # the race gets a 401, closing the replay window a separate
+    # check-then-revoke would leave open.
+    jti, exp = payload.get("jti"), payload.get("exp")
+    if jti and exp and not consume_once(jti, datetime.fromtimestamp(exp, tz=UTC)):
         raise HTTPException(status_code=401, detail="Refresh token has been revoked")
 
     user = db.get(User, payload["sub"])
@@ -218,4 +236,4 @@ def logout(
             continue
         jti, exp = payload.get("jti"), payload.get("exp")
         if jti and exp:
-            revoke(jti, datetime.fromtimestamp(exp, tz=timezone.utc))
+            revoke(jti, datetime.fromtimestamp(exp, tz=UTC))

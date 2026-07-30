@@ -1,14 +1,15 @@
 import asyncio
 import json
+
 import redis.asyncio as aioredis
 from fastapi import APIRouter, Depends, Query, Request
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.config import get_settings
 from app.database import SessionLocal
 from app.models.user import User, UserRole
 from app.services.event_bus import CHANNEL
-from app.services.sse_ticket import issue_ticket, consume_ticket
+from app.services.sse_ticket import consume_ticket, issue_ticket
 from app.utils.deps import require_staff
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -59,9 +60,16 @@ def create_sse_ticket(current_user: User = Depends(require_staff)):
 
 
 @router.get("/reports")
-async def report_events(request: Request, ticket: str = Query(...)):
+def report_events(request: Request, ticket: str = Query(...)):
     """SSE stream of report lifecycle events for dashboard clients, gated by
-    a ticket minted via POST /events/ticket (see docstring there)."""
+    a ticket minted via POST /events/ticket (see docstring there).
+
+    Deliberately a sync def, not async: consume_ticket and SessionLocal are
+    both blocking calls, and FastAPI runs sync route functions in a worker
+    thread rather than on the event loop — an async def here would run that
+    blocking preflight work directly on the loop instead. The returned
+    StreamingResponse still streams _stream's async generator normally;
+    that's independent of whether this outer function is sync or async."""
     try:
         user_id = consume_ticket(ticket)
         if not user_id:

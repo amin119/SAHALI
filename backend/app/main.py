@@ -1,14 +1,13 @@
-import structlog
 import sentry_sdk
-from fastapi import FastAPI, Request, Depends
+import structlog
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.config import get_settings
 from app.rate_limit import limiter
-from app.routers import auth, users, reports, notifications, admin, categories, events
+from app.routers import admin, auth, categories, events, notifications, reports, users
 from app.utils.deps import require_super_admin
 
 settings = get_settings()
@@ -25,9 +24,8 @@ structlog.configure(
 log = structlog.get_logger()
 
 if settings.APP_ENV == "production" and settings.CORS_ORIGINS == "*":
-    log.warning(
-        "cors_wide_open_in_production",
-        detail="CORS_ORIGINS is unset/'*' in a production environment — set it to your real dashboard origin(s).",
+    raise RuntimeError(
+        "CORS_ORIGINS must be set to explicit origin(s) in production — refusing to start with '*'."
     )
 
 app = FastAPI(
@@ -81,8 +79,9 @@ def health_db(_=Depends(require_super_admin)):
     """Ops diagnostic — gated to super-admin. Reports ok/error only, never
     raw exception text or which specific account exists, so it can't be used
     for unauthenticated reconnaissance."""
-    from app.database import engine, SessionLocal
     from sqlalchemy import text
+
+    from app.database import SessionLocal, engine
     from app.models.user import User, UserRole
     from app.utils.security import _get_private_key, _get_public_key
     result: dict = {}
@@ -94,9 +93,8 @@ def health_db(_=Depends(require_super_admin)):
         log.warning("health_db_check_failed", check="db", error=str(e))
         result["db"] = "error"
     try:
-        db = SessionLocal()
-        result["admin_account_exists"] = db.query(User).filter(User.role == UserRole.admin).first() is not None
-        db.close()
+        with SessionLocal() as db:
+            result["admin_account_exists"] = db.query(User).filter(User.role == UserRole.admin).first() is not None
     except Exception as e:
         log.warning("health_db_check_failed", check="admin_account", error=str(e))
         result["admin_account_exists"] = "error"

@@ -10,6 +10,8 @@ class MunicipalityOut(BaseModel):
     open_reports: int
     agent_count: int
     resolution_rate: int
+    lat: float | None = None
+    lng: float | None = None
 
 
 class MunicipalityListOut(BaseModel):
@@ -23,9 +25,13 @@ class MunicipalityCreate(BaseModel):
     name: str
     subscription_tier: str | None = None
     logo_url: str | None = None
+    lat: float | None = None
+    lng: float | None = None
 
 
 class MunicipalityUpdate(BaseModel):
     name: str | None = None
     subscription_tier: str | None = None
     logo_url: str | None = None
+    lat: float | None = None
+    lng: float | None = None

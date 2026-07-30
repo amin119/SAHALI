@@ -1,10 +1,11 @@
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
+
 from app.database import get_db
-from app.utils.security import decode_token
-from app.services.token_blacklist import is_revoked
 from app.models.user import User, UserRole
+from app.services.token_blacklist import is_revoked
+from app.utils.security import decode_token
 
 bearer_scheme = HTTPBearer()
 
@@ -54,5 +55,4 @@ def require_super_admin(current_user: User = Depends(get_current_user)) -> User:
 
 
 require_admin = require_roles(UserRole.admin)
-require_staff = require_roles(UserRole.admin, UserRole.supervisor, UserRole.field_agent, UserRole.analyst)
-require_supervisor = require_roles(UserRole.admin, UserRole.supervisor)
+require_staff = require_roles(UserRole.admin, UserRole.field_agent, UserRole.analyst)

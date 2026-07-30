@@ -1,27 +1,46 @@
+import csv
+import io
+from datetime import UTC, datetime
+from typing import Annotated
+from zoneinfo import ZoneInfo
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from sqlalchemy import func, text, or_
+from geoalchemy2.functions import ST_MakePoint, ST_SetSRID
+from sqlalchemy import func, or_, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from typing import Annotated
-import csv, io
-from datetime import datetime, timezone
 
 from app.database import get_db
+from app.models.agent_schedule import AgentSchedule
+from app.models.municipality import Municipality
 from app.models.report import Report, ReportStatus
 from app.models.user import User, UserRole
-from app.models.municipality import Municipality
-from app.schemas.user import StaffUserCreate, StaffUserUpdate, UserOut, UserListOut
 from app.schemas.municipality import (
-    MunicipalityOut, MunicipalityListOut, MunicipalityCreate, MunicipalityUpdate,
+    MunicipalityCreate,
+    MunicipalityListOut,
+    MunicipalityOut,
+    MunicipalityUpdate,
 )
 from app.schemas.notification import BroadcastRequest
+from app.schemas.user import (
+    AgentStatsListOut,
+    AgentStatsOut,
+    ScheduleSlotIn,
+    ScheduleSlotOut,
+    StaffUserCreate,
+    StaffUserUpdate,
+    UserListOut,
+    UserOut,
+)
 from app.services import backfill as backfill_service
-from app.utils.deps import require_admin, require_supervisor, require_staff, require_super_admin, get_current_user
+from app.utils.deps import require_admin, require_staff, require_super_admin
 from app.utils.pagination import PaginationParams
 from app.utils.security import hash_password
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+TUNIS_TZ = ZoneInfo("Africa/Tunis")
 
 
 def _municipality_query_page(db: Session, pagination: "PaginationParams", search: str | None):
@@ -44,12 +63,13 @@ def _municipality_query_page(db: Session, pagination: "PaginationParams", search
             COUNT(DISTINCT r.id)                                         AS total_reports,
             COUNT(DISTINCT CASE WHEN r.status = 'resolved' THEN r.id END) AS resolved_reports,
             COUNT(DISTINCT CASE WHEN r.status NOT IN ('resolved','rejected') THEN r.id END) AS open_reports,
-            COUNT(DISTINCT u.id) FILTER (WHERE u.role = 'field_agent')  AS agent_count
+            COUNT(DISTINCT u.id) FILTER (WHERE u.role = 'field_agent')  AS agent_count,
+            ST_Y(m.location) AS lat, ST_X(m.location) AS lng
         FROM municipalities m
         LEFT JOIN reports r ON r.municipality_id = m.id
         LEFT JOIN users u   ON u.municipality_id = m.id
         {where_clause}
-        GROUP BY m.id, m.name, m.subscription_tier
+        GROUP BY m.id, m.name, m.subscription_tier, m.location
         ORDER BY m.name
         LIMIT :limit OFFSET :offset
     """), params).fetchall()
@@ -63,6 +83,7 @@ def _municipality_row_to_dict(r) -> dict:
         "total_reports": r[3], "resolved_reports": r[4],
         "open_reports": r[5], "agent_count": r[6],
         "resolution_rate": round(r[4] / r[3] * 100) if r[3] > 0 else 0,
+        "lat": r[7], "lng": r[8],
     }
 
 
@@ -73,12 +94,13 @@ def _municipality_stats_by_id(db: Session, municipality_id: int) -> dict | None:
             COUNT(DISTINCT r.id)                                         AS total_reports,
             COUNT(DISTINCT CASE WHEN r.status = 'resolved' THEN r.id END) AS resolved_reports,
             COUNT(DISTINCT CASE WHEN r.status NOT IN ('resolved','rejected') THEN r.id END) AS open_reports,
-            COUNT(DISTINCT u.id) FILTER (WHERE u.role = 'field_agent')  AS agent_count
+            COUNT(DISTINCT u.id) FILTER (WHERE u.role = 'field_agent')  AS agent_count,
+            ST_Y(m.location) AS lat, ST_X(m.location) AS lng
         FROM municipalities m
         LEFT JOIN reports r ON r.municipality_id = m.id
         LEFT JOIN users u   ON u.municipality_id = m.id
         WHERE m.id = :id
-        GROUP BY m.id, m.name, m.subscription_tier
+        GROUP BY m.id, m.name, m.subscription_tier, m.location
     """), {"id": municipality_id}).fetchone()
     return _municipality_row_to_dict(row) if row else None
 
@@ -90,6 +112,7 @@ def test_storage(_: User = Depends(require_super_admin)):
     name and internal error text can't leak to a caller."""
     import httpx
     import structlog
+
     from app.config import get_settings
     log = structlog.get_logger()
     s = get_settings()
@@ -134,7 +157,7 @@ def dashboard_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_staff),
 ):
-    today = datetime.now(timezone.utc).date()
+    today = datetime.now(UTC).date()
     base = db.query(Report)
     if current_user.municipality_id is not None:
         base = base.filter(Report.municipality_id == current_user.municipality_id)
@@ -161,7 +184,7 @@ def dashboard_stats(
 @router.get("/reports/export")
 def export_reports(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_supervisor),
+    current_user: User = Depends(require_admin),
     city: str | None = Query(None),
     report_status: ReportStatus | None = Query(None, alias="status"),
 ):
@@ -189,6 +212,38 @@ def export_reports(
     )
 
 
+@router.get("/agents/stats", response_model=AgentStatsListOut)
+def agent_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff),
+):
+    """Per-agent assigned/resolved/in-progress counts, aggregated in SQL — the
+    Teams page used to fetch up to 500 full report rows (every field,
+    including description/photos/AI metadata) just to compute these three
+    numbers per agent in the browser. One GROUP BY does the same job."""
+    where_clause = "WHERE r.assigned_to IS NOT NULL"
+    params: dict = {}
+    if current_user.municipality_id is not None:
+        where_clause += " AND r.municipality_id = :municipality_id"
+        params["municipality_id"] = current_user.municipality_id
+
+    rows = db.execute(text(f"""
+        SELECT
+            r.assigned_to,
+            COUNT(*)                                         AS assigned,
+            COUNT(*) FILTER (WHERE r.status = 'resolved')     AS resolved,
+            COUNT(*) FILTER (WHERE r.status = 'in_progress')  AS in_progress
+        FROM reports r
+        {where_clause}
+        GROUP BY r.assigned_to
+    """), params).fetchall()
+
+    return {"items": [
+        AgentStatsOut(agent_id=str(r[0]), assigned=r[1], resolved=r[2], in_progress=r[3])
+        for r in rows
+    ]}
+
+
 @router.get("/users", response_model=UserListOut)
 def list_staff(
     db: Session = Depends(get_db),
@@ -197,6 +252,7 @@ def list_staff(
     search: str | None = Query(None, description="Match against full name or email"),
     role: UserRole | None = Query(None),
     municipality_id: int | None = Query(None),
+    on_shift_now: bool = Query(False, description="Only staff with a schedule slot covering the current moment (Tunis time)"),
 ):
     query = db.query(User).filter(User.role != UserRole.citizen)
     if search:
@@ -208,6 +264,13 @@ def list_staff(
         query = query.filter(User.municipality_id == current_user.municipality_id)
     elif municipality_id:
         query = query.filter(User.municipality_id == municipality_id)
+    if on_shift_now:
+        now = datetime.now(TUNIS_TZ)
+        query = query.join(AgentSchedule, AgentSchedule.agent_id == User.id).filter(
+            AgentSchedule.day_of_week == now.weekday(),
+            AgentSchedule.start_time <= now.time(),
+            AgentSchedule.end_time > now.time(),
+        )
 
     total = query.count()
     items = (
@@ -303,6 +366,57 @@ def delete_staff(
         )
 
 
+def _get_scoped_staff_or_404(user_id: str, db: Session, current_user: User) -> User:
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if current_user.municipality_id is not None and user.municipality_id != current_user.municipality_id:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@router.get("/users/{user_id}/schedule", response_model=list[ScheduleSlotOut])
+def get_agent_schedule(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    _get_scoped_staff_or_404(user_id, db, current_user)
+    return (
+        db.query(AgentSchedule)
+        .filter(AgentSchedule.agent_id == user_id)
+        .order_by(AgentSchedule.day_of_week)
+        .all()
+    )
+
+
+@router.put("/users/{user_id}/schedule", response_model=list[ScheduleSlotOut])
+def set_agent_schedule(
+    user_id: str,
+    body: list[ScheduleSlotIn],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Replaces the agent's whole week in one call — simpler for the caller
+    than per-day CRUD, and a schedule is small enough that this is cheap."""
+    _get_scoped_staff_or_404(user_id, db, current_user)
+
+    days = [slot.day_of_week for slot in body]
+    if len(days) != len(set(days)):
+        raise HTTPException(status_code=400, detail="Duplicate day_of_week in schedule")
+
+    db.query(AgentSchedule).filter(AgentSchedule.agent_id == user_id).delete()
+    new_slots = [
+        AgentSchedule(agent_id=user_id, day_of_week=slot.day_of_week, start_time=slot.start_time, end_time=slot.end_time)
+        for slot in body
+    ]
+    db.add_all(new_slots)
+    db.commit()
+    for s in new_slots:
+        db.refresh(s)
+    return new_slots
+
+
 @router.get("/municipalities", response_model=MunicipalityListOut)
 def list_municipalities(
     db: Session = Depends(get_db),
@@ -322,7 +436,8 @@ def create_municipality(
 ):
     if db.query(Municipality).filter(Municipality.name == body.name).first():
         raise HTTPException(status_code=409, detail="A municipality with this name already exists")
-    muni = Municipality(name=body.name, subscription_tier=body.subscription_tier, logo_url=body.logo_url)
+    location = ST_SetSRID(ST_MakePoint(body.lng, body.lat), 4326) if body.lat is not None and body.lng is not None else None
+    muni = Municipality(name=body.name, subscription_tier=body.subscription_tier, logo_url=body.logo_url, location=location)
     db.add(muni)
     db.commit()
     db.refresh(muni)
@@ -330,6 +445,7 @@ def create_municipality(
         "id": muni.id, "name": muni.name, "subscription_tier": muni.subscription_tier,
         "total_reports": 0, "resolved_reports": 0, "open_reports": 0,
         "agent_count": 0, "resolution_rate": 0,
+        "lat": body.lat, "lng": body.lng,
     }
 
 
@@ -352,6 +468,8 @@ def update_municipality(
         muni.subscription_tier = body.subscription_tier
     if body.logo_url is not None:
         muni.logo_url = body.logo_url
+    if body.lat is not None and body.lng is not None:
+        muni.location = ST_SetSRID(ST_MakePoint(body.lng, body.lat), 4326)
     db.commit()
 
     return _municipality_stats_by_id(db, municipality_id) or {
@@ -359,6 +477,25 @@ def update_municipality(
         "total_reports": 0, "resolved_reports": 0, "open_reports": 0,
         "agent_count": 0, "resolution_rate": 0,
     }
+
+
+@router.get("/municipalities/{municipality_id}/agents", response_model=list[UserOut])
+def list_municipality_agents(
+    municipality_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_super_admin),
+):
+    """Who actually works in this municipality — a super-admin's view across
+    the whole platform; a municipal admin already gets this via GET /admin/users,
+    which is auto-scoped to their own municipality."""
+    if not db.get(Municipality, municipality_id):
+        raise HTTPException(status_code=404, detail="Municipality not found")
+    return (
+        db.query(User)
+        .filter(User.municipality_id == municipality_id, User.role != UserRole.citizen)
+        .order_by(User.full_name)
+        .all()
+    )
 
 
 @router.delete("/municipalities/{municipality_id}", status_code=204)
@@ -385,11 +522,11 @@ def delete_municipality(
 def broadcast(
     body: BroadcastRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(require_supervisor),
+    _: User = Depends(require_admin),
 ):
     from app.models.notification import Notification
     from app.models.user import UserRole
-    query = db.query(User).filter(User.role == UserRole.citizen, User.is_active == True)
+    query = db.query(User).filter(User.role == UserRole.citizen, User.is_active)
     if body.city:
         query = query.filter(User.municipality_id.isnot(None))  # simplified; extend with city join if needed
 

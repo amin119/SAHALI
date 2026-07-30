@@ -1,5 +1,7 @@
 import hmac
+
 import redis as redis_lib
+
 from app.config import get_settings
 from app.utils.security import generate_otp
 
@@ -11,11 +13,13 @@ MAX_VERIFY_ATTEMPTS = 5  # per OTP lifetime — resets when a fresh code is requ
 
 
 def _attempts_exhausted(attempts_key: str) -> bool:
-    attempts = int(_redis.get(attempts_key) or 0)
-    if attempts >= MAX_VERIFY_ATTEMPTS:
-        return True
-    _redis.setex(attempts_key, OTP_TTL, attempts + 1)
-    return False
+    """INCR is atomic, so concurrent verify calls can't all read the same
+    pre-increment count and slip past the limit together (a plain GET+SETEX
+    would allow exactly that race)."""
+    attempts = _redis.incr(attempts_key)
+    if attempts == 1:
+        _redis.expire(attempts_key, OTP_TTL)
+    return attempts > MAX_VERIFY_ATTEMPTS
 
 
 # ── Phone OTP ──────────────────────────────────────────────────────────────────

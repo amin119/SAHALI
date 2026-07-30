@@ -9,9 +9,8 @@ plugins {
 }
 
 // Real release signing, read from android/key.properties (gitignored — see
-// android/.gitignore). Falls back to the debug keystore when that file
-// doesn't exist, so `flutter run --release` keeps working before a release
-// keystore has been generated.
+// android/.gitignore). Required for release builds — see the check() in the
+// release buildType below; debug builds are unaffected either way.
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
@@ -46,8 +45,11 @@ android {
     }
 
     signingConfigs {
-        if (keystorePropertiesFile.exists()) {
-            create("release") {
+        // Always create the config object (so buildTypes.release below can
+        // reference it during configuration without failing) but only
+        // populate it when the properties file actually exists.
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
                 storeFile = file(keystoreProperties["storeFile"] as String)
@@ -58,11 +60,23 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+}
+
+// Fail loudly rather than silently shipping a debug-signed release artifact
+// if key.properties is missing (e.g. a misconfigured CI secret) — but only
+// when a release variant is actually being built, so debug/profile builds
+// and plain Gradle syncs still work without a keystore. Matches broadly on
+// "Release" (not just assembleRelease/bundleRelease) because the actual
+// signing happens in an earlier task (packageRelease) — a check placed only
+// on the umbrella task never runs, since packaging fails first with AGP's
+// own (less clear) error.
+tasks.matching { it.name.contains("Release") }.configureEach {
+    doFirst {
+        check(keystorePropertiesFile.exists()) {
+            "Missing android/key.properties — release builds require a real signing config."
         }
     }
 }

@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Date, Text
-from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
+from sqlalchemy import Column, Date, Integer, String, Text
+from sqlalchemy.orm import relationship
+
 from app.database import Base
 
 

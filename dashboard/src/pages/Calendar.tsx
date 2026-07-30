@@ -3,8 +3,6 @@ import { api } from '../lib/api'
 import type { Report } from '../types/api'
 import { useLang } from '../context/LangContext'
 
-const HOURS = Array.from({ length: 10 }, (_, i) => i + 8)
-
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   received:     { bg: '#0EA5E918', text: '#0EA5E9' },
   under_review: { bg: '#F59E0B18', text: '#F59E0B' },
@@ -59,12 +57,12 @@ export default function Calendar() {
   const weekDates = getWeekDates(weekOffset)
   const today = new Date()
 
+  // Every event for the day, oldest first — nothing is dropped for falling
+  // outside a fixed hour window, unlike a traditional 8h-18h time grid.
   function getEventsForDay(date: Date): Report[] {
-    return reports.filter(r => sameDay(new Date(r.updated_at), date))
-  }
-
-  function getHourSlot(r: Report): number {
-    return new Date(r.updated_at).getHours()
+    return reports
+      .filter(r => sameDay(new Date(r.updated_at), date))
+      .sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
   }
 
   function monthLabel(): string {
@@ -128,14 +126,15 @@ export default function Calendar() {
         </div>
       )}
 
+      {/* Agenda — one column per day, a full untruncated card per event.
+          No fixed hour range, so nothing is silently hidden for falling
+          outside a "working hours" window like a traditional time-grid would. */}
       <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
-        {/* Day headers */}
-        <div className="grid border-b border-[#E2E8F0]" style={{ gridTemplateColumns: '60px repeat(7, 1fr)' }}>
-          <div className="p-3 border-r border-[#E2E8F0]" />
+        <div className="grid grid-cols-7 divide-x divide-[#E2E8F0] border-b border-[#E2E8F0]">
           {weekDates.map((d, i) => {
             const isToday = sameDay(d, today)
             return (
-              <div key={i} className={`p-3 text-center border-r border-[#E2E8F0] last:border-r-0 ${isToday ? 'bg-[#0038AF08]' : ''}`}>
+              <div key={i} className={`p-3 text-center ${isToday ? 'bg-[#0038AF08]' : ''}`}>
                 <p className="text-xs font-semibold text-[#64748B]">{DAYS[i]}</p>
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center mx-auto mt-1 text-sm font-bold
                   ${isToday ? 'bg-[#0038AF] text-white' : 'text-[#181c20]'}`}>
@@ -146,49 +145,45 @@ export default function Calendar() {
           })}
         </div>
 
-        {/* Time grid */}
-        <div className="overflow-y-auto" style={{ maxHeight: 480 }}>
-          {loading ? (
-            <div className="p-8 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-full border-4 border-[#0038AF] border-t-transparent animate-spin mx-auto mb-3" />
-                <p className="text-sm text-[#64748B]">{t('cal_loading')}</p>
-              </div>
+        {loading ? (
+          <div className="p-8 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-full border-4 border-[#0038AF] border-t-transparent animate-spin mx-auto mb-3" />
+              <p className="text-sm text-[#64748B]">{t('cal_loading')}</p>
             </div>
-          ) : (
-            HOURS.map(hour => (
-              <div key={hour} className="grid border-b border-[#E2E8F0] last:border-b-0"
-                style={{ gridTemplateColumns: '60px repeat(7, 1fr)', minHeight: 56 }}>
-                <div className="px-3 py-2 border-r border-[#E2E8F0] flex items-start">
-                  <span className="text-xs text-[#94A3B8]">{hour.toString().padStart(2, '0')}:00</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-7 divide-x divide-[#E2E8F0]" style={{ minHeight: 420 }}>
+            {weekDates.map((d, di) => {
+              const isToday = sameDay(d, today)
+              const events = getEventsForDay(d)
+              return (
+                <div key={di} className={`p-2 space-y-2 overflow-y-auto ${isToday ? 'bg-[#0038AF04]' : ''}`} style={{ maxHeight: 480 }}>
+                  {events.length === 0 ? (
+                    <p className="text-center text-[10px] text-[#CBD5E1] pt-4">—</p>
+                  ) : events.map(r => {
+                    const sm = STATUS_COLORS[r.status] ?? STATUS_COLORS.in_progress
+                    const pc = PRIORITY_COLOR[r.priority] ?? '#94A3B8'
+                    return (
+                      <button key={r.id} onClick={() => setSelectedReport(r === selectedReport ? null : r)}
+                        className="w-full text-left px-2.5 py-2 rounded-lg transition-all hover:opacity-90 border"
+                        style={{ backgroundColor: sm.bg, borderColor: `${sm.text}30` }}>
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className="text-[10px] font-semibold" style={{ color: sm.text }}>
+                            {new Date(r.updated_at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
+                        </div>
+                        <p className="text-xs font-medium text-[#181c20] leading-snug line-clamp-2">{r.title}</p>
+                        <p className="text-[10px] font-mono text-[#94A3B8] mt-1 truncate">{r.tracking_code}</p>
+                      </button>
+                    )
+                  })}
                 </div>
-                {weekDates.map((d, di) => {
-                  const isToday = sameDay(d, today)
-                  const events = getEventsForDay(d).filter(r => getHourSlot(r) === hour)
-                  return (
-                    <div key={di} className={`p-1.5 border-r border-[#E2E8F0] last:border-r-0 min-h-14 ${isToday ? 'bg-[#0038AF04]' : ''}`}>
-                      {events.map(r => {
-                        const sm = STATUS_COLORS[r.status] ?? STATUS_COLORS.in_progress
-                        const pc = PRIORITY_COLOR[r.priority] ?? '#94A3B8'
-                        return (
-                          <button key={r.id} onClick={() => setSelectedReport(r === selectedReport ? null : r)}
-                            className="w-full text-left px-2 py-1 rounded-lg mb-1 text-xs font-medium transition-all hover:opacity-90"
-                            style={{ backgroundColor: sm.bg, color: sm.text }}>
-                            <div className="flex items-center gap-1 mb-0.5">
-                              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
-                              <span className="truncate font-mono text-[10px] opacity-70">{r.tracking_code}</span>
-                            </div>
-                            <span className="truncate block leading-tight">{r.title}</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )
-                })}
-              </div>
-            ))
-          )}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Summary strip */}

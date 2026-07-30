@@ -1,0 +1,155 @@
+\chapter{Implementation}
+\label{chap:realisation}
+
+\section{Development Environment}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Category} & \textbf{Tools / Technologies} \\
+\midrule
+Languages          & Python 3.12, Dart (Flutter SDK $\geq$ 3.11), TypeScript \\
+Backend framework  & FastAPI, SQLAlchemy 2.0, Alembic (schema migrations), Pydantic v2 \\
+Mobile framework   & Flutter, GoRouter (navigation), Provider (state management, MVVM pattern) \\
+Frontend framework & React 19, Vite, Tailwind CSS, react-router-dom \\
+Database           & PostgreSQL 15 with the PostGIS geospatial extension \\
+Cache / messaging  & Redis (OTP storage, rate-limit counters, token/ticket denylists, SSE pub/sub) \\
+Package management & \texttt{uv} (Python), \texttt{pub} (Dart), \texttt{npm} (TypeScript) \\
+Containerization    & Docker and Docker Compose (local Postgres/Redis/MinIO) \\
+Version control     & Git, hosted on GitHub \\
+CI/CD               & GitHub Actions \\
+Editor / agent       & Claude Code (LLM-assisted development, see Section~\ref{chap:etude}) \\
+\bottomrule
+\end{tabularx}
+\caption{Development environment summary}
+\end{table}
+
+\section{Code Description and Key Algorithms}
+
+This section highlights four representative pieces of the implementation, chosen because each embeds a non-obvious design decision rather than boilerplate CRUD code.
+
+\subsection{Nearest-Municipality Matching}
+
+Rather than requiring a citizen or an operator to pick a municipality manually, every submitted report is matched to the geographically nearest one using a PostGIS $k$-nearest-neighbour query on municipality centroids (Listing~\ref{lst:knn}). This runs synchronously against the database with no external network call, so it adds negligible latency to report submission.
+
+\begin{lstlisting}[language=SQL, caption={Nearest-municipality query (PostGIS KNN operator)}, label={lst:knn}]
+SELECT id
+FROM municipalities
+ORDER BY location <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)
+LIMIT 1;
+\end{lstlisting}
+
+\subsection{Asymmetric JWT Authentication}
+
+Authentication tokens follow the JSON Web Token standard~\cite{rfc7519} and are signed with RS256 (asymmetric RSA signing) rather than a symmetric HMAC scheme, so that only the backend holding the private key can mint valid tokens, while the public key can be distributed freely for verification. Listing~\ref{lst:jwt} shows token creation, including a \texttt{jti} (JWT ID) claim added specifically to support the revocation mechanism described in Section~\ref{sec:difficultes}.
+
+\begin{lstlisting}[language=Python, caption={Access token creation with a revocation-capable jti claim}, label={lst:jwt}]
+def create_access_token(subject: str, role: str) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+    )
+    payload = {
+        "sub": subject, "role": role, "exp": expire,
+        "type": "access", "jti": str(uuid.uuid4()),
+    }
+    return jwt.encode(payload, _get_private_key(), algorithm="RS256")
+\end{lstlisting}
+
+\subsection{Atomic Single-Use Token Claims}
+
+A recurring theme in the security-hardening phase (Section~\ref{sec:difficultes}) was replacing check-then-act patterns with single atomic Redis~\cite{redis} operations. Listing~\ref{lst:atomic} shows the final refresh-token rotation logic: \texttt{SET\ldots NX} atomically claims a token identifier for one-time use in a single round trip, closing a race window that a separate ``check if used, then mark as used'' sequence would leave open between concurrent requests. This class of vulnerability --- security controls that are correct sequentially but not under concurrency --- is one the OWASP Top 10~\cite{owasp} groups under broken access control and insecure design.
+
+\begin{lstlisting}[language=Python, caption={Atomic one-time-use claim via Redis SET...NX}, label={lst:atomic}]
+def consume_once(jti: str, expires_at: datetime) -> bool:
+    ttl = _ttl_seconds(expires_at)
+    if ttl <= 0:
+        return False
+    return bool(_redis.set(f"{_PREFIX}{jti}", "1", ex=ttl, nx=True))
+\end{lstlisting}
+
+\subsection{Bilingual Reverse Geocoding}
+
+Report addresses are reverse-geocoded through OpenStreetMap's Nominatim service~\cite{nominatim}, queried twice per report --- once with a French language preference, once with Arabic --- because a given point is frequently tagged in only one of the two languages in OpenStreetMap's Tunisia dataset. A conservative resolution strategy discards unreliable neighbourhood-level guesses rather than displaying a plausible-looking but wrong street name (a real issue found during manual testing, discussed in Section~\ref{sec:difficultes}).
+
+\section{Difficulties Encountered and Solutions Adopted}
+\label{sec:difficultes}
+
+Table~\ref{tab:difficulties} summarizes the most significant problems encountered during the internship and how each was resolved. They are grouped by the project phase in which they arose.
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{p{3.6cm}Xp{4.7cm}}
+\toprule
+\textbf{Difficulty} & \textbf{Root Cause} & \textbf{Solution} \\
+\midrule
+Field agents received ``report not found'' for reports they were legitimately assigned to. &
+A municipality-scoping access check, added for admin/supervisor roles, was applied uniformly to field agents too --- but a report's \texttt{municipality\_id} was often \texttt{NULL} (not yet backfilled), and \texttt{None != <int>} evaluates to \texttt{True} in Python, so the comparison always failed. &
+Gave field agents their own access-check branch based on the \texttt{Assignment} table (task-based access) instead of municipality comparison (membership-based access) --- the two roles have fundamentally different access models. \\
+\addlinespace
+Reverse-geocoded street names were sometimes plainly wrong (a neighbourhood name shown as a street). &
+Confirmed, by testing across every Nominatim zoom level, that this was a genuine OpenStreetMap data-quality gap for the queried point, not a bug in the query. &
+Removed the risky suburb/neighbourhood fallback; a report is left without a street name rather than shown an incorrect one. \\
+\addlinespace
+Android release build failed with an abstract-class implementation error in a third-party package. &
+A version-incompatible pairing between the \texttt{record} plugin and its platform-interface package, resolved incorrectly by the dependency resolver at an older pinned version. &
+Bumped the \texttt{record} constraint to a version range with a compatible pairing; confirmed via a clean static analysis pass and a full release build. \\
+\addlinespace
+A signing key was found retrievable from an early Git commit, still reachable from every branch. &
+The key had been committed once, early in the project's history, and never removed --- deleting it from the current checkout does not remove it from history. &
+Rotated the key pair immediately (treating the old one as permanently compromised), then separately evaluated (and deferred, as a lower-priority hygiene step) rewriting Git history to purge the blob. \\
+\addlinespace
+The CI dependency-vulnerability scan failed with dozens of known CVEs once it could finally reach the internet (a local machine issue had silently prevented it from running at all until then). &
+Several pinned dependencies were multiple minor versions behind, and one framework version capped how far a related package could be upgraded, requiring the upgrade chain to be resolved in the right order. &
+Methodically bisected compatible version combinations by installing candidates into a disposable virtual environment and re-running the full test suite after each change, rather than upgrading blindly. \\
+\addlinespace
+An independent automated code review found that two ``fixed'' security issues (token rotation, one-time ticket consumption) still had a narrow race window. &
+The fixes had replaced an unsafe pattern with a \emph{check, then act} pattern --- safer than the original, but still not atomic under concurrent requests. &
+Replaced both with single atomic Redis operations (\texttt{SET...NX}, \texttt{GETDEL}); added a test using a synchronization barrier to force two threads to race deliberately, rather than hoping a naive concurrent test would happen to overlap. \\
+\addlinespace
+A Gradle check added to fail loudly when the release-signing keystore was missing ended up breaking \emph{all} builds, including debug ones. &
+The check ran at Gradle's configuration phase, which evaluates for every invocation, not only when a release build is actually requested. &
+Moved the check to fire immediately before the actual signing task instead, verified by testing all three cases: no keystore with a debug build (succeeds), no keystore with a release build (fails with a clear message), and a real keystore with a release build (produces a valid signed artifact). \\
+\bottomrule
+\end{tabularx}
+\caption{Significant difficulties encountered and their resolutions}
+\label{tab:difficulties}
+\end{table}
+
+A pattern across several of these entries is worth naming explicitly: more than one ``fix'' turned out to be incomplete on first attempt, and was only caught by a subsequent, independent verification step (a fresh test, an automated review pass, or a deliberately adversarial concurrency test). This is the practical justification for the audit/fix/verify/review methodology described in Section~\ref{chap:cadre-general} --- verification was not a formality, it repeatedly changed the outcome.
+
+\section{User Interfaces}
+
+Figures~\ref{fig:ui-mobile} and~\ref{fig:ui-dashboard} illustrate the citizen-facing mobile flow and the municipal staff dashboard respectively.
+
+\begin{figure}[h!]
+\centering
+\fbox{\parbox{0.85\textwidth}{\centering\vspace{3cm}
+\textit{[Insert screenshots here: onboarding / language selection, report submission wizard (category → photo → location → description → review), report tracking screen, field-agent mission list]}
+\vspace{3cm}}}
+\caption{Mobile application --- key citizen and field-agent screens}
+\label{fig:ui-mobile}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\fbox{\parbox{0.85\textwidth}{\centering\vspace{3cm}
+\textit{[Insert screenshots here: dashboard overview with KPIs, live report map, report detail panel, team/agent management view]}
+\vspace{3cm}}}
+\caption{Web dashboard --- key municipal staff screens}
+\label{fig:ui-dashboard}
+\end{figure}
+
+\section{CI/CD Pipeline}
+\label{sec:cicd}
+
+Once the functional platform and the security-hardening pass were in place, a continuous integration and deployment pipeline was built using GitHub Actions~\cite{gha}, structured as four independent jobs on every pull request:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Backend lint and dependency audit} --- static analysis (ruff) and a known-vulnerability scan (pip-audit) against the pinned dependency set.
+  \item \textbf{Backend test suite} --- runs the automated test suite (Chapter~\ref{chap:tests}) against real PostgreSQL and Redis service containers, mirroring production dependencies rather than mocking them.
+  \item \textbf{Backend Docker build check} --- builds the production container image to catch a broken \texttt{Dockerfile} or dependency-installation failure before the hosting platform does.
+  \item \textbf{Dashboard and mobile checks} --- type-checking and build for the dashboard, static analysis and the mobile test suite for the Flutter app.
+\end{enumerate}
+
+A separate, tag-triggered workflow automates mobile releases: pushing a version tag builds a signed Android APK and app bundle and attaches them to a GitHub Release, using the signing keystore and its passwords stored as encrypted repository secrets --- never committed to source control. Because this workflow holds write access to the repository and to those secrets, every third-party action it uses is pinned to an immutable commit hash rather than a mutable version tag, closing off a supply-chain risk where a compromised action release could otherwise run arbitrary code with those permissions.
