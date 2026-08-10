@@ -175,7 +175,7 @@ export default function Dashboard() {
       </div>
 
       {/* Attention — the first thing a non-expert user should see: what needs action, not charts */}
-      <div className="mb-8">
+      <div className="mb-8" data-tour="attention">
         <h3 className="text-[#181c20] font-semibold text-base mb-3">{t('dash_attention_title')}</h3>
         {stats ? (
           attentionTotal > 0 ? (
@@ -220,7 +220,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6" data-tour="kpi-cards">
         {statsError && (
           <div className="col-span-full flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
             <span className="material-symbols-outlined text-red-400" style={{ fontSize: 16 }}>error</span>
@@ -431,7 +431,7 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Reports Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-[#E2E8F0] overflow-hidden" data-tour="recent-reports">
         <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
           <h4 className="text-[#181c20] font-semibold text-base">{t('recent_title')}</h4>
           <a href="/reports" className="text-[#0038AF] text-sm font-medium hover:underline">{t('see_all')}</a>

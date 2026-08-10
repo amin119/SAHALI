@@ -34,3 +34,7 @@ class User(Base):
     reports = relationship("Report", foreign_keys="Report.citizen_id", back_populates="citizen")
     assigned_reports = relationship("Report", foreign_keys="Report.assigned_to", back_populates="assignee")
     notifications = relationship("Notification", back_populates="user")
+
+    @property
+    def municipality_name(self) -> str | None:
+        return self.municipality.name if self.municipality else None

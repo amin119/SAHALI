@@ -111,4 +111,56 @@
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+
+  /* Guided page tour (driver.js) — themed to match the rest of the dashboard
+     instead of the library's default plain white/black look. */
+  .sahali-tour-popover.driver-popover {
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 320px;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.2);
+  }
+  .sahali-tour-popover .driver-popover-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #181c20;
+  }
+  .sahali-tour-popover .driver-popover-description {
+    font-size: 13px;
+    color: #64748B;
+    line-height: 1.6;
+    margin-top: 6px;
+  }
+  .sahali-tour-popover .driver-popover-progress-text {
+    color: #94A3B8;
+    font-size: 11px;
+  }
+  .sahali-tour-popover .driver-popover-footer-btn {
+    border-radius: 8px;
+    border: none;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .sahali-tour-popover .driver-popover-next-btn {
+    background-color: #0038AF;
+    color: #fff;
+  }
+  .sahali-tour-popover .driver-popover-next-btn:hover {
+    background-color: #002a8a;
+  }
+  .sahali-tour-popover .driver-popover-prev-btn {
+    background-color: #f1f4f9;
+    color: #64748B;
+  }
+  .sahali-tour-popover .driver-popover-prev-btn:hover {
+    background-color: #e2e8f0;
+  }
+  .sahali-tour-popover .driver-popover-close-btn {
+    color: #94A3B8;
+  }
+  .sahali-tour-popover .driver-popover-close-btn:hover {
+    color: #64748B;
+  }
 }

@@ -118,7 +118,7 @@ export default function Statistics() {
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-5 mb-6">
         {/* Bar chart */}
-        <div className="xl:col-span-3 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-5">
+        <div className="xl:col-span-3 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-5" data-tour="stats-chart">
           <h3 className="text-sm font-bold text-[#181c20] mb-5">{t('chart_by_status')}</h3>
           {loading ? (
             <div className="space-y-4">

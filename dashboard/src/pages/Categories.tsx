@@ -199,6 +199,7 @@ export default function Categories() {
                       </div>
                     </div>
                     <button
+                      data-tour="category-toggle"
                       onClick={lockedByPlatform ? undefined : () => toggleEnabled(cat)}
                       disabled={lockedByPlatform}
                       title={lockedByPlatform ? t('cat_locked_by_platform') : undefined}

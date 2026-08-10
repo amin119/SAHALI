@@ -157,7 +157,7 @@ export default function Map() {
       <div className="flex gap-5">
         {/* Map */}
         <div className="flex-1 min-w-0">
-          <div className="rounded-2xl border border-[#E2E8F0] shadow-sm overflow-hidden" style={{ height: 520 }}>
+          <div className="rounded-2xl border border-[#E2E8F0] shadow-sm overflow-hidden" style={{ height: 520 }} data-tour="map-canvas">
             {loading && (
               <div className="w-full h-full bg-[#f1f4f9] flex items-center justify-center">
                 <p className="text-sm text-[#94A3B8]">{t('loading')}</p>
@@ -167,7 +167,7 @@ export default function Map() {
           </div>
 
           {/* Legend */}
-          <div className="mt-4 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4 flex flex-wrap gap-4">
+          <div className="mt-4 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4 flex flex-wrap gap-4" data-tour="map-legend">
             {MAP_STATUSES.map(s => (
               <button
                 key={s}

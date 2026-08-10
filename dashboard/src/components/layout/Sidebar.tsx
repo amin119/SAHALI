@@ -49,6 +49,13 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
   const { lang, setLang, t } = useLang()
   const { user } = useAuth()
   const isMunicipalAdmin = user?.role === 'admin' && user?.municipality_id != null
+  const isSuperAdminUser = user?.role === 'admin' && user?.municipality_id == null
+  const cityLabel = isSuperAdminUser ? t('sidebar_all_municipalities') : (user?.municipality_name ?? '—')
+  const roleLabel = user ? t(
+    user.role === 'admin' ? 'role_admin' :
+    user.role === 'analyst' ? 'role_analyst' :
+    user.role === 'field_agent' ? 'role_field_agent' : 'role_citizen'
+  ) : ''
 
   const groups = NAV_GROUPS
     .map(group => ({
@@ -143,13 +150,28 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
           <span>{t('nav_settings')}</span>
         </NavLink>
 
+        <NavLink
+          to="/help"
+          onClick={onClose}
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 rounded-sm transition-all duration-150 text-sm font-medium
+              ${isActive
+                ? 'bg-[#0038AF] text-white border-l-4 border-[#b6c4ff] translate-x-0.5'
+                : 'text-[#3f465c] hover:bg-[#525d71]/40 hover:text-white'
+              }`
+          }
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>help</span>
+          <span>{t('nav_help')}</span>
+        </NavLink>
+
         <div className="flex items-center gap-3 px-4 py-3 mt-1">
           <div className="w-9 h-9 rounded-lg bg-[#0038AF] flex items-center justify-center flex-shrink-0">
             <span className="material-symbols-outlined text-white" style={{ fontSize: 18 }}>location_city</span>
           </div>
-          <div>
-            <p className="text-white text-xs font-semibold">{t('sidebar_city')}</p>
-            <p className="text-[#3f465c] text-[10px]">{t('sidebar_admin')}</p>
+          <div className="min-w-0">
+            <p className="text-white text-xs font-semibold truncate">{cityLabel}</p>
+            <p className="text-[#3f465c] text-[10px]">{roleLabel}</p>
           </div>
         </div>
       </div>

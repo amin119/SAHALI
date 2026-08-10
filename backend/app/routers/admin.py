@@ -9,7 +9,7 @@ from fastapi.responses import StreamingResponse
 from geoalchemy2.functions import ST_MakePoint, ST_SetSRID
 from sqlalchemy import func, or_, text
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.models.agent_schedule import AgentSchedule
@@ -254,7 +254,7 @@ def list_staff(
     municipality_id: int | None = Query(None),
     on_shift_now: bool = Query(False, description="Only staff with a schedule slot covering the current moment (Tunis time)"),
 ):
-    query = db.query(User).filter(User.role != UserRole.citizen)
+    query = db.query(User).options(joinedload(User.municipality)).filter(User.role != UserRole.citizen)
     if search:
         like = f"%{search}%"
         query = query.filter(or_(User.full_name.ilike(like), User.email.ilike(like)))

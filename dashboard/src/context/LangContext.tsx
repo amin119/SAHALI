@@ -17,6 +17,7 @@ const FR = {
   nav_categories:    'Catégories',
   nav_statistics:    'Statistiques',
   nav_settings:      'Paramètres',
+  nav_help:          'Aide',
   // Status (badge labels)
   status_submitted:   'Nouveau',
   status_received:    'Reçu',
@@ -41,8 +42,7 @@ const FR = {
   lang_fr:           'Français',
   lang_ar:           'العربية',
   // Sidebar footer
-  sidebar_admin:     'Administration',
-  sidebar_city:      'La Marsa',
+  sidebar_all_municipalities: 'Toutes les municipalités',
   // Page subtitles (static)
   sub_map:           'Visualisation en temps réel des signalements actifs.',
   sub_reports:       'Gestion et suivi de tous les signalements citoyens.',
@@ -53,6 +53,7 @@ const FR = {
   sub_categories:    'Configuration des catégories de signalements.',
   sub_statistics:    'Analyse des performances et indicateurs clés.',
   sub_settings:      'Configuration de la plateforme municipale.',
+  sub_help:          'Comment utiliser chaque page du tableau de bord.',
   // TopBar
   topbar_search:     'Rechercher un signalement, agent...',
   notif_title:       'Notifications',
@@ -356,6 +357,7 @@ const AR: typeof FR = {
   nav_categories:    'الفئات',
   nav_statistics:    'الإحصائيات',
   nav_settings:      'الإعدادات',
+  nav_help:          'مساعدة',
   status_submitted:   'جديد',
   status_received:    'مستلم',
   status_under_review:'قيد الدراسة',
@@ -374,8 +376,7 @@ const AR: typeof FR = {
   agent_inactive:    'غير نشط',
   lang_fr:           'Français',
   lang_ar:           'العربية',
-  sidebar_admin:     'الإدارة',
-  sidebar_city:      'المرسى',
+  sidebar_all_municipalities: 'كل البلديات',
   sub_map:           'عرض البلاغات النشطة في الوقت الفعلي.',
   sub_reports:       'إدارة ومتابعة جميع البلاغات المدنية.',
   sub_interventions: 'إدارة وتخطيط فرق الميدان.',
@@ -385,6 +386,7 @@ const AR: typeof FR = {
   sub_categories:    'إعداد فئات البلاغات.',
   sub_statistics:    'تحليل الأداء والمؤشرات الرئيسية.',
   sub_settings:      'إعدادات المنصة البلدية.',
+  sub_help:          'كيفية استخدام كل صفحة في لوحة القيادة.',
   topbar_search:     'بحث عن بلاغ، عميل...',
   notif_title:       'الإشعارات',
   notif_empty:       'لا توجد إشعارات',

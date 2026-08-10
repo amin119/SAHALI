@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:geolocator/geolocator.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/location_utils.dart';
 import '../../../data/models/report_model.dart';
 import '../../../data/models/category_model.dart';
 import '../../../data/services/report_service.dart';
@@ -40,7 +40,7 @@ class ReportsProvider extends ChangeNotifier {
   Future<void> loadCategories() async {
     if (_categories.isNotEmpty) return;
     try {
-      final pos = await _silentKnownPosition();
+      final pos = await silentKnownPosition();
       _categories = await _categoryService.listCategories(
         lat: pos?.latitude,
         lng: pos?.longitude,
@@ -48,22 +48,6 @@ class ReportsProvider extends ChangeNotifier {
       notifyListeners();
     } catch (_) {
       // categories are optional — ignore failure
-    }
-  }
-
-  /// Best-effort location for filtering categories by municipality — never
-  /// prompts for permission (categories should load instantly regardless of
-  /// location access); only used if permission was already granted elsewhere
-  /// in the app, and prefers the cached last-known fix over a fresh GPS read.
-  Future<Position?> _silentKnownPosition() async {
-    try {
-      final permission = await Geolocator.checkPermission();
-      final granted = permission == LocationPermission.always ||
-          permission == LocationPermission.whileInUse;
-      if (!granted) return null;
-      return await Geolocator.getLastKnownPosition();
-    } catch (_) {
-      return null;
     }
   }
 

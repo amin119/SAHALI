@@ -13,6 +13,7 @@ class UserOut(BaseModel):
     phone: str | None
     email: str | None
     municipality_id: int | None
+    municipality_name: str | None = None
     preferred_language: str
     is_active: bool
     created_at: datetime

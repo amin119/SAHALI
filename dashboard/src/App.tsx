@@ -14,6 +14,7 @@ import Municipalities from './pages/Municipalities'
 import Categories from './pages/Categories'
 import Statistics from './pages/Statistics'
 import Settings from './pages/Settings'
+import Help from './pages/Help'
 
 // Leaflet (map tiles + its CSS) is the single heaviest dependency in the
 // dashboard — lazy-loading it means every other page's users stop paying to
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="categories" element={<Categories />} />
             <Route path="statistics" element={<Statistics />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="help" element={<Help />} />
           </Route>
         </Routes>
       </BrowserRouter>

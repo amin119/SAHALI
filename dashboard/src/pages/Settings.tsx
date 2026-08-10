@@ -175,7 +175,7 @@ export default function Settings() {
 
       <div className="flex gap-6">
         {/* Sidebar nav */}
-        <div className="w-56 flex-shrink-0">
+        <div className="w-56 flex-shrink-0" data-tour="settings-tabs">
           <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
             {sections.map(s => (
               <button key={s.key} onClick={() => { setActiveSection(s.key); setToast(null) }}

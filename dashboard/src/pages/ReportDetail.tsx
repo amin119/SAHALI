@@ -200,7 +200,7 @@ export default function ReportDetail() {
       </div>
 
       {/* Le parcours du signalement — la première chose à regarder */}
-      <Card className="shadow-sm mb-6">
+      <Card className="shadow-sm mb-6" data-tour="journey">
         <Stepper
           size="md"
           steps={JOURNEY_STEPS}
@@ -212,7 +212,7 @@ export default function ReportDetail() {
 
       {/* L'action à faire maintenant — la chose la plus importante de la page pour le personnel */}
       {NEXT_STATUSES[report.status] && (
-        <Card className="shadow-sm p-6 mb-6">
+        <Card className="shadow-sm p-6 mb-6" data-tour="status-action">
           <p className="text-[#181c20] font-semibold text-base mb-3">{t('change_status')}</p>
           {pendingStatus ? (
             <div className="space-y-3">
@@ -320,7 +320,7 @@ export default function ReportDetail() {
                 {t('show_all_agents')}
               </label>
             </div>
-            <div className="mb-2">
+            <div className="mb-2" data-tour="assign-search">
               <TextField
                 icon="search"
                 value={agentSearch}
@@ -334,7 +334,7 @@ export default function ReportDetail() {
                 {t('showing_on_shift_only')}
               </p>
             )}
-            <div className="max-h-56 overflow-y-auto border border-[#E2E8F0] rounded-lg divide-y divide-[#E2E8F0] mb-2">
+            <div className="max-h-56 overflow-y-auto border border-[#E2E8F0] rounded-lg divide-y divide-[#E2E8F0] mb-2" data-tour="assign-list">
               {staffUsers.length === 0 ? (
                 <EmptyState icon="group_off" message={t('no_agents')} size="sm" />
               ) : staffUsers.map(u => (
@@ -358,13 +358,15 @@ export default function ReportDetail() {
             <div className="mb-2">
               <TextField value={assignNote} onChange={e => setAssignNote(e.target.value)} placeholder={t('assign_note_placeholder')} />
             </div>
-            <Button
-              icon="group_add"
-              disabled={assigning || selectedAgents.length === 0}
-              onClick={submitAssignment}
-            >
-              {assigning ? t('assigning') : `${t('btn_assign')}${selectedAgents.length > 0 ? ` (${selectedAgents.length})` : ''}`}
-            </Button>
+            <span data-tour="assign-btn">
+              <Button
+                icon="group_add"
+                disabled={assigning || selectedAgents.length === 0}
+                onClick={submitAssignment}
+              >
+                {assigning ? t('assigning') : `${t('btn_assign')}${selectedAgents.length > 0 ? ` (${selectedAgents.length})` : ''}`}
+              </Button>
+            </span>
           </div>
         )}
 
@@ -385,7 +387,7 @@ export default function ReportDetail() {
 
       {/* Rapport de résolution — seulement pertinent une fois le signalement en cours ou terminé */}
       {(report.status === 'in_progress' || report.status === 'resolved') && (
-        <Card className="shadow-sm p-6 mb-6 space-y-4">
+        <Card className="shadow-sm p-6 mb-6 space-y-4" data-tour="resolution">
           <p className="text-[#181c20] font-semibold text-base">{t('tab_report')}</p>
           {resolution ? (
             <>
@@ -449,7 +451,7 @@ export default function ReportDetail() {
       )}
 
       {/* Historique détaillé */}
-      <Card className="shadow-sm p-6">
+      <Card className="shadow-sm p-6" data-tour="history">
         <p className="text-[#181c20] font-semibold text-base mb-4">{t('tab_history')}</p>
         <Timeline
           emptyMessage="Aucun historique"

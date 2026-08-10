@@ -8,6 +8,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_shapes.dart';
 import '../../../core/utils/category_utils.dart';
+import '../../../core/utils/location_utils.dart';
 import '../../../data/models/category_model.dart';
 import '../../../data/services/category_service.dart';
 import '../../../shared/widgets/sa_button.dart';
@@ -35,7 +36,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   Future<void> _loadCategories() async {
     try {
-      final cats = await CategoryService().listCategories();
+      final pos = await silentKnownPosition();
+      final cats = await CategoryService().listCategories(
+        lat: pos?.latitude,
+        lng: pos?.longitude,
+      );
       if (mounted) {
         setState(() {
           _categories = cats;
