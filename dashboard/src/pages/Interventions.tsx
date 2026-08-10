@@ -158,7 +158,7 @@ export default function Interventions() {
         </div>
       )}
 
-      <div className="flex gap-4 flex-1 overflow-x-auto pb-4">
+      <div className="flex gap-4 flex-1 overflow-x-auto pb-4" data-tour="kanban-board">
         {groupedByColumn.map(col => {
           const isDragTarget = draggedId != null
           const isOver = dragOverCol === col.id
@@ -199,6 +199,7 @@ export default function Interventions() {
                     return (
                       <div
                         key={r.id}
+                        data-tour="kanban-card"
                         draggable
                         onDragStart={() => setDraggedId(r.id)}
                         onDragEnd={() => { setDraggedId(null); setDragOverCol(null) }}

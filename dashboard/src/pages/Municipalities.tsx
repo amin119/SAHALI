@@ -175,6 +175,7 @@ export default function Municipalities() {
           </p>
         </div>
         <button
+          data-tour="muni-add"
           onClick={openAdd}
           className="flex items-center gap-2 px-4 py-2 bg-[#0038AF] text-white rounded-xl text-sm font-semibold shadow-md hover:opacity-90 transition-opacity">
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add_location_alt</span>
@@ -224,7 +225,7 @@ export default function Municipalities() {
       </div>
 
       <div className="flex gap-6">
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0" data-tour="muni-table">
           <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
             <table className="w-full text-left">
               <thead>

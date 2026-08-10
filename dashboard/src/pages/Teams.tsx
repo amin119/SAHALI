@@ -333,6 +333,7 @@ export default function Teams() {
             ))}
           </div>
           <button
+            data-tour="add-agent"
             onClick={() => {
               setShowAdd(true)
               setFormError(null)
@@ -379,7 +380,7 @@ export default function Teams() {
       )}
 
       <div className="flex gap-6">
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0" data-tour="teams-list">
           {view === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {loading
@@ -663,7 +664,7 @@ export default function Teams() {
                   )}
                 </div>
 
-                <div className="border-t border-[#E2E8F0] px-5 py-4">
+                <div className="border-t border-[#E2E8F0] px-5 py-4" data-tour="schedule-editor">
                   <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-1">{t('schedule_title')}</p>
                   <p className="text-[10px] text-[#94A3B8] mb-3">{t('schedule_subtitle')}</p>
                   {scheduleError && (

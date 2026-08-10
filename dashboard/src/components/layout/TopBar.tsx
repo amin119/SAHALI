@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { api } from '../../lib/api'
 import type { Notification } from '../../types/api'
 import { useReportEvents } from '../../hooks/useReportEvents'
 import { useLang } from '../../context/LangContext'
+import { runPageTour } from '../../lib/runTour'
 
 interface TopBarProps {
   title: string
@@ -15,7 +16,8 @@ interface TopBarProps {
 export default function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const { t } = useLang()
+  const location = useLocation()
+  const { t, lang } = useLang()
   const [search, setSearch] = useState('')
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [showNotifs, setShowNotifs] = useState(false)
@@ -88,7 +90,11 @@ export default function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
 
       {/* Right: actions + user */}
       <div className="flex items-center gap-1 sm:gap-2">
-        <button className="hidden sm:flex w-9 h-9 items-center justify-center rounded-full hover:bg-[#f1f4f9] transition-colors">
+        <button
+          onClick={() => { if (!runPageTour(location.pathname, lang)) navigate('/help') }}
+          title={lang === 'ar' ? 'دليل هذه الصفحة' : 'Visite guidée de cette page'}
+          className="hidden sm:flex w-9 h-9 items-center justify-center rounded-full hover:bg-[#f1f4f9] transition-colors"
+        >
           <span className="material-symbols-outlined text-[#64748B]" style={{ fontSize: 20 }}>language</span>
         </button>
 
@@ -145,7 +151,11 @@ export default function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
           )}
         </div>
 
-        <button className="hidden sm:flex w-9 h-9 items-center justify-center rounded-full hover:bg-[#f1f4f9] transition-colors">
+        <button
+          onClick={() => navigate('/help')}
+          title={t('nav_help')}
+          className="hidden sm:flex w-9 h-9 items-center justify-center rounded-full hover:bg-[#f1f4f9] transition-colors"
+        >
           <span className="material-symbols-outlined text-[#64748B]" style={{ fontSize: 20 }}>help</span>
         </button>
 

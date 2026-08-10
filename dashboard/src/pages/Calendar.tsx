@@ -129,7 +129,7 @@ export default function Calendar() {
       {/* Agenda — one column per day, a full untruncated card per event.
           No fixed hour range, so nothing is silently hidden for falling
           outside a "working hours" window like a traditional time-grid would. */}
-      <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden" data-tour="calendar-grid">
         <div className="grid grid-cols-7 divide-x divide-[#E2E8F0] border-b border-[#E2E8F0]">
           {weekDates.map((d, i) => {
             const isToday = sameDay(d, today)

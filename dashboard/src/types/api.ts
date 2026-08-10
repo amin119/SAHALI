@@ -7,6 +7,7 @@ export interface User {
   phone?: string
   role: UserRole
   municipality_id?: number | null
+  municipality_name?: string | null
   preferred_language: string
   is_active: boolean
   created_at: string

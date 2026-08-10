@@ -110,10 +110,10 @@ export default function Reports() {
       <PageHeader
         title="Signalements"
         subtitle={loading ? 'Chargement...' : `${total.toLocaleString('fr-FR')} signalements`}
-        actions={<Button variant="secondary" icon="download" onClick={exportCsv}>Exporter CSV</Button>}
+        actions={<span data-tour="reports-export"><Button variant="secondary" icon="download" onClick={exportCsv}>Exporter CSV</Button></span>}
       />
 
-      <Card className="p-4 mb-4 flex flex-wrap items-center gap-3">
+      <Card className="p-4 mb-4 flex flex-wrap items-center gap-3" data-tour="reports-filters">
         <div className="flex-1 min-w-48">
           <TextField icon="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher par code, titre, ville..." />
         </div>
@@ -128,6 +128,7 @@ export default function Reports() {
       <SelectionBar count={selected.length} onClear={() => setSelected([])} />
       {error && <ErrorBanner message={error} onRetry={fetchReports} />}
 
+      <div data-tour="reports-table">
       <DataTable
         columns={columns}
         rows={filtered}
@@ -140,6 +141,7 @@ export default function Reports() {
         onToggleSelectAll={checked => setSelected(checked ? filtered.map(r => r.id) : [])}
         emptyMessage="Aucun signalement trouvé"
       />
+      </div>
 
       <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
