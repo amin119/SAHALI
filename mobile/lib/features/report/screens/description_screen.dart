@@ -7,8 +7,10 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_shapes.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/tour/app_tour.dart';
 import '../../../shared/widgets/step_bar.dart';
 import '../../../shared/widgets/sa_button.dart';
+import '../../../shared/widgets/tour_button.dart';
 import '../viewmodels/report_form_provider.dart';
 
 class DescriptionScreen extends StatefulWidget {
@@ -20,6 +22,25 @@ class DescriptionScreen extends StatefulWidget {
 class _DescriptionScreenState extends State<DescriptionScreen> {
   late final TextEditingController _ctrl;
   static const _max = 500;
+  final _fieldKey = GlobalKey();
+  final _nextBtnKey = GlobalKey();
+
+  void _showTour(AppLocalizations l10n) {
+    showScreenTour(context, [
+      TourStep(
+        targetKey: _fieldKey,
+        title: l10n.tourDescriptionFieldTitle,
+        description: l10n.tourDescriptionFieldDesc,
+        align: ContentAlign.bottom,
+      ),
+      TourStep(
+        targetKey: _nextBtnKey,
+        title: l10n.tourDescriptionNextTitle,
+        description: l10n.tourDescriptionNextDesc,
+        align: ContentAlign.top,
+      ),
+    ], doneLabel: l10n.tourDone);
+  }
 
   @override
   void initState() {
@@ -67,6 +88,7 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
           icon: Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => context.go(AppRoutes.reportLocation),
         ),
+        actions: [TourButton(onPressed: () => _showTour(l10n))],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Padding(
@@ -93,6 +115,7 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
 
             Expanded(
               child: Container(
+                key: _fieldKey,
                 decoration: AppShapes.card(color: p.surface, radius: AppShapes.radiusLg, borderColor: p.border),
                 child: TextField(
                   controller: _ctrl,
@@ -144,6 +167,7 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
             ).animate().fadeIn(duration: 300.ms, delay: 120.ms),
             const SizedBox(height: 20),
             SaButton(
+              key: _nextBtnKey,
               label: l10n.nextReviewReport,
               onPressed: _valid ? _next : null,
             ),

@@ -7,12 +7,14 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_shapes.dart';
+import '../../../core/tour/app_tour.dart';
 import '../../../core/utils/category_utils.dart';
 import '../../../core/utils/location_utils.dart';
 import '../../../data/models/category_model.dart';
 import '../../../data/services/category_service.dart';
 import '../../../shared/widgets/sa_button.dart';
 import '../../../shared/widgets/step_bar.dart';
+import '../../../shared/widgets/tour_button.dart';
 import '../viewmodels/report_form_provider.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -25,6 +27,25 @@ class _CategoryScreenState extends State<CategoryScreen> {
   int? _selected;
   List<CategoryModel> _categories = [];
   bool _loadingCategories = true;
+  final _gridKey = GlobalKey();
+  final _nextBtnKey = GlobalKey();
+
+  void _showTour(AppLocalizations l10n) {
+    showScreenTour(context, [
+      TourStep(
+        targetKey: _gridKey,
+        title: l10n.tourCategoryGridTitle,
+        description: l10n.tourCategoryGridDesc,
+        align: ContentAlign.bottom,
+      ),
+      TourStep(
+        targetKey: _nextBtnKey,
+        title: l10n.tourCategoryNextTitle,
+        description: l10n.tourCategoryNextDesc,
+        align: ContentAlign.top,
+      ),
+    ], doneLabel: l10n.tourDone);
+  }
 
   @override
   void initState() {
@@ -82,6 +103,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           icon: Icon(PhosphorIconsRegular.x),
           onPressed: () => context.go(AppRoutes.home),
         ),
+        actions: [TourButton(onPressed: () => _showTour(l10n))],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Padding(
@@ -121,7 +143,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                             ],
                           ),
                         )
-                      : GridView.builder(
+                      : KeyedSubtree(
+                        key: _gridKey,
+                        child: GridView.builder(
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             mainAxisSpacing: 12,
@@ -193,12 +217,16 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                 ).slideY(begin: 0.12, end: 0, curve: Curves.easeOutCubic);
                           },
                         ),
+                      ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
-              child: SaButton(
-                label: l10n.nextPhoto,
-                onPressed: _selected == null ? null : _confirm,
+              child: KeyedSubtree(
+                key: _nextBtnKey,
+                child: SaButton(
+                  label: l10n.nextPhoto,
+                  onPressed: _selected == null ? null : _confirm,
+                ),
               ),
             ),
           ],

@@ -9,8 +9,10 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_shapes.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/tour/app_tour.dart';
 import '../../../shared/widgets/step_bar.dart';
 import '../../../shared/widgets/sa_button.dart';
+import '../../../shared/widgets/tour_button.dart';
 import '../viewmodels/report_form_provider.dart';
 
 class LocationScreen extends StatefulWidget {
@@ -25,6 +27,25 @@ class _LocationScreenState extends State<LocationScreen> {
   late LatLng _pinned;
   final _mapController = MapController();
   bool _locating = false;
+  final _mapKey = GlobalKey();
+  final _nextBtnKey = GlobalKey();
+
+  void _showTour(AppLocalizations l10n) {
+    showScreenTour(context, [
+      TourStep(
+        targetKey: _mapKey,
+        title: l10n.tourLocationMapTitle,
+        description: l10n.tourLocationMapDesc,
+        align: ContentAlign.bottom,
+      ),
+      TourStep(
+        targetKey: _nextBtnKey,
+        title: l10n.tourLocationNextTitle,
+        description: l10n.tourLocationNextDesc,
+        align: ContentAlign.top,
+      ),
+    ], doneLabel: l10n.tourDone);
+  }
 
   @override
   void initState() {
@@ -95,6 +116,7 @@ class _LocationScreenState extends State<LocationScreen> {
           icon: Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => context.go(AppRoutes.reportPhoto),
         ),
+        actions: [TourButton(onPressed: () => _showTour(l10n))],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Padding(
@@ -125,7 +147,9 @@ class _LocationScreenState extends State<LocationScreen> {
           ),
 
           Expanded(
-            child: Stack(
+            child: KeyedSubtree(
+              key: _mapKey,
+              child: Stack(
               children: [
                 FlutterMap(
                   mapController: _mapController,
@@ -182,6 +206,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   ),
                 ),
               ],
+              ),
             ),
           ),
 
@@ -209,7 +234,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                SaButton(label: l10n.confirmLocation, onPressed: _confirm),
+                KeyedSubtree(key: _nextBtnKey, child: SaButton(label: l10n.confirmLocation, onPressed: _confirm)),
               ],
             ),
           ),

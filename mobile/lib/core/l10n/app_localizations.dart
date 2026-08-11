@@ -182,6 +182,43 @@ class AppLocalizations {
   String get ob3Title => _t('ob3Title');
   String get ob3Sub => _t('ob3Sub');
 
+  // ── Guided screen tours ─────────────────────────────────────────────────────
+  String get tourDone => _t('tourDone');
+  String get tourHomeCommunityTitle => _t('tourHomeCommunityTitle');
+  String get tourHomeCommunityDesc => _t('tourHomeCommunityDesc');
+  String get tourHomeFabTitle => _t('tourHomeFabTitle');
+  String get tourHomeFabDesc => _t('tourHomeFabDesc');
+  String get tourHomeBellTitle => _t('tourHomeBellTitle');
+  String get tourHomeBellDesc => _t('tourHomeBellDesc');
+  String get tourCategoryGridTitle => _t('tourCategoryGridTitle');
+  String get tourCategoryGridDesc => _t('tourCategoryGridDesc');
+  String get tourCategoryNextTitle => _t('tourCategoryNextTitle');
+  String get tourCategoryNextDesc => _t('tourCategoryNextDesc');
+  String get tourPhotoAreaTitle => _t('tourPhotoAreaTitle');
+  String get tourPhotoAreaDesc => _t('tourPhotoAreaDesc');
+  String get tourPhotoNextTitle => _t('tourPhotoNextTitle');
+  String get tourPhotoNextDesc => _t('tourPhotoNextDesc');
+  String get tourLocationMapTitle => _t('tourLocationMapTitle');
+  String get tourLocationMapDesc => _t('tourLocationMapDesc');
+  String get tourLocationNextTitle => _t('tourLocationNextTitle');
+  String get tourLocationNextDesc => _t('tourLocationNextDesc');
+  String get tourDescriptionFieldTitle => _t('tourDescriptionFieldTitle');
+  String get tourDescriptionFieldDesc => _t('tourDescriptionFieldDesc');
+  String get tourDescriptionNextTitle => _t('tourDescriptionNextTitle');
+  String get tourDescriptionNextDesc => _t('tourDescriptionNextDesc');
+  String get tourReviewSummaryTitle => _t('tourReviewSummaryTitle');
+  String get tourReviewSummaryDesc => _t('tourReviewSummaryDesc');
+  String get tourReviewSubmitTitle => _t('tourReviewSubmitTitle');
+  String get tourReviewSubmitDesc => _t('tourReviewSubmitDesc');
+  String get tourMyReportsFilterTitle => _t('tourMyReportsFilterTitle');
+  String get tourMyReportsFilterDesc => _t('tourMyReportsFilterDesc');
+  String get tourMyReportsListTitle => _t('tourMyReportsListTitle');
+  String get tourMyReportsListDesc => _t('tourMyReportsListDesc');
+  String get tourMyReportsAddTitle => _t('tourMyReportsAddTitle');
+  String get tourMyReportsAddDesc => _t('tourMyReportsAddDesc');
+  String get tourProfileMenuTitle => _t('tourProfileMenuTitle');
+  String get tourProfileMenuDesc => _t('tourProfileMenuDesc');
+
   // ── Emergency numbers screen ───────────────────────────────────────────────────
   String get navEmergency => _t('navEmergency');
   String get emergencyTitle => _t('emergencyTitle');
@@ -586,6 +623,42 @@ const _en = <String, String>{
   'ob3Title': 'Together for Tunisia',
   'ob3Sub': 'Thousands of Tunisians have already improved their neighborhoods with سهلي.',
 
+  'tourDone': 'Got it',
+  'tourHomeCommunityTitle': 'Community activity',
+  'tourHomeCommunityDesc': 'See how many issues have been reported and resolved across Tunisia, updated live.',
+  'tourHomeFabTitle': 'Report an issue',
+  'tourHomeFabDesc': "Tap this button to start a new report — you'll pick a category, add a photo, pin the location, and describe the problem.",
+  'tourHomeBellTitle': 'Notifications',
+  'tourHomeBellDesc': "You'll be notified here whenever the status of one of your reports changes.",
+  'tourCategoryGridTitle': 'Choose a category',
+  'tourCategoryGridDesc': "Pick the type of problem you're reporting — tap a card to select it, then continue.",
+  'tourCategoryNextTitle': 'Continue',
+  'tourCategoryNextDesc': "Once you've picked a category, tap here to add a photo.",
+  'tourPhotoAreaTitle': 'Add a photo',
+  'tourPhotoAreaDesc': 'A clear photo helps the municipality understand the problem faster. Tap to take one or choose from your gallery.',
+  'tourPhotoNextTitle': 'Continue',
+  'tourPhotoNextDesc': 'Tap here to move on to pinning the location.',
+  'tourLocationMapTitle': 'Pin the location',
+  'tourLocationMapDesc': "We try to detect your position automatically — drag the pin if it's not exactly right.",
+  'tourLocationNextTitle': 'Continue',
+  'tourLocationNextDesc': 'Confirm the location to move on to the description.',
+  'tourDescriptionFieldTitle': 'Describe the problem',
+  'tourDescriptionFieldDesc': 'A few words are enough — mention anything that could help whoever handles your report.',
+  'tourDescriptionNextTitle': 'Continue',
+  'tourDescriptionNextDesc': 'Tap here to review everything before sending.',
+  'tourReviewSummaryTitle': 'Review your report',
+  'tourReviewSummaryDesc': 'Check the category, photo, location and description — tap any section to go back and edit it.',
+  'tourReviewSubmitTitle': 'Send it',
+  'tourReviewSubmitDesc': 'Once everything looks right, tap here to submit your report to the municipality.',
+  'tourMyReportsFilterTitle': 'Filter your reports',
+  'tourMyReportsFilterDesc': 'Switch between all, active, resolved, and closed reports.',
+  'tourMyReportsListTitle': 'Your reports',
+  'tourMyReportsListDesc': 'Tap any report to see its full history and current status.',
+  'tourMyReportsAddTitle': 'New report',
+  'tourMyReportsAddDesc': 'You can also start a new report from here.',
+  'tourProfileMenuTitle': 'Your account',
+  'tourProfileMenuDesc': 'Manage your language, notifications, and account settings from this menu.',
+
   'welcomeBack': 'Welcome back',
   'loginSubtitle': 'Sign in to your account.',
   'tabPhoneOtp': 'Phone / OTP',
@@ -913,6 +986,42 @@ const _fr = <String, String>{
   'ob3Title': 'Ensemble pour la Tunisie',
   'ob3Sub': 'Des milliers de Tunisiens ont déjà amélioré leur quartier grâce à سهلي.',
 
+  'tourDone': 'Compris',
+  'tourHomeCommunityTitle': 'Activité de la communauté',
+  'tourHomeCommunityDesc': 'Découvrez combien de problèmes ont été signalés et résolus à travers la Tunisie, en direct.',
+  'tourHomeFabTitle': 'Signaler un problème',
+  'tourHomeFabDesc': 'Appuyez sur ce bouton pour démarrer un signalement — vous choisirez une catégorie, ajouterez une photo, indiquerez la position, puis décrirez le problème.',
+  'tourHomeBellTitle': 'Notifications',
+  'tourHomeBellDesc': "Vous serez averti ici dès que le statut d'un de vos signalements change.",
+  'tourCategoryGridTitle': 'Choisissez une catégorie',
+  'tourCategoryGridDesc': 'Sélectionnez le type de problème que vous signalez en appuyant sur une carte, puis continuez.',
+  'tourCategoryNextTitle': 'Continuer',
+  'tourCategoryNextDesc': 'Une fois la catégorie choisie, appuyez ici pour ajouter une photo.',
+  'tourPhotoAreaTitle': 'Ajoutez une photo',
+  'tourPhotoAreaDesc': 'Une photo claire aide la municipalité à comprendre le problème plus vite. Appuyez pour prendre une photo ou en choisir une dans votre galerie.',
+  'tourPhotoNextTitle': 'Continuer',
+  'tourPhotoNextDesc': 'Appuyez ici pour passer à la position.',
+  'tourLocationMapTitle': 'Indiquez la position',
+  'tourLocationMapDesc': 'Nous essayons de détecter votre position automatiquement — déplacez le repère si besoin.',
+  'tourLocationNextTitle': 'Continuer',
+  'tourLocationNextDesc': 'Confirmez la position pour passer à la description.',
+  'tourDescriptionFieldTitle': 'Décrivez le problème',
+  'tourDescriptionFieldDesc': 'Quelques mots suffisent — mentionnez tout ce qui peut aider la personne qui traitera votre signalement.',
+  'tourDescriptionNextTitle': 'Continuer',
+  'tourDescriptionNextDesc': "Appuyez ici pour tout relire avant l'envoi.",
+  'tourReviewSummaryTitle': 'Relisez votre signalement',
+  'tourReviewSummaryDesc': 'Vérifiez la catégorie, la photo, la position et la description — appuyez sur une section pour la modifier.',
+  'tourReviewSubmitTitle': 'Envoyer',
+  'tourReviewSubmitDesc': 'Une fois que tout est correct, appuyez ici pour envoyer votre signalement à la municipalité.',
+  'tourMyReportsFilterTitle': 'Filtrez vos signalements',
+  'tourMyReportsFilterDesc': 'Basculez entre tous, actifs, résolus et clôturés.',
+  'tourMyReportsListTitle': 'Vos signalements',
+  'tourMyReportsListDesc': 'Appuyez sur un signalement pour voir son historique complet et son statut actuel.',
+  'tourMyReportsAddTitle': 'Nouveau signalement',
+  'tourMyReportsAddDesc': 'Vous pouvez aussi démarrer un signalement depuis ici.',
+  'tourProfileMenuTitle': 'Votre compte',
+  'tourProfileMenuDesc': 'Gérez votre langue, vos notifications et les paramètres de votre compte depuis ce menu.',
+
   'welcomeBack': 'Bon retour',
   'loginSubtitle': 'Connectez-vous à votre compte.',
   'tabPhoneOtp': 'Téléphone / OTP',
@@ -1239,6 +1348,42 @@ const _ar = <String, String>{
   'ob2Sub': 'احصل على إشعارات في كل خطوة حتى حل مشكلتك بالكامل.',
   'ob3Title': 'معاً من أجل تونس',
   'ob3Sub': 'آلاف التونسيين حسّنوا أحياءهم بالفعل بفضل سهلي.',
+
+  'tourDone': 'فهمت',
+  'tourHomeCommunityTitle': 'نشاط المجتمع',
+  'tourHomeCommunityDesc': 'تعرّف على عدد المشاكل المُبلَّغ عنها والمُحلولة في تونس، بشكل مباشر.',
+  'tourHomeFabTitle': 'الإبلاغ عن مشكلة',
+  'tourHomeFabDesc': 'انقر على هذا الزر لبدء بلاغ جديد — ستختار فئة، تضيف صورة، تحدد الموقع، ثم تصف المشكلة.',
+  'tourHomeBellTitle': 'الإشعارات',
+  'tourHomeBellDesc': 'ستُعلَم هنا فور تغيّر حالة أحد بلاغاتك.',
+  'tourCategoryGridTitle': 'اختر فئة',
+  'tourCategoryGridDesc': 'حدّد نوع المشكلة التي تبلّغ عنها بالنقر على بطاقة، ثم استمر.',
+  'tourCategoryNextTitle': 'استمرار',
+  'tourCategoryNextDesc': 'بعد اختيار الفئة، انقر هنا لإضافة صورة.',
+  'tourPhotoAreaTitle': 'أضف صورة',
+  'tourPhotoAreaDesc': 'صورة واضحة تساعد البلدية على فهم المشكلة بسرعة أكبر. انقر لتصوير أو اختيار صورة من معرضك.',
+  'tourPhotoNextTitle': 'استمرار',
+  'tourPhotoNextDesc': 'انقر هنا للانتقال إلى تحديد الموقع.',
+  'tourLocationMapTitle': 'حدّد الموقع',
+  'tourLocationMapDesc': 'نحاول تحديد موقعك تلقائياً — حرّك العلامة إذا لم تكن دقيقة.',
+  'tourLocationNextTitle': 'استمرار',
+  'tourLocationNextDesc': 'أكّد الموقع للانتقال إلى الوصف.',
+  'tourDescriptionFieldTitle': 'صف المشكلة',
+  'tourDescriptionFieldDesc': 'كلمات قليلة تكفي — اذكر أي تفصيل قد يساعد من سيتولى بلاغك.',
+  'tourDescriptionNextTitle': 'استمرار',
+  'tourDescriptionNextDesc': 'انقر هنا لمراجعة كل شيء قبل الإرسال.',
+  'tourReviewSummaryTitle': 'راجع بلاغك',
+  'tourReviewSummaryDesc': 'تحقق من الفئة والصورة والموقع والوصف — انقر على أي قسم لتعديله.',
+  'tourReviewSubmitTitle': 'إرسال',
+  'tourReviewSubmitDesc': 'بعد التأكد من كل شيء، انقر هنا لإرسال بلاغك إلى البلدية.',
+  'tourMyReportsFilterTitle': 'صفِّ بلاغاتك',
+  'tourMyReportsFilterDesc': 'تبديل بين الكل، النشطة، المحلولة، والمغلقة.',
+  'tourMyReportsListTitle': 'بلاغاتك',
+  'tourMyReportsListDesc': 'انقر على أي بلاغ لعرض سجله الكامل وحالته الحالية.',
+  'tourMyReportsAddTitle': 'بلاغ جديد',
+  'tourMyReportsAddDesc': 'يمكنك أيضاً بدء بلاغ جديد من هنا.',
+  'tourProfileMenuTitle': 'حسابك',
+  'tourProfileMenuDesc': 'أدر لغتك، إشعاراتك، وإعدادات حسابك من هذه القائمة.',
 
   'welcomeBack': 'مرحباً بعودتك',
   'loginSubtitle': 'سجّل الدخول إلى حسابك.',

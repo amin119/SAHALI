@@ -9,12 +9,14 @@ import '../../../core/providers/theme_provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_shapes.dart';
+import '../../../core/tour/app_tour.dart';
 import '../../../core/utils/category_utils.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/report/providers/reports_provider.dart';
 import '../../../shared/widgets/sa_bottom_sheet.dart';
 import '../../../shared/widgets/sahali_header_logo.dart';
 import '../../../shared/widgets/status_badge.dart';
+import '../../../shared/widgets/tour_button.dart';
 import 'package:intl/intl.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -31,6 +33,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (ctx != null) {
       Scrollable.ensureVisible(ctx, duration: const Duration(milliseconds: 400), curve: Curves.easeOutCubic);
     }
+  }
+
+  void _showTour(AppLocalizations l10n) {
+    showScreenTour(context, [
+      TourStep(
+        targetKey: _settingsKey,
+        title: l10n.tourProfileMenuTitle,
+        description: l10n.tourProfileMenuDesc,
+        align: ContentAlign.top,
+      ),
+    ], doneLabel: l10n.tourDone);
   }
 
   @override
@@ -151,6 +164,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () => context.go(AppRoutes.home),
             ),
             actions: [
+              TourButton(onPressed: () => _showTour(l10n)),
               IconButton(icon: Icon(PhosphorIconsRegular.gearSix), onPressed: _scrollToSettings),
             ],
           ),

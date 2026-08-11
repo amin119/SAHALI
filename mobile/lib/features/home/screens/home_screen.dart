@@ -6,12 +6,14 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_shapes.dart';
+import '../../../core/tour/app_tour.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/notifications/providers/notifications_provider.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/local_notification_service.dart';
 import '../../../core/services/sync_service.dart';
 import '../../../shared/widgets/sahali_header_logo.dart';
+import '../../../shared/widgets/tour_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,6 +28,34 @@ class _HomeScreenState extends State<HomeScreen>
   // Press-scale bounce
   late final AnimationController _pressCtrl;
   late final Animation<double> _pressScale;
+
+  final _communityKey = GlobalKey();
+  final _fabKey = GlobalKey();
+  final _bellKey = GlobalKey();
+
+  void _showTour(AppLocalizations l10n) {
+    showScreenTour(context, [
+      TourStep(
+        targetKey: _communityKey,
+        title: l10n.tourHomeCommunityTitle,
+        description: l10n.tourHomeCommunityDesc,
+        align: ContentAlign.bottom,
+      ),
+      TourStep(
+        targetKey: _fabKey,
+        title: l10n.tourHomeFabTitle,
+        description: l10n.tourHomeFabDesc,
+        align: ContentAlign.top,
+        shape: ShapeLightFocus.Circle,
+      ),
+      TourStep(
+        targetKey: _bellKey,
+        title: l10n.tourHomeBellTitle,
+        description: l10n.tourHomeBellDesc,
+        align: ContentAlign.bottom,
+      ),
+    ], doneLabel: l10n.tourDone);
+  }
 
   @override
   void initState() {
@@ -76,18 +106,21 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
             const SizedBox(height: 12),
             // ── Community / Tunisia stats ───────────────────────────────
-            _CommunityCard(l10n: l10n),
+            KeyedSubtree(key: _communityKey, child: _CommunityCard(l10n: l10n)),
             // ── Offline queue banner ────────────────────────────────────
             _QueueBanner(l10n: l10n),
             const SizedBox(height: 36),
             // ── Centered pulsing FAB ────────────────────────────────────
-            _CenteredFab(
-              l10n: l10n,
-              pulseCtrl: _pulseCtrl,
-              pressScale: _pressScale,
-              onTapDown: _onFabDown,
-              onTapUp: _onFabUp,
-              onTapCancel: _onFabCancel,
+            KeyedSubtree(
+              key: _fabKey,
+              child: _CenteredFab(
+                l10n: l10n,
+                pulseCtrl: _pulseCtrl,
+                pressScale: _pressScale,
+                onTapDown: _onFabDown,
+                onTapUp: _onFabUp,
+                onTapCancel: _onFabCancel,
+              ),
             ),
             const Spacer(),
           ],
@@ -107,28 +140,32 @@ class _HomeScreenState extends State<HomeScreen>
       surfaceTintColor: Colors.transparent,
       title: const SahaliHeaderLogo(height: 32),
       actions: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              decoration: AppShapes.card(color: Colors.white.withValues(alpha: 0.55), radius: AppShapes.radiusMd),
-              child: IconButton(
-                icon: PhosphorIcon(PhosphorIconsDuotone.bell, color: p.ink),
-                onPressed: () => context.go(AppRoutes.notifications),
-              ),
-            ),
-            if (unread > 0)
-              Positioned(
-                top: 6,
-                right: 14,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(color: p.urgent, shape: BoxShape.circle),
+        TourButton(onPressed: () => _showTour(l10n)),
+        KeyedSubtree(
+          key: _bellKey,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                decoration: AppShapes.card(color: Colors.white.withValues(alpha: 0.55), radius: AppShapes.radiusMd),
+                child: IconButton(
+                  icon: PhosphorIcon(PhosphorIconsDuotone.bell, color: p.ink),
+                  onPressed: () => context.go(AppRoutes.notifications),
                 ),
               ),
-          ],
+              if (unread > 0)
+                Positioned(
+                  top: 6,
+                  right: 14,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(color: p.urgent, shape: BoxShape.circle),
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
     );

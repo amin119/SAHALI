@@ -7,10 +7,12 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_shapes.dart';
+import '../../../core/tour/app_tour.dart';
 import '../../../core/utils/category_utils.dart';
 import '../../../data/models/report_model.dart';
 import '../../../features/report/providers/reports_provider.dart';
 import '../../../shared/widgets/status_badge.dart';
+import '../../../shared/widgets/tour_button.dart';
 import 'package:intl/intl.dart';
 
 class MyReportsScreen extends StatefulWidget {
@@ -21,6 +23,32 @@ class MyReportsScreen extends StatefulWidget {
 
 class _MyReportsScreenState extends State<MyReportsScreen> {
   int _filterIndex = 0;
+  final _filterRowKey = GlobalKey();
+  final _listKey = GlobalKey();
+  final _addBtnKey = GlobalKey();
+
+  void _showTour(AppLocalizations l10n) {
+    showScreenTour(context, [
+      TourStep(
+        targetKey: _filterRowKey,
+        title: l10n.tourMyReportsFilterTitle,
+        description: l10n.tourMyReportsFilterDesc,
+        align: ContentAlign.bottom,
+      ),
+      TourStep(
+        targetKey: _listKey,
+        title: l10n.tourMyReportsListTitle,
+        description: l10n.tourMyReportsListDesc,
+        align: ContentAlign.top,
+      ),
+      TourStep(
+        targetKey: _addBtnKey,
+        title: l10n.tourMyReportsAddTitle,
+        description: l10n.tourMyReportsAddDesc,
+        align: ContentAlign.bottom,
+      ),
+    ], doneLabel: l10n.tourDone);
+  }
 
   @override
   void initState() {
@@ -62,7 +90,9 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
           onPressed: () => context.go(AppRoutes.home),
         ),
         actions: [
+          TourButton(onPressed: () => _showTour(l10n)),
           IconButton(
+            key: _addBtnKey,
             icon: Icon(PhosphorIconsRegular.plus),
             onPressed: () => context.go(AppRoutes.reportCategory),
           ),
@@ -71,6 +101,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
       body: Column(
         children: [
           SizedBox(
+            key: _filterRowKey,
             height: 48,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -105,6 +136,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
           ),
 
           Expanded(
+            key: _listKey,
             child: provider.loading && provider.reports.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : provider.error != null && provider.reports.isEmpty

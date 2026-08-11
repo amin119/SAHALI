@@ -9,10 +9,12 @@ import '../../../core/theme/app_shapes.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/sync_service.dart';
+import '../../../core/tour/app_tour.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../shared/widgets/step_bar.dart';
 import '../../../shared/widgets/sa_button.dart';
 import '../../../shared/widgets/sa_bottom_sheet.dart';
+import '../../../shared/widgets/tour_button.dart';
 import '../providers/reports_provider.dart';
 import '../viewmodels/report_form_provider.dart';
 
@@ -26,6 +28,25 @@ class _ReviewScreenState extends State<ReviewScreen> {
   bool _submitting = false;
   bool _uploadingPhoto = false;
   String? _error;
+  final _summaryKey = GlobalKey();
+  final _submitBtnKey = GlobalKey();
+
+  void _showTour(AppLocalizations l10n) {
+    showScreenTour(context, [
+      TourStep(
+        targetKey: _summaryKey,
+        title: l10n.tourReviewSummaryTitle,
+        description: l10n.tourReviewSummaryDesc,
+        align: ContentAlign.bottom,
+      ),
+      TourStep(
+        targetKey: _submitBtnKey,
+        title: l10n.tourReviewSubmitTitle,
+        description: l10n.tourReviewSubmitDesc,
+        align: ContentAlign.top,
+      ),
+    ], doneLabel: l10n.tourDone);
+  }
 
   Future<void> _submit() async {
     final form = context.read<ReportFormProvider>();
@@ -130,6 +151,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           icon: Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => context.go(AppRoutes.reportDescription),
         ),
+        actions: [TourButton(onPressed: () => _showTour(l10n))],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Padding(
@@ -154,7 +176,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
             const SizedBox(height: 24),
 
-            _SectionCard(
+            KeyedSubtree(key: _summaryKey, child: _SectionCard(
               label: l10n.reviewCategory,
               editLabel: l10n.edit,
               onEdit: () => context.go(AppRoutes.reportCategory),
@@ -172,7 +194,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       ],
                     )
                   : Text(l10n.noCategory, style: TextStyle(fontSize: 14, color: p.textHint)),
-            ),
+            )),
             const SizedBox(height: 12),
 
             _SectionCard(
@@ -258,6 +280,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
             const SizedBox(height: 20),
             SaButton(
+              key: _submitBtnKey,
               label: _uploadingPhoto ? l10n.uploadingPhoto : l10n.submitReport,
               isLoading: _submitting,
               onPressed: _submitting ? null : _submit,

@@ -10,9 +10,11 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_shapes.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/tour/app_tour.dart';
 import '../../../shared/widgets/step_bar.dart';
 import '../../../shared/widgets/sa_button.dart';
 import '../../../shared/widgets/sa_bottom_sheet.dart';
+import '../../../shared/widgets/tour_button.dart';
 import '../viewmodels/report_form_provider.dart';
 
 class PhotoScreen extends StatefulWidget {
@@ -23,6 +25,25 @@ class PhotoScreen extends StatefulWidget {
 
 class _PhotoScreenState extends State<PhotoScreen> {
   final _picker = ImagePicker();
+  final _areaKey = GlobalKey();
+  final _nextBtnKey = GlobalKey();
+
+  void _showTour(AppLocalizations l10n) {
+    showScreenTour(context, [
+      TourStep(
+        targetKey: _areaKey,
+        title: l10n.tourPhotoAreaTitle,
+        description: l10n.tourPhotoAreaDesc,
+        align: ContentAlign.bottom,
+      ),
+      TourStep(
+        targetKey: _nextBtnKey,
+        title: l10n.tourPhotoNextTitle,
+        description: l10n.tourPhotoNextDesc,
+        align: ContentAlign.top,
+      ),
+    ], doneLabel: l10n.tourDone);
+  }
 
   Future<void> _pick(ImageSource source) async {
     if (source == ImageSource.camera) {
@@ -58,6 +79,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
           icon: Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => context.go(AppRoutes.reportCategory),
         ),
+        actions: [TourButton(onPressed: () => _showTour(l10n))],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Padding(
@@ -84,15 +106,18 @@ class _PhotoScreenState extends State<PhotoScreen> {
 
             // Photo grid
             Expanded(
-              child: photos.isEmpty
-                  ? _EmptyState(onCamera: () => _pick(ImageSource.camera), onGallery: () => _pick(ImageSource.gallery))
-                  : _PhotoGrid(
-                      photos: photos,
-                      canAdd: canAdd,
-                      onRemove: _remove,
-                      onCamera: () => _pick(ImageSource.camera),
-                      onGallery: () => _pick(ImageSource.gallery),
-                    ),
+              child: KeyedSubtree(
+                key: _areaKey,
+                child: photos.isEmpty
+                    ? _EmptyState(onCamera: () => _pick(ImageSource.camera), onGallery: () => _pick(ImageSource.gallery))
+                    : _PhotoGrid(
+                        photos: photos,
+                        canAdd: canAdd,
+                        onRemove: _remove,
+                        onCamera: () => _pick(ImageSource.camera),
+                        onGallery: () => _pick(ImageSource.gallery),
+                      ),
+              ),
             ),
 
             if (photos.isNotEmpty) ...[
@@ -120,9 +145,12 @@ class _PhotoScreenState extends State<PhotoScreen> {
               ),
             ],
             const SizedBox(height: 16),
-            SaButton(
-              label: photos.isNotEmpty ? l10n.nextConfirmLocation : l10n.skipPhoto,
-              onPressed: _next,
+            KeyedSubtree(
+              key: _nextBtnKey,
+              child: SaButton(
+                label: photos.isNotEmpty ? l10n.nextConfirmLocation : l10n.skipPhoto,
+                onPressed: _next,
+              ),
             ),
           ],
         ),
